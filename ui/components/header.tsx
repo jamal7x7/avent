@@ -7,7 +7,7 @@ import { signOut, useSession } from "~/lib/auth-client";
 
 import { useState } from "react";
 import { cn } from "~/lib/utils";
-import { Cart } from "~/ui/components/cart";
+import { LanguageSwitcher } from "./language-switcher";
 import { Button } from "~/ui/primitives/button";
 import {
   DropdownMenu,
@@ -92,7 +92,7 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            {!isDashboard && <Cart />}
+            {!isDashboard && <LanguageSwitcher />}
 
             <NotificationsWidget />
 

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "~/lib/hooks/use-cart";
 import { ThemeProvider } from "~/ui/components/theme-provider";
+import { Providers } from "./providers";
 
 import "~/css/globals.css";
 import { Footer } from "~/ui/components/footer";
@@ -19,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Avent Next.js Template",
-  description: "Avent Next.js Template",
+  title: "Avent ",
+  description: "Avent",
 };
 
 export default function RootLayout({
@@ -39,13 +40,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CartProvider>
-            <div className="flex min-h-screen flex-col">
-              <Header showAuth={true} />
-              {children}
-              <Footer />
-            </div>
-          </CartProvider>
+          <Providers>
+            <CartProvider>
+              <div className="flex min-h-screen flex-col">
+                <Header showAuth={true} />
+                {children}
+                <Footer />
+              </div>
+            </CartProvider>
+          </Providers>
         </ThemeProvider>
         <SpeedInsights />
       </body>

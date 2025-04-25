@@ -1,0 +1,21 @@
+{
+  "welcome": "Welcome to Avent",
+  "hero_title_prefix": "Welcome to",
+  "hero_title_suffix": "Avent: Secure School Communication & Class Management",
+  "hero_subtitle": "Experience seamless collaboration with top privacy and security for schools, teachers, and students.",
+  "cta_primary": "Create your free account now",
+  "cta_secondary": "Sign In",
+  "cta_title": "Ready to transform your school communication?",
+  "cta_desc": "Join Avent and experience secure, modern, and effective digital collaboration for your educational community.",
+  "features_title": "Why Avent?",
+  "features_subtitle": "Avent empowers schools with secure, efficient, and collaborative digital tools.",
+  "feature_security": "End-to-End Encryption",
+  "feature_security_desc": "All messages and files are protected with industry-leading encryption.",
+  "feature_community": "Class & Group Management",
+  "feature_community_desc": "Organize classes, groups, and assignments with ease.",
+  "feature_customization": "Customizable Permissions",
+  "feature_customization_desc": "Admins and teachers have full control over privacy and access.",
+  "feature_privacy": "Privacy by Design",
+  "feature_privacy_desc": "Built from the ground up for student and teacher privacy.",
+  "hero_image_alt": "Connected students and teachers"
+}

@@ -1,0 +1,21 @@
+{
+  "welcome": "Bienvenue chez Avent",
+  "hero_title_prefix": "Bienvenue à",
+  "hero_title_suffix": "Avent : Communication scolaire sécurisée et gestion de classe",
+  "hero_subtitle": "Collaborez facilement avec une confidentialité et une sécurité de pointe pour écoles, enseignants et élèves.",
+  "cta_primary": "Créez votre compte gratuit maintenant",
+  "cta_secondary": "Se connecter",
+  "cta_title": "Prêt à transformer la communication de votre école ?",
+  "cta_desc": "Rejoignez Avent et profitez d'une collaboration numérique sécurisée, moderne et efficace pour votre communauté éducative.",
+  "features_title": "Pourquoi Avent ?",
+  "features_subtitle": "Avent donne aux écoles des outils numériques sécurisés, efficaces et collaboratifs.",
+  "feature_security": "Chiffrement de bout en bout",
+  "feature_security_desc": "Tous les messages et fichiers sont protégés par un chiffrement de pointe.",
+  "feature_community": "Gestion des classes et groupes",
+  "feature_community_desc": "Organisez facilement classes, groupes et devoirs.",
+  "feature_customization": "Permissions personnalisables",
+  "feature_customization_desc": "Les administrateurs et enseignants contrôlent entièrement la confidentialité et l'accès.",
+  "feature_privacy": "Confidentialité par conception",
+  "feature_privacy_desc": "Conçu dès le départ pour la vie privée des élèves et enseignants.",
+  "hero_image_alt": "Élèves et enseignants connectés"
+}
