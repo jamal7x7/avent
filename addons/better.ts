@@ -3,15 +3,20 @@ import fs from "fs-extra";
 import MagicString from "magic-string";
 import path from "pathe";
 
+/**
+ * Generates and post-processes the authentication schema using @better-auth/cli.
+ *
+ * This script is intended to be run via the pnpm script: `pnpm db:auth`
+ */
 async function main() {
-  // Step 1: Generate the schema file
+  // Step 1: Generate the schema file using npx for pnpm compatibility
   await execaCommand(
-    "bun x --bun @better-auth/cli generate --config ./src/lib/auth.ts --output ./src/db/schema/users.ts",
+    "npx @better-auth/cli generate --config ./lib/auth.ts --output ./db/schema/users.ts",
     { stdio: "inherit" },
   );
 
   // Step 2: Read the generated file
-  const filePath = path.resolve("./src/db/schema/users.ts");
+  const filePath = path.resolve("./db/schema/users.ts");
   const originalContent = await fs.readFile(filePath, "utf8");
 
   // Create a new MagicString instance with the original content
@@ -21,8 +26,8 @@ async function main() {
   const notice = `/**
  * THIS FILE IS AUTO-GENERATED - DO NOT EDIT DIRECTLY
  * 
- * To modify the schema, edit src/lib/auth.ts instead,
- * then run 'bun db:auth' to regenerate this file.
+ * To modify the schema, edit lib/auth.ts instead,
+ * then run 'pnpm db:auth' to regenerate this file.
  * 
  * Any direct changes to this file will be overwritten.
  */
@@ -63,7 +68,7 @@ async function main() {
     );
   }
 
-  // Step 6: Save the modified content back to the file
+  // Step 6: Write the modified content back to the file
   await fs.writeFile(filePath, s.toString(), "utf8");
 
   // Step 7: Make it prettier
@@ -72,7 +77,11 @@ async function main() {
   });
 }
 
-await main().catch((error: unknown) => {
-  console.error("Error:", error);
+main().catch((error: unknown) => {
+  // Custom error handling for clarity
+  console.error(
+    "[better.ts] Error during schema generation:",
+    error instanceof Error ? error.message : error,
+  );
   process.exit(1);
 });

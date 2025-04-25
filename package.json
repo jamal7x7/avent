@@ -8,11 +8,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "db:push": "drizzle-kit push",
-    "db:auth": "ts-node addons/better.ts",
+    "db:auth2": "ts-node --loader ts-node/esm addons/better.ts",
+    "db:auth": "npx tsx addons/better.ts",
     "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "ui": "npx shadcn@latest add",
     "latest": "pnpm update --latest && pnpm check",
-    "check": "tsc --noEmit && knip && eslint . && biome check --write ."
+    "check": "tsc --noEmit && knip && eslint . && biome check --write .",
+    "seed": "npx tsx script/seed.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.7",
@@ -61,6 +65,7 @@
     "knip": "^5.50.5",
     "magic-string": "^0.30.17",
     "tailwindcss": "^4.1.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0"
   }

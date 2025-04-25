@@ -1,8 +1,8 @@
 /**
  * THIS FILE IS AUTO-GENERATED - DO NOT EDIT DIRECTLY
  *
- * To modify the schema, edit src/lib/auth.ts instead,
- * then run 'bun db:auth' to regenerate this file.
+ * To modify the schema, edit lib/auth.ts instead,
+ * then run 'pnpm db:auth' to regenerate this file.
  *
  * Any direct changes to this file will be overwritten.
  */

@@ -12,7 +12,7 @@ const globalForDb = globalThis as unknown as {
   conn?: DbConnection;
 };
 export const conn: DbConnection =
-  globalForDb.conn ?? postgres(process.env.DATABASE_URL ?? "");
+  globalForDb.conn ?? postgres(process.env.POSTGRES_URL ?? "");
 if (process.env.NODE_ENV !== "production") {
   globalForDb.conn = conn;
 }
