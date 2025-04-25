@@ -2,7 +2,7 @@ import { ArrowRight, Clock, ShoppingBag, Star, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import United24Banner from "~/ui/components/banners/u24";
+import SupportBanner from "~/ui/components/banners/support";
 import { ProductCard } from "~/ui/components/product-card";
 import { TestimonialsSection } from "~/ui/components/testimonials/testimonials-with-marquee";
 import { Button } from "~/ui/primitives/button";
@@ -46,7 +46,7 @@ const features = [
 export default function HomePage() {
   return (
     <>
-      <United24Banner animateGradient={false} />
+      <SupportBanner animateGradient={false} />
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 via-muted/25 to-background py-24 md:py-32">

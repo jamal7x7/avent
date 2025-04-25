@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Relivator Next.js Template",
-  description: "Relivator Next.js Template",
+  title: "Avent Next.js Template",
+  description: "Avent Next.js Template",
 };
 
 export default function RootLayout({

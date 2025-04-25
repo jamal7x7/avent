@@ -121,7 +121,7 @@ const United24Banner: React.FC<United24BannerProps> = ({
 
   // Generate background classes or styles based on gradient animation and theme
   const bannerClasses = `w-full shadow-md relative z-50 overflow-hidden banner-gradient-bg ${
-    !animateGradient ? "bg-[#ffd700] dark:bg-[#0057b7]" : ""
+    !animateGradient ? "bg-muted dark:bg-muted" : ""
   }`;
 
   // Determine the background style based on animateGradient prop
@@ -135,13 +135,13 @@ const United24Banner: React.FC<United24BannerProps> = ({
 
   // Dynamic button class based on gradient animation state
   const buttonClasses = animateGradient
-    ? "banner-button bg-[#0057b7] text-[#ffd700] font-bold py-2 px-6 rounded hover:bg-white hover:text-[#0057b7] uppercase shadow-md opacity-90 hover:opacity-100 transition-opacity duration-300"
-    : "banner-button bg-[#0057b7] dark:bg-[#ffd700] hover:bg-white dark:hover:bg-white text-[#ffd700] dark:text-blue-800 hover:text-[#0057b7] font-bold py-2 px-6 rounded uppercase shadow-md opacity-90 hover:opacity-100 transition-opacity duration-300";
+    ? "banner-button bg-primary dark:bg-primary/70 text-white font-bold py-2 px-6 rounded hover:bg-white hover:text-primary uppercase shadow-md opacity-90 hover:opacity-100 transition-opacity duration-300"
+    : "banner-button bg-primary dark:bg-primary/70 text-white font-bold py-2 px-6 rounded hover:bg-white hover:text-primary uppercase shadow-md opacity-90 hover:opacity-100 transition-opacity duration-300";
 
   // Text color classes based on theme and gradient state
   const textColorClasses = animateGradient
     ? "text-white"
-    : "text-blue-800 dark:text-white";
+    : "text-primary dark:text-white";
 
   return (
     <div
@@ -156,16 +156,16 @@ const United24Banner: React.FC<United24BannerProps> = ({
           <div className="mb-3 md:mb-0 md:mr-5 flex-shrink-0 relative banner-logo">
             {/* Use Image component with different sources based on theme */}
             <Image
-              src="/u24.svg"
-              alt="United24 Logo"
+              src="/"
+              alt="Avent"
               width={96}
               height={48}
               priority
               className="w-24 h-auto rounded block dark:hidden"
             />
             <Image
-              src="/u24_white.svg"
-              alt="United24 Logo"
+              src="/"
+              alt="Avent"
               width={96}
               height={48}
               priority
@@ -175,27 +175,27 @@ const United24Banner: React.FC<United24BannerProps> = ({
           <p
             className={`font-semibold text-center md:text-left banner-content ${textColorClasses}`}
           >
-            Stand with Ukraine. Help fund drones, medkits, and victory. Every
-            dollar helps stop{" "}
+            This app is hosted on servers that need to be paid for. You can help
+            keep it running by donating to{" "}
             <Link
-              href="https://war.ukraine.ua/russia-war-crimes"
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
               className="underline"
             >
-              russia's war crimes
+              Avent
             </Link>{" "}
-            and saves lives. Donate now, it matters.
+           thank you
           </p>
         </div>
 
         <div className="flex items-center banner-content">
           <Link
-            href="https://u24.gov.ua"
+            href="/"
             target="_blank"
             rel="noopener noreferrer"
             className={buttonClasses}
-            aria-label="Donate to support Ukraine"
+            aria-label="Donate to support Avent"
           >
             Donate
           </Link>
@@ -203,7 +203,7 @@ const United24Banner: React.FC<United24BannerProps> = ({
           {showCloseButton && (
             <button
               onClick={handleClose}
-              aria-label="Close Ukraine support banner"
+              aria-label="Close support banner"
               type="button"
               className={`ml-4 opacity-80 hover:opacity-100 transition-opacity banner-content focus:outline-none focus:ring-2 focus:ring-current focus:ring-opacity-50 ${textColorClasses}`}
             >

@@ -18,6 +18,7 @@ import {
 } from "~/ui/primitives/dropdown-menu";
 import { NotificationsWidget } from "./notifications/notifications-widget";
 import { ThemeToggle } from "./theme-toggle";
+import { Avatar } from "~/ui/components/avatar/avatar";
 
 interface HeaderProps {
   showAuth?: boolean;
@@ -57,10 +58,10 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
                 className={cn(
                   "text-xl font-bold",
                   !isDashboard &&
-                    "tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent",
+                    "bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent tracking-tight"
                 )}
               >
-                Relivator
+                Avent
               </span>
             </Link>
             <nav className="hidden md:flex">
@@ -106,15 +107,14 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
                         className="relative overflow-hidden rounded-full"
                       >
                         {session.user?.image ? (
-                          <img
+                          <Avatar
                             src={session.user.image}
-                            alt={session.user.name || "User"}
-                            className="h-9 w-9 rounded-full object-cover"
+                            alt={session.user.name || undefined}
+                            size={36}
+                            className="h-9 w-9"
                           />
                         ) : (
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                            <User className="h-4 w-4" />
-                          </span>
+                          <Avatar size={36} className="h-9 w-9" />
                         )}
                       </Button>
                     </DropdownMenuTrigger>
@@ -122,13 +122,14 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
                       <div className="flex items-center justify-start gap-2 p-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                           {session.user?.image ? (
-                            <img
+                            <Avatar
                               src={session.user.image}
-                              alt={session.user.name || "User"}
-                              className="h-7 w-7 rounded-full object-cover"
+                              alt={session.user.name || undefined}
+                              size={28}
+                              className="h-7 w-7"
                             />
                           ) : (
-                            <User className="h-4 w-4 text-primary" />
+                            <Avatar size={28} className="h-7 w-7" />
                           )}
                         </div>
                         <div className="flex flex-col space-y-0.5">
