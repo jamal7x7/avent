@@ -1,0 +1,7 @@
+tsconfig.tsbuildinfo
+/auth-schema.ts
+/node_modules
+next-env.d.ts
+.vercel
+.next
+.env
