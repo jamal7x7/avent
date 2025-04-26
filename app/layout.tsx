@@ -1,13 +1,13 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "~/components/theme-provider";
 import { CartProvider } from "~/lib/hooks/use-cart";
-import { ThemeProvider } from "~/ui/components/theme-provider";
-import { Providers } from "./providers";
+import ClientLayout from "./client-layout";
 
-import "~/css/globals.css";
-import { Footer } from "~/ui/components/footer";
-import { Header } from "~/ui/components/header";
+import "./globals.css";
+import { Footer } from "~/components/footer";
+import { Header } from "~/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Avent ",
+  title: "Aven",
   description: "Avent",
 };
 
@@ -40,15 +40,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Providers>
-            <CartProvider>
-              <div className="flex min-h-screen flex-col">
-                <Header showAuth={true} />
+          <CartProvider>
+            <div className="flex min-h-screen flex-col">
+              <ClientLayout>
+                {/* <Header showAuth={true} /> */}
                 {children}
                 <Footer />
-              </div>
-            </CartProvider>
-          </Providers>
+              </ClientLayout>
+            </div>
+          </CartProvider>
         </ThemeProvider>
         <SpeedInsights />
       </body>

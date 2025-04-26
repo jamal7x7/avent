@@ -2,10 +2,10 @@
 
 import * as React from "react";
 
-import type { Notification } from "~/ui/components/notifications/notification-center";
-import { mockNotifications } from "~/ui/components/notifications/notifications.mock";
-import { Button } from "~/ui/primitives/button";
-import { Separator } from "~/ui/primitives/separator";
+import type { Notification } from "~/components/notifications/notification-center";
+import { mockNotifications } from "~/components/notifications/notifications.mock";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = React.useState<Notification[]>(

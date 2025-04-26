@@ -16,8 +16,6 @@
 
 // // import NavBar from "./components/NavBar";
 
-
-
 // export default function LandingPage() {
 //   // const { t } = useTranslation();
 //   // const [activeCard, setActiveCard] = React.useState(0);
@@ -28,14 +26,13 @@
 //       <NavBar />
 
 //     <main dir="rtl" className="flex flex-col items-center justify-center w-full min-h-screen bg-gradient-to-b from-white to-slate-100 dark:from-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-500">
-      
+
 //       {/* Hero Section */}
 //       <section className="relative w-full max-w-7xl px-6 py-32 text-center overflow-hidden">
 //         {/* Animated background */}
 //         <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 via-purple-200/30 to-pink-200/30 dark:from-blue-900/30 dark:via-purple-900/30 dark:to-pink-900/30 animate-pulse blur-2xl"></div>
-        
+
 //         {/* Glassmorphism overlay */}
-        
 
 //         <div className="relative  flex justify-center animate-fade-in delay-500">
 //           <div className="-mt-80 absolute w-80 h-80 bg-gradient-to-br from-blue-300/20 via-purple-300/20 to-pink-300/20 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 rounded-full blur-3xl -z-10"></div>
@@ -53,7 +50,6 @@
 //             {t('hero_subtitle', 'استمتع بتعاون سلس مع أعلى مستويات الخصوصية والأمان.')}
 //           </p>
 //           <Link href="/sign-up">
-           
 
 // <RainbowButton  className="px-12 py-5  text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-500 hover:to-blue-500 text-normal dark:text-white  dark:shadow-xl transition-all duration-1200 animate-pulse rounded-full border-2   hover:border-gray-400 hover:dark:border-gray-100">
 // {t('cta_primary', 'أنشئ حسابك المجاني الآن')}
@@ -61,7 +57,6 @@
 
 // </Link>
 
-        
 //         </div>
 //             </>
 //             }
@@ -220,7 +215,6 @@
 // }
 
 // // --- SecurityCard and SecurityParagraph components ---
-
 
 // type SecurityCardProps = {
 //   icon: React.ReactNode;

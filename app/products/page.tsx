@@ -2,9 +2,9 @@
 
 import * as React from "react";
 
+import { ProductCard } from "~/components/product-card";
+import { Button } from "~/components/ui/button";
 import { useCart } from "~/lib/hooks/use-cart";
-import { ProductCard } from "~/ui/components/product-card";
-import { Button } from "~/ui/primitives/button";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */

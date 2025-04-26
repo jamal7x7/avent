@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { GitHubIcon } from "~/components/icons/github";
+import { GoogleIcon } from "~/components/icons/google";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Separator } from "~/components/ui/separator";
 import { signIn } from "~/lib/auth-client";
-import { GitHubIcon } from "~/ui/icons/github";
-import { GoogleIcon } from "~/ui/icons/google";
-import { Button } from "~/ui/primitives/button";
-import { Card, CardContent } from "~/ui/primitives/card";
-import { Input } from "~/ui/primitives/input";
-import { Label } from "~/ui/primitives/label";
-import { Separator } from "~/ui/primitives/separator";
 
 export function SignInPageClient() {
   const router = useRouter();

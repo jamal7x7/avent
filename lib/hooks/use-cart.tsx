@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import type { CartItem } from "~/ui/components/cart";
+import type { CartItem } from "~/components/cart";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */

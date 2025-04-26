@@ -1,10 +1,10 @@
-import i18n from 'i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import { initReactI18next } from 'react-i18next';
+import i18n from "i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+import { initReactI18next } from "react-i18next";
 
-import en  from '../locales/en.json';
-import fr from '../locales/fr.json';
-import ar from '../locales/ar.json';
+import ar from "../locales/ar.json";
+import en from "../locales/en.json";
+import fr from "../locales/fr.json";
 
 const resources = {
   en_us: { translation: en },
@@ -19,14 +19,20 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources,
-      fallbackLng: 'en_us',
-      supportedLngs: ['en_us', 'fr_fr', 'ar_ma'],
+      fallbackLng: "en_us",
+      supportedLngs: ["en_us", "fr_fr", "ar_ma"],
       interpolation: {
         escapeValue: false,
       },
       detection: {
-        order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
-        caches: ['localStorage', 'cookie'],
+        order: [
+          "querystring",
+          "cookie",
+          "localStorage",
+          "navigator",
+          "htmlTag",
+        ],
+        caches: ["localStorage", "cookie"],
       },
     });
 }

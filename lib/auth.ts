@@ -3,7 +3,7 @@
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { twoFactor } from "better-auth/plugins";
+import { admin, twoFactor } from "better-auth/plugins";
 import { db } from "~/db";
 import {
   accountTable,
@@ -151,5 +151,5 @@ export const auth = betterAuth({
 
   // advanced: { generateId: false },
 
-  plugins: [twoFactor()],
+  plugins: [twoFactor(), admin()],
 });

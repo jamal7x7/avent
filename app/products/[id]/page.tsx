@@ -5,9 +5,9 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import * as React from "react";
 
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import { useCart } from "~/lib/hooks/use-cart";
-import { Button } from "~/ui/primitives/button";
-import { Separator } from "~/ui/primitives/separator";
 
 /* -------------------------------------------------------------------------- */
 /*                               Type declarations                            */

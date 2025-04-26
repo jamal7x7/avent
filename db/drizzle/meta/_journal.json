@@ -8,6 +8,13 @@
       "when": 1745572528280,
       "tag": "0000_happy_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745656099894,
+      "tag": "0001_smooth_rage",
+      "breakpoints": true
     }
   ]
 }
