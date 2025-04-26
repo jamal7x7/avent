@@ -11,52 +11,64 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import { signIn, signUp } from "~/lib/auth-client";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { signUp, admin, signIn } from "~/lib/auth-client";
+import { signUpSchema, SignUpSchema } from "~/lib/validation";
+import { USER_ROLES, UserRole, toBetterAuthRole } from "~/types/role";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function SignUpPageClient() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const {
+    handleSubmit,
+    control,
+    register,
+    formState: { errors },
+  } = useForm<SignUpSchema>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "student",
+    },
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: SignUpSchema) => {
     setError("");
     setLoading(true);
-
-    void signUp
-      .email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-      })
-      .then(() => {
-        router.push("/auth/sign-in?registered=true");
-      })
-      .catch((err: unknown) => {
-        setError("Registration failed. Please try again.");
-        console.error(err);
-      })
-      .finally(() => {
-        setLoading(false);
+    try {
+      await signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
       });
+      if (data.role !== "student") {
+        // Use correct params for admin.listUsers: query as object
+        const usersResp = await admin.listUsers({ query: { searchValue: data.email, searchField: "email" } });
+        const users = Array.isArray((usersResp as any).users) ? (usersResp as any).users : [];
+        const user = users.find((u: any) => u.email === data.email);
+        if (user && user.id) {
+          await admin.setRole({ userId: user.id, role: toBetterAuthRole(data.role) });
+        }
+      }
+      router.push("/auth/sign-in?registered=true");
+    } catch (err) {
+      setError("Registration failed. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGitHubSignUp = () => {
     setLoading(true);
     try {
+      // Social sign-up does not support role assignment directly
+      // Optionally, show a note or handle role assignment after OAuth callback
       void signIn.social({ provider: "github" });
     } catch (err) {
       setError("Failed to sign up with GitHub");
@@ -109,41 +121,62 @@ export function SignUpPageClient() {
 
           <Card className="border-none shadow-sm">
             <CardContent className="pt-2">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
-                    name="name"
-                    type="text"
+                    {...register("name")}
                     placeholder="John Doe"
-                    value={formData.name}
-                    onChange={handleChange}
                     required
                   />
+                  {errors.name && <span className="text-destructive text-xs">{errors.name.message}</span>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    name="email"
                     type="email"
+                    {...register("email")}
                     placeholder="name@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
                     required
                   />
+                  {errors.email && <span className="text-destructive text-xs">{errors.email.message}</span>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
-                    name="password"
                     type="password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    {...register("password")}
                     required
                   />
+                  {errors.password && <span className="text-destructive text-xs">{errors.password.message}</span>}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Controller
+                    name="role"
+                    control={control}
+                    render={({ field }) => (
+                      <Select {...field} onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Role</SelectLabel>
+                            {USER_ROLES.map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.role && <span className="text-destructive text-xs">{errors.role.message}</span>}
                 </div>
                 {error && (
                   <div className="text-sm font-medium text-destructive">

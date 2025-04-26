@@ -1,4 +1,5 @@
 import { twoFactorClient } from "better-auth/client/plugins";
+import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 // Create and export the auth client
@@ -11,6 +12,7 @@ export const authClient = createAuthClient({
         window.location.href = "/auth/two-factor";
       },
     }),
+    adminClient(),
   ],
 });
 
@@ -19,3 +21,5 @@ export const { signIn, signUp, signOut, useSession } = authClient;
 
 // Two-factor methods
 export const twoFactor = authClient.twoFactor;
+// Admin methods
+export const admin = authClient.admin;

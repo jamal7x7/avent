@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import type { User } from "~/db/types";
 import { signOut, useSession } from "~/lib/auth-client";
+import { useNavLayoutStore } from "~/hooks/use-nav-layout";
 
 interface DashboardPageClientProps {
   user?: User | null;
@@ -28,6 +29,7 @@ type ExtendedUser = {
 
 export function DashboardPageClient({ user }: DashboardPageClientProps) {
   const { data, isPending } = useSession();
+  const { isSidebar } = useNavLayoutStore();
 
   // Use the passed user or the session user
   const currentUser = user ?? data?.user;
@@ -38,10 +40,15 @@ export function DashboardPageClient({ user }: DashboardPageClientProps) {
     void signOut();
   };
 
+  // Set padding top if topnav is active (assume nav height 56px)
+  const contentClass = isSidebar
+    ? "container grid flex-1 items-start gap-4 p-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3"
+    : "container grid flex-1 items-start gap-4 p-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3 pt-16";
+
   // If we're still loading, show a skeleton
   if (isPending) {
     return (
-      <div className="container grid flex-1 items-start gap-4 p-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+      <div className={contentClass}>
         <div className="grid gap-4 md:col-span-2 lg:col-span-1">
           <Card>
             <CardHeader className="space-y-2">
@@ -61,7 +68,7 @@ export function DashboardPageClient({ user }: DashboardPageClientProps) {
   }
 
   return (
-    <div className="container grid flex-1 items-start gap-4 p-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+    <div className={contentClass}>
       <div className="grid gap-4 md:col-span-2 lg:col-span-1">
         <Card>
           <CardHeader>
