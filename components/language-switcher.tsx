@@ -1,6 +1,6 @@
 "use client";
 import { useTranslation } from "react-i18next";
-import GlobeIcon from "~/components/icons/globe";
+import { RiGlobalLine } from "@remixicon/react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -15,10 +15,13 @@ const languages = [
   { code: "ar_ma", label: "العربية" },
 ];
 
-export function LanguageSwitcher({ className }: { className?: string }) {
-  const { i18n } = useTranslation();
+export function LanguageSwitcher({ className, isCollapsed }: { className?: string; isCollapsed?: boolean }) {
+  const { t, i18n } = useTranslation();
+  const normalizedLang = (i18n.language || "").toLowerCase().replace("-", "_");
   const current =
-    languages.find((l) => l.code === i18n.language) || languages[0];
+    languages.find((l) => l.code === normalizedLang) ||
+    languages.find((l) => l.code.startsWith(normalizedLang.split("_")[0])) ||
+    languages[0];
 
   return (
     <DropdownMenu>
@@ -26,10 +29,19 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="icon"
-          className={`h-9 w-9 rounded-full bg-background transition-colors hover:bg-muted ${className || ""}`}
+          className={
+            isCollapsed === false
+              ? `h-9 w-full min-w-[140px] rounded-full focus:outline-none focus:ring hover:bg-sidebar-accent flex items-center justify-start px-3 gap-3 ${className || ""}`
+              : `h-9 w-9 rounded-full focus:outline-none focus:ring hover:bg-sidebar-accent flex items-center justify-center ${className || ""}`
+          }
           aria-label="Switch language"
         >
-          <GlobeIcon className="h-[1.2rem] w-[1.2rem]" />
+          <RiGlobalLine size={22} className="text-muted-foreground/60" />
+          {isCollapsed === false && (
+            <span className="text-sm text-muted-foreground font-medium whitespace-nowrap">
+              {current.label}
+            </span>
+          )}
           <span className="sr-only">Switch language</span>
         </Button>
       </DropdownMenuTrigger>

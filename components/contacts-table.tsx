@@ -184,7 +184,7 @@ const getColumns = ({ data, setData }: GetColumnsProps): ColumnDef<Item>[] => [
         >
           {row.original.status === "Active" && (
             <RiCheckLine
-              className="text-emerald-500"
+              className="text-blue-500"
               size={14}
               aria-hidden="true"
             />
@@ -217,7 +217,7 @@ const getColumns = ({ data, setData }: GetColumnsProps): ColumnDef<Item>[] => [
           size={20}
           className={cn(
             row.original.verified
-              ? "fill-emerald-600"
+              ? "fill-blue-600"
               : "fill-muted-foreground/50",
           )}
           aria-hidden="true"

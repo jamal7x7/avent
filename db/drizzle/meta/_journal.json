@@ -15,6 +15,13 @@
       "when": 1745656099894,
       "tag": "0001_smooth_rage",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745779449534,
+      "tag": "0002_yielding_expediter",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import type * as React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useTransition } from "react";
 
 import {
   RiBardLine,
@@ -9,14 +10,15 @@ import {
   RiLeafLine,
   RiLoginCircleLine,
   RiLogoutBoxLine,
-  RiMenuLine,
+  RiSideBarLine,
   RiArrowDownSLine,
+  RiArrowLeftSLine,
   RiScanLine,
   RiSettings3Line,
   RiUserFollowLine,
+  RiSearch2Line,
   RemixiconComponentType,
 } from "@remixicon/react";
-import { SearchForm } from "~/components/search-form";
 import { TeamSwitcher } from "~/components/team-switcher";
 import {
   Sidebar,
@@ -33,7 +35,12 @@ import {
 } from "~/components/ui/sidebar";
 import { useNavLayoutStore } from "~/hooks/use-nav-layout";
 import { cn } from "~/lib/utils";
-
+import { AuthAvatar } from "./auth-avatar";
+import { useSession } from "~/lib/auth-client";
+import { ThemeToggle } from "~/components/theme-toggle";
+import { LanguageSwitcher } from "~/components/language-switcher";
+import { SearchForm } from "~/components/search-form";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
 type NavItem = {
   title: string;
@@ -42,7 +49,7 @@ type NavItem = {
   isActive?: boolean;
 }
 // This is sample data.
-const data = {
+export const data = {
   teams: [
     {
       name: "InnovaCraft",
@@ -121,19 +128,33 @@ const data = {
 };
 
 function DashboardTopNav() {
-  const { toggleNavLayout } = useNavLayoutStore();
+  const toggleNavLayout = useNavLayoutStore((state) => state.toggleNavLayout);
+  const { data: session } = useSession();
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isPending, startTransition] = useTransition();
+  // Focus input when expanded
+  useEffect(() => {
+    if (searchExpanded && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchExpanded]);
+
   // Split nav groups for layout logic
   const mainGroups = data.navMain.filter((g) => g.title !== "Other");
   const otherGroup = data.navMain.find((g) => g.title === "Other");
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 w-full bg-sidebar text-sidebar-foreground shadow flex flex-row items-center justify-between px-4 py-2 gap-2 border-b border-border">
+    <nav className={cn(
+      "fixed top-0 left-0 right-0 z-40 w-full bg-sidebar text-sidebar-foreground shadow flex flex-row items-center justify-between px-4 py-2 gap-2 border-b border-border",
+      isPending && "opacity-60 transition-opacity duration-300 pointer-events-none"
+    )}>
       <div className="flex items-center gap-4">
         <button
           aria-label="Show Sidebar"
-          className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring"
-          onClick={toggleNavLayout}
+          className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring transition-colors"
+          onClick={() => startTransition(() => toggleNavLayout())}
         >
-          <RiMenuLine className="size-6" />
+          <RiSideBarLine className="w-6 h-6 text-muted-foreground/60 transition-transform" />
         </button>
         <TeamSwitcher teams={data.teams} />
         <div className="flex-1 flex flex-wrap gap-4 md:gap-8">
@@ -165,76 +186,120 @@ function DashboardTopNav() {
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-2 ml-auto">
-        {/* Render only icons for 'Other' group */}
-        {otherGroup && otherGroup.items.map((item) => (
-          <a
-            key={item.title}
-            href={item.url}
-            className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring"
-            title={item.title}
+      <div className="flex gap-2 ml-auto items-center">
+        {/* Search button, expands on click */}
+        <div className={searchExpanded ? "w-64 transition-all duration-300" : "w-9 transition-all duration-300"}>
+          <form
+            className="relative"
+            onFocus={() => setSearchExpanded(true)}
+            onBlur={e => {
+              if (!e.currentTarget.contains(e.relatedTarget)) setSearchExpanded(false);
+            }}
+            tabIndex={-1}
           >
-            {item.icon && <item.icon className="size-6" aria-hidden="true" />}
-          </a>
-        ))}
-        <SearchForm className="hidden md:block" />
-        <button
-          aria-label="Sign Out"
-          className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring"
-        >
-          <RiLogoutBoxLine className="size-6 text-muted-foreground/60" />
-        </button>
+            <div className={searchExpanded ? "flex items-center w-full h-9" : "flex items-center w-9 h-9"}>
+              <span className="pl-2 flex items-center text-muted-foreground">
+                <RiSearch2Line size={20} />
+              </span>
+              {searchExpanded && (
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  placeholder="Search..."
+                  className="block w-full h-9 rounded-md border bg-background px-2 py-1 text-sm shadow-xs transition-all outline-none border-input ml-2"
+                  onBlur={e => {
+                    if (!e.currentTarget.value && !e.relatedTarget) setSearchExpanded(false);
+                  }}
+                  onClick={() => setSearchExpanded(true)}
+                  aria-label="Search"
+                />
+              )}
+            </div>
+          </form>
+        </div>
+        <ThemeToggle />
+        <LanguageSwitcher isCollapsed={true} />
+        <AuthAvatar
+          name={session?.user?.name || "User"}
+          email={session?.user?.email || ""}
+          image={session?.user?.image || undefined}
+          isDashboard={true}
+        />
       </div>
     </nav>
   );
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { isSidebar, toggleNavLayout } = useNavLayoutStore();
-  if (!isSidebar) {
+  const toggleNavLayout = useNavLayoutStore((state) => state.toggleNavLayout);
+  const { data: session } = useSession();
+  // Detect collapsed state using sidebar context data attribute
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  useEffect(() => {
+    // Listen for sidebar collapse state via data attribute
+    const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+    if (!sidebar) return;
+    const sidebarCollapsible = sidebar.closest('[data-collapsible]');
+    if (!sidebarCollapsible) return;
+    const observer = new MutationObserver(() => {
+      setIsCollapsed(sidebarCollapsible.getAttribute('data-collapsible') === 'icon');
+    });
+    observer.observe(sidebarCollapsible, { attributes: true });
+    setIsCollapsed(sidebarCollapsible.getAttribute('data-collapsible') === 'icon');
+    return () => observer.disconnect();
+  }, []);
+
+  if (!useNavLayoutStore.getState().isSidebar) {
     return <DashboardTopNav />;
   }
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" variant="inset" {...props} data-sidebar="sidebar">
       <SidebarHeader>
         <div className="flex items-center justify-between">
-          <TeamSwitcher teams={data.teams} />
+          {/* Only show TeamSwitcher if not collapsed */}
+          {!isCollapsed && <TeamSwitcher teams={data.teams} />}
           <button
             aria-label="Show Top Nav"
-            className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring"
-            onClick={toggleNavLayout}
+            className="rounded p-2 hover:bg-sidebar-accent focus:outline-none focus:ring transition-colors"
+            onClick={() => toggleNavLayout()}
           >
-            <RiArrowDownSLine className="size-6" />
+            <span className="inline-flex items-center justify-center transition-transform duration-200" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+              <RiArrowLeftSLine className="w-6 h-6 text-muted-foreground/60" />
+            </span>
           </button>
         </div>
         <hr className="border-t border-border mx-2 -mt-px" />
-        <SearchForm className="mt-3" />
+        {/* Search: icon only in collapsed mode */}
+        {isCollapsed ? (
+          <div className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-sidebar-accent focus:outline-none focus:ring mx-auto mt-3 cursor-pointer" aria-label="Search" tabIndex={0} role="button">
+            <RiSearch2Line size={20} />
+          </div>
+        ) : (
+          <SearchForm className="mt-3" />
+        )}
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
+        {/* SidebarGroup: only icons and tooltips in collapsed mode */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
-            <SidebarGroupLabel className="uppercase text-muted-foreground/60">
+            <SidebarGroupLabel className={isCollapsed ? "sr-only" : "uppercase text-muted-foreground/60"}>
               {item.title}
             </SidebarGroupLabel>
-            <SidebarGroupContent className="px-2">
+            <SidebarGroupContent className={isCollapsed ? "px-0" : "px-2"}>
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className="group/menu-button font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                      className={isCollapsed ? "justify-center p-2 min-w-0 w-9 h-9" : "gap-3 h-9"}
                       isActive={!!item.isActive}
+                      tooltip={isCollapsed ? item.title : undefined}
                     >
-                      <a href={item.url}>
+                      <a href={item.url} tabIndex={0} aria-label={item.title}>
                         {item.icon && (
-                          <item.icon
-                            className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                            size={22}
-                            aria-hidden="true"
-                          />
+                          <item.icon className="text-muted-foreground/60" size={22} aria-hidden="true" />
                         )}
-                        <span>{item.title}</span>
+                        {!isCollapsed && <span>{item.title}</span>}
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -245,16 +310,49 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
+        <div className={isCollapsed ? "flex flex-col items-center gap-2 px-1 pb-2" : "flex items-center gap-2 px-4 pb-2"}>
+          {/* Theme Toggle as sidebar icon */}
+          <SidebarMenuItem className="list-none ![&>button]:!list-none">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton className={"flex items-center justify-center p-2 min-w-0 w-9 h-9"}>
+                  <ThemeToggle className="w-6 h-6" />
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="select-none">
+                Toggle theme
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+          {/* Language Switcher as sidebar icon */}
+          <SidebarMenuItem className="list-none ![&>button]:!list-none">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton className={isCollapsed ? "flex items-center justify-center p-2 min-w-0 w-9 h-9" : "gap-3 h-9 w-full min-w-[140px] justify-start px-3 flex items-center"}>
+                  <LanguageSwitcher isCollapsed={isCollapsed} className={isCollapsed ? "w-6 h-6" : "w-6 h-6"} />
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="select-none">
+                Switch language
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+        </div>
         <hr className="border-t border-border mx-2 -mt-px" />
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto">
-              <RiLogoutBoxLine
-                className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                size={22}
-                aria-hidden="true"
+            <SidebarMenuButton
+              className={isCollapsed ? "min-h-[48px] w-9 h-9 justify-center" : "group/menu-button min-h-[64px] rounded-md p-0 flex items-center w-full"}
+            >
+              <AuthAvatar
+                className={isCollapsed ? "size-8 mx-auto" : "flex items-center w-full px-3"}
+                name={session?.user?.name || "User"}
+                email={isCollapsed ? undefined : session?.user?.email || ""}
+                role={isCollapsed ? undefined : session?.user?.role || "User"}
+                image={session?.user?.image || undefined}
+                isDashboard={true}
+                showDetails={!isCollapsed}
               />
-              <span>Sign Out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
