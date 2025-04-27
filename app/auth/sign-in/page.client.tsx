@@ -66,7 +66,8 @@ export function SignInPageClient() {
       {/* Left side - Image */}
       <div className="relative hidden md:block">
         <Image
-          src="https://images.unsplash.com/photo-1719811059181-09032aef07b8?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3"
+          // src="https://images.unsplash.com/photo-1719811059181-09032aef07b8?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3"
+          src="https://images.unsplash.com/photo-1604866830893-c13cafa515d5?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Sign-in background image"
           fill
           priority
@@ -75,9 +76,9 @@ export function SignInPageClient() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         <div className="absolute bottom-8 left-8 z-10 text-white">
-          <h1 className="text-3xl font-bold">Relivator</h1>
+          <h1 className="text-3xl font-bold">Avent</h1>
           <p className="mt-2 max-w-md text-sm text-white/80">
-            Store which makes you happy.
+            school secure communication platform.
           </p>
         </div>
       </div>

@@ -43,9 +43,8 @@ export default function RootLayout({
           <CartProvider>
             <div className="flex min-h-screen flex-col">
               <ClientLayout>
-                {/* <Header showAuth={true} /> */}
                 {children}
-                <Footer />
+              
               </ClientLayout>
             </div>
           </CartProvider>
