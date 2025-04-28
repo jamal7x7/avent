@@ -45,6 +45,7 @@ import { ThemeToggle } from "~/components/theme-toggle";
 import { LanguageSwitcher } from "~/components/language-switcher";
 import { SearchForm } from "~/components/search-form";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
+import Link from "next/link";
 
 type NavItem = {
   title: string;
@@ -52,7 +53,7 @@ type NavItem = {
   icon: RemixiconComponentType;
   isActive?: boolean;
   roles?: string[];
-}
+};
 
 // This is sample data.
 export const data = {
@@ -113,22 +114,22 @@ export const data = {
         },
       ] as NavItem[],
     },
-    {
-      title: "Other",
-      url: "#",
-      items: [
-        {
-          title: "Settings",
-          url: "#",
-          icon: RiSettings3Line,
-        },
-        {
-          title: "Help Center",
-          url: "#",
-          icon: RiLeafLine,
-        },
-      ],
-    },
+    // {
+    //   title: "Other",
+    //   url: "#",
+    //   items: [
+    //     {
+    //       title: "Settings",
+    //       url: "#",
+    //       icon: RiSettings3Line,
+    //     },
+    //     {
+    //       title: "Help Center",
+    //       url: "#",
+    //       icon: RiLeafLine,
+    //     },
+    //   ],
+    // },
   ],
 };
 
@@ -170,7 +171,7 @@ function DashboardTopNav() {
                 {group.items.map((item) => {
                   const isActive = 'isActive' in item && item.isActive;
                   return (
-                    <a
+                    <Link
                       key={item.title}
                       href={item.url}
                       className={cn(
@@ -178,12 +179,14 @@ function DashboardTopNav() {
                         isActive && "bg-primary/10 text-primary"
                       )}
                     >
-                      {item.icon && <item.icon className="size-5" aria-hidden="true" />}
+                      {item.icon && (
+                        <item.icon className="size-5" aria-hidden="true" />
+                      )}
                       <span>{item.title}</span>
                       {isActive && (
                         <span className="absolute -bottom-0.5 left-2 right-2 h-0.5 rounded-full bg-primary" />
                       )}
-                    </a>
+                    </Link>
                   );
                 })}
               </div>

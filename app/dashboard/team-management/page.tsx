@@ -1,62 +1,89 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { PlusIcon, UsersIcon } from "lucide-react";
-import { TeamCard } from "~/components/team-card";
-import { AddTeamForm } from "~/components/add-team-form";
-import { JoinTeamForm } from "~/components/join-team-form";
-import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
-import { auth } from "~/lib/auth";
 import { headers } from "next/headers";
-
+import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
+import { AddTeamForm } from "~/components/add-team-form";
+import { AnnouncementForm } from "~/components/announcement-form";
+import AnnouncementList from "~/components/announcement-list";
+import { JoinTeamForm } from "~/components/join-team-form";
+import { TeamCard } from "~/components/team-card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  SimpleTabs,
+  SimpleTabsContent,
+  SimpleTabsList,
+  SimpleTabsTrigger,
+} from "~/components/ui/simple-tabs"; // Import SimpleTabs component
+import { auth } from "~/lib/auth";
+import DashboardContent from "../DashboardContent";
 export const dynamic = "force-dynamic";
 
 export default async function TeamManagementPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  const teamsRaw = session?.user?.id ? await fetchUserTeams(session.user.id) : [];
-  const teams = teamsRaw.map((t: any) => ({ ...t, type: t.type ?? "classroom" }));
+  const teamsRaw = session?.user?.id
+    ? await fetchUserTeams(session.user.id)
+    : [];
+  const teams = teamsRaw.map((t) => ({
+    id: t.id,
+    name: t.name ?? "Unnamed Team",
+    type: t.type ?? "classroom",
+    memberCount: t.memberCount ?? 0,
+  }));
   const hasTeams = teams.length > 0;
+
   return (
-    <div className="h-full py-10 px-4">
-      <div className="flex flex-col gap-8 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Team Management</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <DashboardContent>
+      <div className="h-full py-10 px-4 space-y-8">
+        <h1 className="text-2xl font-bold mb-2">Announcements</h1>
+        <p className="text-muted-foreground mb-6">
+          Manage and send announcements to your teams.
+        </p>
+
+      <SimpleTabs defaultValue="your-teams" className="w-full">
+        <SimpleTabsList className="flex justify-start border-b">
+          <SimpleTabsTrigger value="your-teams">Your Teams</SimpleTabsTrigger>
+          <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
+          <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
+        </SimpleTabsList>
+
+        {/* Your Teams Tab */}
+        <SimpleTabsContent value="your-teams" className="mt-4">
+          {hasTeams ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {teams.map((team) => (
+                <TeamCard key={team.id} team={team} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-muted-foreground text-center py-8 border border-dashed rounded-lg">
+              No teams yet. Create or join a team using the tabs above.
+            </div>
+          )}
+        </SimpleTabsContent>
+
+        {/* Add Team Tab */}
+        <SimpleTabsContent value="add-team" className="mt-4">
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center gap-2 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <PlusIcon className="w-5 h-5 text-primary" /> Add Team
-              </CardTitle>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Create a New Team</CardTitle>
             </CardHeader>
             <CardContent>
               <AddTeamForm teams={teams} />
             </CardContent>
           </Card>
+        </SimpleTabsContent>
+
+        {/* Join Team Tab */}
+        <SimpleTabsContent value="join-team" className="mt-4">
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center gap-2 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <UsersIcon className="w-5 h-5 text-primary" /> Join Team
-              </CardTitle>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Join an Existing Team</CardTitle>
             </CardHeader>
             <CardContent>
               <JoinTeamForm />
             </CardContent>
           </Card>
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-            <UsersIcon className="w-5 h-5 text-muted-foreground" /> Your Teams
-          </h2>
-          {hasTeams ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {teams.map((team: any) => (
-                <TeamCard key={team.id} team={team} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-muted-foreground text-center py-8">No teams yet. Create or join a team to get started.</div>
-          )}
-        </div>
+        </SimpleTabsContent>
+      </SimpleTabs>
       </div>
-    </div>
+    </DashboardContent>
   );
 }

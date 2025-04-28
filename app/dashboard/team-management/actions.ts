@@ -1,20 +1,14 @@
+"use server";
+
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { db } from "~/db";
 import { teamInviteCodes, teamMembers, teams } from "~/db/schema";
-
-export const inviteCodeSchema = z.object({
-  teamId: z.string(),
-  expiresAt: z.string().datetime(), // ISO string
-  maxUses: z.number().min(1).max(1000),
-  userId: z.string(),
-});
-
-export const joinCodeSchema = z.object({
-  code: z.string().length(6),
-  userId: z.string(),
-});
+import { auth } from "~/lib/auth"; // Import auth
+import { revalidatePath } from "next/cache"; // Import revalidatePath
+import { headers } from "next/headers"; // Import headers
+import { inviteCodeSchema, joinCodeSchema } from "~/lib/validation/team"; // Import schemas
 
 export async function generateInviteCode(
   input: z.infer<typeof inviteCodeSchema>,
@@ -91,4 +85,39 @@ export async function joinTeamWithCode(input: z.infer<typeof joinCodeSchema>) {
     .set({ uses: invite.uses + 1 })
     .where(eq(teamInviteCodes.id, invite.id));
   return { success: true, teamId: invite.teamId };
+}
+
+export async function leaveTeamAction(teamId: string) {
+  const session = await auth.api.getSession({ headers: await headers() }); // Use getSession with headers()
+  if (!session?.user?.id) {
+    return { error: "Not authenticated" };
+  }
+  const userId = session.user.id;
+
+  try {
+    // Check if the user is actually a member of this team
+    const membership = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
+    });
+
+    if (!membership) {
+      return { error: "You are not a member of this team." };
+    }
+
+    // Prevent owner from leaving? Or handle ownership transfer? For now, let's allow leaving.
+    // Consider adding logic here if the owner role has special constraints.
+
+    // Delete the membership
+    await db
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+
+    // Revalidate the path to update the UI
+    revalidatePath("/dashboard/team-management");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error leaving team:", error);
+    return { error: "An unexpected error occurred. Please try again." };
+  }
 }

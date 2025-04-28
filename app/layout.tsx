@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aven",
+  title: "Avent",
   description: "Avent",
 };
 
@@ -42,10 +42,7 @@ export default function RootLayout({
         >
           <CartProvider>
             <div className="flex min-h-screen flex-col">
-              <ClientLayout>
-                {children}
-              
-              </ClientLayout>
+              <ClientLayout>{children}</ClientLayout>
             </div>
           </CartProvider>
         </ThemeProvider>

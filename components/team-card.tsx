@@ -2,20 +2,53 @@
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
-import { ClipboardCopyIcon } from "lucide-react";
-import { useState } from "react";
+import { ClipboardCopyIcon, LogOutIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { leaveTeamAction } from "~/app/dashboard/team-management/actions";
+import { Button } from "~/components/ui/button";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { UsersIcon } from "lucide-react"; // Import UsersIcon
 
-export function TeamCard({ team }: { team: { id: string; name: string; type: string } }) {
+interface TeamCardProps {
+  team: {
+    id: string;
+    name: string;
+    type: string | null; // Type might be null based on schema/fetch
+    memberCount: number;
+  };
+}
+
+export function TeamCard({ team }: TeamCardProps) {
   const [copied, setCopied] = useState(false);
+  const [isPending, startTransition] = useTransition();
   return (
     <Card className="p-4 flex flex-col gap-2 shadow-sm">
       <div className="flex items-center gap-2 justify-between">
-        <span className="font-semibold text-lg flex items-center gap-2">
-          <Badge variant="outline" className="text-xs px-2 py-1 mr-2">
-            {team.type}
-          </Badge>
-          {team.name}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-lg flex items-center gap-2">
+            {team.type && (
+              <Badge variant="outline" className="text-xs px-2 py-1 mr-1">
+                {team.type}
+              </Badge>
+            )}
+            {team.name}
+          </span>
+          <span className="text-sm text-muted-foreground flex items-center gap-1">
+            <UsersIcon className="w-3.5 h-3.5" />
+            {team.memberCount} {team.memberCount === 1 ? "member" : "members"}
+          </span>
+        </div>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -35,7 +68,44 @@ export function TeamCard({ team }: { team: { id: string; name: string; type: str
           </Tooltip>
         </TooltipProvider>
       </div>
-      {/* Add more team actions/info here */}
+      <div className="flex items-center justify-end gap-2 mt-2">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm" disabled={isPending}>
+              <LogOutIcon className="w-4 h-4 mr-1" />
+              Leave Team
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. You will leave the team "{team.name}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    const result = await leaveTeamAction(team.id);
+                    if (result?.error) {
+                      toast.error(result.error);
+                    } else {
+                      toast.success(`Successfully left team "${team.name}"`);
+                      // Revalidation should handle UI update
+                    }
+                  });
+                }}
+              >
+                {isPending ? "Leaving..." : "Confirm"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        {/* Add more team actions/info here */}
+      </div>
     </Card>
   );
 }

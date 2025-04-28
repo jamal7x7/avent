@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface Announcement {
   id: string;
@@ -57,27 +59,36 @@ export function AnnouncementListClient({
     <div className="w-full max-w-xl mt-8">
       <div className="flex items-center gap-2 mb-4">
         <span className="font-medium">Filter by team:</span>
-        <select
-          className="border rounded px-2 py-1"
-          value={selectedTeam}
-          onChange={e => handleFilterChange(e.target.value)}
-        >
-          <option value="all">All Teams</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
+        <Select onValueChange={handleFilterChange} value={selectedTeam}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a team" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Teams</SelectItem>
+            {teams.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <ul className="space-y-4">
         {announcements.length === 0 && !isLoading && (
-          <li className="text-muted-foreground">No announcements found.</li>
+          <li className="text-muted-foreground text-center">No announcements found.</li>
         )}
         {announcements.map(a => (
-          <li key={a.id} className="bg-muted p-4 rounded shadow flex flex-col gap-1">
-            <div className="text-sm text-muted-foreground">{a.teamName || "All Teams"}</div>
-            <div className="font-medium">{a.content}</div>
-            <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</div>
-          </li>
+          <Card key={a.id} className="flex flex-col gap-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">{a.content}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">{a.teamName || "All Teams"}</div>
+            </CardContent>
+            <CardFooter>
+              <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</div>
+            </CardFooter>
+          </Card>
         ))}
       </ul>
       {hasMore && (

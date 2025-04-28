@@ -5,14 +5,38 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { toastAnnouncement } from "~/components/toast-announcement";
 import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const announcementFormSchema = z.object({
+  content: z.string().min(1, { message: "Announcement message cannot be empty." }).max(300, { message: "Announcement message cannot exceed 300 characters." }),
+  teamIds: z.array(z.string()).optional(),
+});
+
+type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
 
 export function AnnouncementForm() {
   const { data: session } = useSession();
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  const [selectedTeams, setSelectedTeams] = useState<string[]>([]); 
-  const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<AnnouncementFormValues>({
+    resolver: zodResolver(announcementFormSchema),
+    defaultValues: {
+      content: "",
+      teamIds: [],
+    },
+  });
 
   const validRoles = ["teacher","admin","staff"];
   const role = (typeof session?.user?.role === 'string' && validRoles.includes(session.user.role))
@@ -43,73 +67,74 @@ export function AnnouncementForm() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: AnnouncementFormValues) => {
     setError(null);
-    if (!content.trim()) {
-      setError("Announcement message cannot be empty.");
-      return;
-    }
-    setIsSubmitting(true);
+    form.formState.isSubmitting = true; // Manually set submitting state for the button
     try {
       const res = await fetch("/api/announcements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content,
+          content: values.content,
           teamIds: selectedTeams, // [] means all teams
           senderId: session!.user.id,
           senderRole: role,
         }),
       });
       if (!res.ok) throw new Error("Failed to create announcement");
-      setContent("");
+      form.reset();
       setSelectedTeams([]);
       toastAnnouncement("success", "Announcement sent!");
     } catch (e) {
       setError((e as Error).message);
       toastAnnouncement("error", "Failed to send announcement.");
     } finally {
-      setIsSubmitting(false);
+      form.formState.isSubmitting = false; // Manually set submitting state for the button
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-xl w-full">
-      <div>
-        <label htmlFor="announcement-content" className="block font-medium mb-1">
-          Announcement
-        </label>
-        <Input
-          id="announcement-content"
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          maxLength={300}
-          placeholder="Write your announcement..."
-          disabled={isSubmitting}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-xl w-full">
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Announcement</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Write your announcement..."
+                  maxLength={300}
+                  disabled={form.formState.isSubmitting}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <div className="text-xs text-muted-foreground mt-1">Max 300 characters</div>
-      </div>
-      <div>
-        <span className="font-medium">Send to teams:</span>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {teams.map(team => (
-            <label key={team.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={selectedTeams.includes(team.id)}
-                onCheckedChange={() => handleTeamToggle(team.id)}
-                id={`team-${team.id}`}
-              />
-              <span>{team.name}</span>
-            </label>
-          ))}
+        <div>
+          <span className="font-medium">Send to teams:</span>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {teams.map(team => (
+              <label key={team.id} className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedTeams.includes(team.id)}
+                  onCheckedChange={() => handleTeamToggle(team.id)}
+                  id={`team-${team.id}`}
+                />
+                <span>{team.name}</span>
+              </label>
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">No selection = all teams</div>
         </div>
-        <div className="text-xs text-muted-foreground mt-1">No selection = all teams</div>
-      </div>
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Sending..." : "Send Announcement"}
-      </Button>
-    </form>
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Sending..." : "Send Announcement"}
+        </Button>
+      </form>
+    </Form>
   );
 }

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm"; // Import count
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { db } from "~/db";
@@ -100,20 +100,23 @@ export async function fetchAnnouncements(
 }
 
 export async function fetchUserTeams(userId: string) {
-  // All teams where the user is a teacher/admin/staff
-  const roles = ["teacher", "admin", "staff"];
+  // Fetch all teams the user is a member of, regardless of role, and include member count
+  const userTeamIdsQuery = db
+    .selectDistinct({ teamId: teamMembers.teamId })
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, userId));
+
   const result = await db
     .select({
       id: teams.id,
       name: teams.name,
+      type: teams.type, // Include type as it's used in the page
+      memberCount: count(teamMembers.id),
     })
-    .from(teamMembers)
-    .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-    .where(
-      and(
-        eq(teamMembers.userId, userId),
-        or(...roles.map((r) => eq(teamMembers.role, r))),
-      ),
-    );
+    .from(teams)
+    .leftJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+    .where(inArray(teams.id, userTeamIdsQuery)) // Filter teams the user is part of
+    .groupBy(teams.id, teams.name, teams.type); // Group by team to count members
+
   return result;
 }
