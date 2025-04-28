@@ -57,11 +57,11 @@ export default function DashboardContent({ children }: { children?: React.ReactN
   }, []);
 
   return (
-    <>
+    <div className="flex min-h-screen w-full">
       <AppSidebar />
       <SidebarInset
         className={clsx(
-          "overflow-hidden px-4 md:px-6 lg:px-8",
+          "flex-1 w-full overflow-hidden px-4 md:px-6 lg:px-8",
           isSidebar ? "mt-0" : "mt-16"
         )}
       >
@@ -108,6 +108,6 @@ export default function DashboardContent({ children }: { children?: React.ReactN
           {children}
         </div>
       </SidebarInset>
-    </>
+    </div>
   );
 }

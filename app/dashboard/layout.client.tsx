@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { SidebarProvider } from "~/components/ui/sidebar";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
@@ -35,8 +36,10 @@ export function DashboardLayoutClient({
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">{children}</main>
-    </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen flex-col w-full">
+        <main className="flex-1">{children}</main>
+      </div>
+    </SidebarProvider>
   );
 }

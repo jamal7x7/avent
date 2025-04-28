@@ -17,6 +17,10 @@ import {
   RiSettings3Line,
   RiUserFollowLine,
   RiSearch2Line,
+  RiNotification3Line,
+  RiTeamLine,
+  RiBookOpenLine,
+  RiCalendar2Line,
   RemixiconComponentType,
 } from "@remixicon/react";
 import { TeamSwitcher } from "~/components/team-switcher";
@@ -47,7 +51,9 @@ type NavItem = {
   url: string;
   icon: RemixiconComponentType;
   isActive?: boolean;
+  roles?: string[];
 }
+
 // This is sample data.
 export const data = {
   teams: [
@@ -71,41 +77,40 @@ export const data = {
       items: [
         {
           title: "Dashboard",
-          url: "#",
+          url: "/dashboard",
           icon: RiScanLine,
           isActive: true,
         },
-        // {
-        //   title: "Insights",
-        //   url: "#",
-        //   icon: RiBardLine,
-        // },
         {
           title: "Contacts",
-          url: "#",
+          url: "/dashboard/contacts",
           icon: RiUserFollowLine,
           isActive: false,
         },
-        // {
-        //   title: "Tools",
-        //   url: "#",
-        //   icon: RiCodeSSlashLine,
-        // },
-        // {
-        //   title: "Integration",
-        //   url: "#",
-        //   icon: RiLoginCircleLine,
-        // },
-        // {
-        //   title: "Layouts",
-        //   url: "#",
-        //   icon: RiLayoutLeftLine,
-        // },
-        // {
-        //   title: "Reports",
-        //   url: "#",
-        //   icon: RiLeafLine,
-        // },
+        {
+          title: "Announcements",
+          url: "/dashboard/announcements",
+          icon: RiNotification3Line,
+          roles: ["teacher"],
+        },
+        {
+          title: "Team Management",
+          url: "/dashboard/team-management",
+          icon: RiTeamLine,
+          roles: ["teacher"],
+        },
+        {
+          title: "Courses",
+          url: "/dashboard/courses",
+          icon: RiBookOpenLine,
+          roles: ["teacher"],
+        },
+        {
+          title: "Schedule",
+          url: "/dashboard/schedule",
+          icon: RiCalendar2Line,
+          roles: ["teacher"],
+        },
       ] as NavItem[],
     },
     {

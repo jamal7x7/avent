@@ -192,6 +192,19 @@ import {
     subjectId: text('subject_id').notNull().references(() => subjectTable.id, { onDelete: 'cascade' }),
   });
   
+  // --- Team Invite Codes ---
+  import { nanoid } from "nanoid";
+  export const teamInviteCodes = pgTable('team_invite_codes', {
+    id: text('id').primaryKey().$defaultFn(() => nanoid()),
+    code: varchar('code', { length: 6 }).notNull().unique(),
+    teamId: text('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
+    createdBy: text('created_by').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at').notNull(),
+    maxUses: integer('max_uses').notNull(),
+    uses: integer('uses').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  });
+  
   // --- RELATIONS ---
   
   export const teamsRelations = relations(teams, ({ many }) => ({
