@@ -39,11 +39,9 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
+        <div
           className={cn(
-            "h-9 w-9 rounded-full focus:outline-none focus:ring hover:bg-sidebar-accent",
+            "h-9 w-9 rounded-full flex items-center justify-center focus:outline-none focus:ring hover:bg-sidebar-accent cursor-pointer",
             className,
           )}
         >
@@ -53,7 +51,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             <RiSunLine className="text-muted-foreground/60" size={22} />
           )}
           <span className="sr-only">Toggle theme</span>
-        </Button>
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem

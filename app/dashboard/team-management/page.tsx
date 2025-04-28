@@ -31,58 +31,62 @@ export default async function TeamManagementPage() {
 
   return (
     <DashboardContent>
-      <div className="h-full py-10 px-4 space-y-8">
-        <h1 className="text-2xl font-bold mb-2">Announcements</h1>
+      <div className="h-full py-0 px-4 space-y-0">
+        {/* <h1 className="text-2xl font-bold mb-2">Announcements</h1>
         <p className="text-muted-foreground mb-6">
           Manage and send announcements to your teams.
-        </p>
+        </p> */}
 
-      <SimpleTabs defaultValue="your-teams" className="w-full">
-        <SimpleTabsList className="flex justify-start border-b">
-          <SimpleTabsTrigger value="your-teams">Your Teams</SimpleTabsTrigger>
-          <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
-          <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
-        </SimpleTabsList>
+        <SimpleTabs defaultValue="your-teams" className="w-full">
+          <SimpleTabsList className="flex justify-start border-b">
+            <SimpleTabsTrigger value="your-teams">Your Teams</SimpleTabsTrigger>
+            <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
+            <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
+          </SimpleTabsList>
 
-        {/* Your Teams Tab */}
-        <SimpleTabsContent value="your-teams" className="mt-4">
-          {hasTeams ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {teams.map((team) => (
-                <TeamCard key={team.id} team={team} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-muted-foreground text-center py-8 border border-dashed rounded-lg">
-              No teams yet. Create or join a team using the tabs above.
-            </div>
-          )}
-        </SimpleTabsContent>
+          {/* Your Teams Tab */}
+          <SimpleTabsContent value="your-teams" className="mt-4">
+            {hasTeams ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teams.map((team) => (
+                  <TeamCard key={team.id} team={team} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-center py-8 border border-dashed rounded-lg">
+                No teams yet. Create or join a team using the tabs above.
+              </div>
+            )}
+          </SimpleTabsContent>
 
-        {/* Add Team Tab */}
-        <SimpleTabsContent value="add-team" className="mt-4">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Create a New Team</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AddTeamForm teams={teams} />
-            </CardContent>
-          </Card>
-        </SimpleTabsContent>
+          {/* Add Team Tab */}
+          <SimpleTabsContent value="add-team" className="mt-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Create a New Team
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AddTeamForm teams={teams} />
+              </CardContent>
+            </Card>
+          </SimpleTabsContent>
 
-        {/* Join Team Tab */}
-        <SimpleTabsContent value="join-team" className="mt-4">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Join an Existing Team</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <JoinTeamForm />
-            </CardContent>
-          </Card>
-        </SimpleTabsContent>
-      </SimpleTabs>
+          {/* Join Team Tab */}
+          <SimpleTabsContent value="join-team" className="mt-4">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Join an Existing Team
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <JoinTeamForm />
+              </CardContent>
+            </Card>
+          </SimpleTabsContent>
+        </SimpleTabs>
       </div>
     </DashboardContent>
   );

@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
-import { useNavLayoutStore } from "~/hooks/use-nav-layout";
+import { RiScanLine } from "@remixicon/react";
 import clsx from "clsx";
+import React from "react";
 import { AppSidebar, data as sidebarData } from "~/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarTrigger,
-} from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
+import { AuthAvatar } from "~/components/auth-avatar";
+import ContactsTable from "~/components/contacts-table";
 import FeedbackDialog from "~/components/feedback-dialog";
+import { StatsGrid } from "~/components/stats-grid";
+import { TeamSwitcher } from "~/components/team-switcher";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,27 +17,31 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { RiScanLine } from "@remixicon/react";
 import { Button } from "~/components/ui/button";
-import { StatsGrid } from "~/components/stats-grid";
-import ContactsTable from "~/components/contacts-table";
-import { AuthAvatar } from "~/components/auth-avatar";
-import { useSession, signOut } from "~/lib/auth-client";
-import { TeamSwitcher } from "~/components/team-switcher";
+import { Separator } from "~/components/ui/separator";
+import { SidebarInset, SidebarTrigger } from "~/components/ui/sidebar";
+import { useNavLayoutStore } from "~/hooks/use-nav-layout";
+import { signOut, useSession } from "~/lib/auth-client";
 
 import type { Metadata } from "next";
+import {
+  SimpleTabs,
+  SimpleTabsContent,
+  SimpleTabsList,
+  SimpleTabsTrigger,
+} from "~/components/ui/simple-tabs";
 
-export {
-  Button,
-  StatsGrid,
-  ContactsTable,
-};
+export { Button, StatsGrid, ContactsTable };
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-export default function DashboardContent({ children }: { children?: React.ReactNode }) {
+export default function DashboardContent({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
   const { isSidebar } = useNavLayoutStore();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   // Sidebar width utility (matches sidebar.tsx)
@@ -46,13 +49,17 @@ export default function DashboardContent({ children }: { children?: React.ReactN
   React.useEffect(() => {
     const sidebar = document.querySelector('[data-sidebar="sidebar"]');
     if (!sidebar) return;
-    const sidebarCollapsible = sidebar.closest('[data-collapsible]');
+    const sidebarCollapsible = sidebar.closest("[data-collapsible]");
     if (!sidebarCollapsible) return;
     const observer = new MutationObserver(() => {
-      setIsCollapsed(sidebarCollapsible.getAttribute('data-collapsible') === 'icon');
+      setIsCollapsed(
+        sidebarCollapsible.getAttribute("data-collapsible") === "icon",
+      );
     });
     observer.observe(sidebarCollapsible, { attributes: true });
-    setIsCollapsed(sidebarCollapsible.getAttribute('data-collapsible') === 'icon');
+    setIsCollapsed(
+      sidebarCollapsible.getAttribute("data-collapsible") === "icon",
+    );
     return () => observer.disconnect();
   }, []);
 
@@ -62,7 +69,7 @@ export default function DashboardContent({ children }: { children?: React.ReactN
       <SidebarInset
         className={clsx(
           "flex-1 w-full overflow-hidden px-4 md:px-6 lg:px-8",
-          isSidebar ? "mt-0" : "mt-16"
+          isSidebar ? "mt-0" : "mt-16",
         )}
       >
         <header className="flex h-16 shrink-0 items-center gap-2 border-b">
@@ -74,11 +81,7 @@ export default function DashboardContent({ children }: { children?: React.ReactN
                 <TeamSwitcher teams={sidebarData.teams} />
               </div>
             )}
-            <Separator
-              orientation="vertical"
-              decorative
-              className="mx-2 h-8"
-            />
+            <Separator orientation="vertical" decorative className="mx-2 h-8" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
@@ -103,8 +106,17 @@ export default function DashboardContent({ children }: { children?: React.ReactN
               isDashboard={true}
             />
           </div> */}
+          {/* <SimpleTabs defaultValue="your-teams" className="w-full">
+            <SimpleTabsList className="flex justify-start border-b">
+              <SimpleTabsTrigger value="your-teams">
+                Your Teams
+              </SimpleTabsTrigger>
+              <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
+              <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
+            </SimpleTabsList>
+          </SimpleTabs> */}
         </header>
-        <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-4 lg:py-6">
+        <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-2 lg:py-4">
           {children}
         </div>
       </SidebarInset>

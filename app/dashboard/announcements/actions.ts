@@ -3,10 +3,16 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  accountTable,
   announcementRecipients,
   announcements,
+  sessionTable,
+  teamInviteCodes,
   teamMembers,
   teams,
+  twoFactorTable,
+  userTable,
+  verificationTable,
 } from "~/db/schema";
 
 export const announcementSchema = z.object({
@@ -85,8 +91,13 @@ export async function fetchAnnouncements(
       createdAt: announcements.createdAt,
       teamId: announcementRecipients.teamId,
       teamName: teams.name,
+      sender: {
+        name: userTable.name,
+        image: userTable.image,
+      },
     })
     .from(announcements)
+    .leftJoin(userTable, eq(announcements.senderId, userTable.id))
     .leftJoin(
       announcementRecipients,
       eq(announcementRecipients.announcementId, announcements.id),

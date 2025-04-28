@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import { AnnouncementCard } from "~/components/announcement-card"; // Import AnnouncementCard
 
 interface Announcement {
   id: string;
@@ -10,6 +10,10 @@ interface Announcement {
   createdAt: string;
   teamId: string;
   teamName: string;
+  sender: {
+    name: string;
+    image?: string;
+  };
 }
 
 interface AnnouncementListClientProps {
@@ -56,7 +60,7 @@ export function AnnouncementListClient({
   };
 
   return (
-    <div className="w-full max-w-xl mt-8">
+    <div className="w-full">
       <div className="flex items-center gap-2 mb-4">
         <span className="font-medium">Filter by team:</span>
         <Select onValueChange={handleFilterChange} value={selectedTeam}>
@@ -77,18 +81,8 @@ export function AnnouncementListClient({
         {announcements.length === 0 && !isLoading && (
           <li className="text-muted-foreground text-center">No announcements found.</li>
         )}
-        {announcements.map(a => (
-          <Card key={a.id} className="flex flex-col gap-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{a.content}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground">{a.teamName || "All Teams"}</div>
-            </CardContent>
-            <CardFooter>
-              <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</div>
-            </CardFooter>
-          </Card>
+        {announcements.map((a) => (
+          <AnnouncementCard key={a.id} announcement={a} />
         ))}
       </ul>
       {hasMore && (
