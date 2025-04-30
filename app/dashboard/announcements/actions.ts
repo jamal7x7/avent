@@ -1,6 +1,7 @@
 import { and, count, desc, eq, inArray, or } from "drizzle-orm"; // Import count
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
 import { db } from "~/db";
 import {
   accountTable,
@@ -17,7 +18,8 @@ import {
 
 export const announcementSchema = z.object({
   content: z.string().min(1).max(300),
-  teamIds: z.array(z.string()), // empty array = all teams
+  priority: z.nativeEnum(AnnouncementPriority), // Add priority
+  teamIds: z.array(z.string()).optional(), // empty array or undefined = all teams
   senderId: z.string(),
   senderRole: z.enum(["teacher", "admin", "staff"]),
 });
@@ -29,18 +31,20 @@ export async function createAnnouncement(input: AnnouncementInput) {
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
   }
-  const { content, teamIds, senderId, senderRole } = parsed.data;
+  const { content, priority, teamIds, senderId, senderRole } = parsed.data; // Destructure priority
   const announcementId = nanoid();
+
   await db.insert(announcements).values({
-    id: announcementId,
+    id: announcementId, // Use the generated announcementId here
     senderId,
     content,
+    priority, // Add priority to insert values
     createdAt: new Date(),
     type: "plain",
   });
   // If no teamIds, send to all teams the sender is a member of
-  let targetTeams = teamIds;
-  if (!teamIds.length) {
+  let targetTeams = teamIds ?? [];
+  if (!targetTeams.length) {
     const roles = ["teacher", "admin", "staff"];
     const userTeams = await db
       .select({ id: teams.id })
@@ -56,7 +60,7 @@ export async function createAnnouncement(input: AnnouncementInput) {
   }
   if (targetTeams.length) {
     await db.insert(announcementRecipients).values(
-      targetTeams.map((teamId) => ({
+      targetTeams.map((teamId: string) => ({
         id: nanoid(),
         announcementId,
         teamId,
@@ -69,6 +73,7 @@ export async function createAnnouncement(input: AnnouncementInput) {
     senderId,
     senderRole,
     createdAt: new Date(),
+    priority, // Return priority
     teamIds: targetTeams,
   };
 }
@@ -89,6 +94,7 @@ export async function fetchAnnouncements(
       id: announcements.id,
       content: announcements.content,
       createdAt: announcements.createdAt,
+      priority: announcements.priority, // Select priority
       teamId: announcementRecipients.teamId,
       teamName: teams.name,
       sender: {

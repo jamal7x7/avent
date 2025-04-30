@@ -20,6 +20,7 @@ export default async function AnnouncementList() {
       typeof a.createdAt === "string" ? a.createdAt : a.createdAt.toISOString(),
     teamId: a.teamId ?? "",
     teamName: a.teamName ?? "",
+    priority: a.priority, // Pass priority through
     sender: a.sender
       ? {
           name: a.sender.name ?? null,

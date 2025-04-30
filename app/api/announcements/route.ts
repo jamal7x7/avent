@@ -5,14 +5,14 @@ import {
   createAnnouncement,
   fetchAnnouncements,
 } from "~/app/dashboard/announcements/actions"; // Import createAnnouncement
+import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
 import { auth } from "~/lib/auth";
 
 // Define Zod schema for validation
 const createAnnouncementSchema = z.object({
   content: z.string().min(1).max(300),
+  priority: z.nativeEnum(AnnouncementPriority), // Add priority validation
   teamIds: z.array(z.string()).optional(), // Optional, empty array means all teams
-  senderId: z.string(),
-  senderRole: z.enum(["teacher", "admin", "staff"]),
 });
 
 export async function GET(req: NextRequest) {
@@ -71,30 +71,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Ensure senderId matches the authenticated user
-    if (validation.data.senderId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Sender ID mismatch" },
-        { status: 403 },
-      );
-    }
-
-    // Ensure senderRole matches the authenticated user's role
-    if (validation.data.senderRole !== session.user.role) {
-      return NextResponse.json(
-        { error: "Sender role mismatch" },
-        { status: 403 },
-      );
-    }
-
     const announcementData = {
       content: validation.data.content,
+      priority: validation.data.priority,
       senderId: session.user.id,
       senderRole: session.user.role as "teacher" | "admin" | "staff",
-      teamIds:
-        validation.data.teamIds && validation.data.teamIds.length > 0
-          ? validation.data.teamIds
-          : undefined, // Pass undefined if empty for 'all teams'
+      teamIds: (validation.data.teamIds ?? []).length > 0
+        ? validation.data.teamIds
+        : undefined,
     };
 
     const newAnnouncement = await createAnnouncement({

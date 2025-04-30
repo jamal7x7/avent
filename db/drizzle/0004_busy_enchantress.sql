@@ -1,0 +1,1 @@
+ALTER TABLE "announcements" ADD COLUMN "priority" text DEFAULT 'normal' NOT NULL;

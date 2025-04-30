@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import type { AnnouncementPriority } from "~/db/types"; // Import priority enum
 
 interface Announcement {
   id: string;
@@ -19,6 +20,7 @@ interface Announcement {
   createdAt: string;
   teamId: string;
   teamName: string;
+  priority: AnnouncementPriority; // Add priority field
   sender: {
     name: string | null;
     image?: string | null;

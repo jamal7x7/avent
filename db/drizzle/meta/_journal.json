@@ -29,6 +29,13 @@
       "when": 1745839585308,
       "tag": "0003_fair_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1746008414040,
+      "tag": "0004_busy_enchantress",
+      "breakpoints": true
     }
   ]
 }
