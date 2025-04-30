@@ -1,8 +1,17 @@
-import { SidebarProvider } from "~/components/ui/sidebar";
-import DashboardContent, { Button, StatsGrid, ContactsTable } from "./DashboardContent";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { PlusIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { SidebarProvider } from "~/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import DashboardContent, {
+  Button,
+  StatsGrid,
+  ContactsTable,
+} from "./DashboardContent";
 
 export default function Page() {
   // Simulate empty state for contacts as an example
@@ -16,13 +25,17 @@ export default function Page() {
           <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight">Oilà, Larry!</h1>
             <p className="text-base text-muted-foreground">
-              Here&rsquo;s an overview of your contacts. Manage or create new ones with ease!
+              Here&rsquo;s an overview of your contacts. Manage or create new
+              ones with ease!
             </p>
           </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button className="flex items-center gap-2 px-4 py-2 text-base font-medium shadow-md" aria-label="Add Contact">
+                <Button
+                  className="flex items-center gap-2 px-4 py-2 text-base font-medium shadow-md"
+                  aria-label="Add Contact"
+                >
                   <PlusIcon className="w-5 h-5" /> Add Contact
                 </Button>
               </TooltipTrigger>
@@ -110,7 +123,10 @@ export default function Page() {
               ),
             },
           ].map((stat, i) => (
-            <Card key={stat.title} className="shadow-sm hover:shadow-lg transition-shadow duration-200">
+            <Card
+              key={stat.title}
+              className="shadow-sm hover:shadow-lg transition-shadow duration-200"
+            >
               <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
                 <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                   <span className="inline-flex items-center justify-center rounded-full bg-muted p-2">
@@ -118,13 +134,17 @@ export default function Page() {
                   </span>
                   {stat.title}
                 </CardTitle>
-                <span className={`text-xs font-medium ${stat.change.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                <span
+                  className={`text-xs font-medium ${stat.change.trend === "up" ? "text-green-600" : "text-red-600"}`}
+                >
                   {stat.change.value}
                 </span>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.title} this month</div>
+                <div className="text-xs text-muted-foreground">
+                  {stat.title} this month
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -136,10 +156,26 @@ export default function Page() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
-            <svg width="64" height="64" fill="none" className="mb-4 text-muted-foreground"><circle cx="32" cy="32" r="32" fill="#F3F4F6"/><path d="M44 33c0 6.627-5.373 12-12 12s-12-5.373-12-12 5.373-12 12-12 12 5.373 12 12Zm-7-4a1 1 0 1 0-2 0v2a1 1 0 0 0 2 0v-2Zm0 6a1 1 0 1 0-2 0v2a1 1 0 0 0 2 0v-2Z" fill="#A0AEC0"/></svg>
+            <svg
+              width="64"
+              height="64"
+              fill="none"
+              className="mb-4 text-muted-foreground"
+            >
+              <circle cx="32" cy="32" r="32" fill="#F3F4F6" />
+              <path
+                d="M44 33c0 6.627-5.373 12-12 12s-12-5.373-12-12 5.373-12 12-12 12 5.373 12 12Zm-7-4a1 1 0 1 0-2 0v2a1 1 0 0 0 2 0v-2Zm0 6a1 1 0 1 0-2 0v2a1 1 0 0 0 2 0v-2Z"
+                fill="#A0AEC0"
+              />
+            </svg>
             <h2 className="text-xl font-semibold mb-2">No contacts yet</h2>
-            <p className="text-muted-foreground mb-4">Start by adding your first contact to get going.</p>
-            <Button className="flex items-center gap-2 px-4 py-2 text-base font-medium shadow-md" aria-label="Add Contact">
+            <p className="text-muted-foreground mb-4">
+              Start by adding your first contact to get going.
+            </p>
+            <Button
+              className="flex items-center gap-2 px-4 py-2 text-base font-medium shadow-md"
+              aria-label="Add Contact"
+            >
               <PlusIcon className="w-5 h-5" /> Add Contact
             </Button>
           </div>

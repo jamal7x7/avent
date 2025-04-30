@@ -1,6 +1,6 @@
 "use client";
 
-import { RiSunLine, RiMoonLine } from "@remixicon/react";
+import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 
@@ -23,16 +23,19 @@ export function ThemeToggle({ className }: { className?: string }) {
   }, []);
 
   if (!mounted) {
+    // Render a placeholder div instead of a Button to avoid nesting issues
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn("h-9 w-9 rounded-full", className)}
-        disabled
+      <div
+        className={cn(
+          "h-9 w-9 rounded-full flex items-center justify-center",
+          "bg-transparent", // Mimic ghost variant
+          className,
+        )}
+        aria-hidden="true"
       >
         <RiSunLine className="text-muted-foreground/60" size={22} />
         <span className="sr-only">Loading theme toggle</span>
-      </Button>
+      </div>
     );
   }
 
@@ -81,9 +84,20 @@ export function ThemeToggle({ className }: { className?: string }) {
             (theme === "system" || !theme) && "font-medium text-primary",
           )}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-muted-foreground/60" aria-hidden="true" role="img">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4 text-muted-foreground/60"
+            aria-hidden="true"
+            role="img"
+          >
             <title>System Theme Icon</title>
-            <path fillRule="evenodd" d="M3.5 2A1.5 1.5 0 002 3.5V15a3 3 0 003 3h12a1.5 1.5 0 001.5-1.5V3.5A1.5 1.5 0 0017 2H3.5zM5 5.75c0-.41.334-.75.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zM5.75 8.25a.75.75 0 00-.75.75v3.25c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-8.5z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M3.5 2A1.5 1.5 0 002 3.5V15a3 3 0 003 3h12a1.5 1.5 0 001.5-1.5V3.5A1.5 1.5 0 0017 2H3.5zM5 5.75c0-.41.334-.75.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zM5.75 8.25a.75.75 0 00-.75.75v3.25c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-8.5z"
+              clipRule="evenodd"
+            />
           </svg>
           System
         </DropdownMenuItem>

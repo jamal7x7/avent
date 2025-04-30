@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { toastAnnouncement } from "~/components/toast-announcement";
-import { useSession } from "~/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { toastAnnouncement } from "~/components/toast-announcement";
+import { Button } from "~/components/ui/button";
+import { Calendar } from "~/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -13,13 +15,20 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Calendar } from "~/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
-
+import { Input } from "~/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { useSession } from "~/lib/auth-client";
 
 const TEAM_TYPES = [
   { value: "classroom", label: "Classroom" },
@@ -30,7 +39,10 @@ const TEAM_TYPES = [
 ];
 
 const createTeamFormSchema = z.object({
-  name: z.string().min(1, { message: "Team name is required" }).max(100, { message: "Team name cannot exceed 100 characters." }),
+  name: z
+    .string()
+    .min(1, { message: "Team name is required" })
+    .max(100, { message: "Team name cannot exceed 100 characters." }),
   type: z.enum(["classroom", "study_group", "club", "committee", "other"]),
 });
 
@@ -41,13 +53,21 @@ const generateCodeFormSchema = z.object({
   expiresAt: z.date({
     required_error: "Expiration date is required.",
   }),
-  maxUses: z.number().min(1, { message: "Max uses must be at least 1." }).max(1000, { message: "Max uses cannot exceed 1000." }),
+  maxUses: z
+    .number()
+    .min(1, { message: "Max uses must be at least 1." })
+    .max(1000, { message: "Max uses cannot exceed 1000." }),
 });
 
 type GenerateCodeFormValues = z.infer<typeof generateCodeFormSchema>;
 
-
-export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name: string; type: string }[]; onTeamAdded?: () => void }) {
+export function AddTeamForm({
+  teams,
+  onTeamAdded,
+}: {
+  teams: { id: string; name: string; type: string }[];
+  onTeamAdded?: () => void;
+}) {
   const { data: session } = useSession();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,8 +89,9 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
     },
   });
 
-
-  const isTeacher = ["teacher", "admin", "staff"].includes(session?.user?.role ?? "");
+  const isTeacher = ["teacher", "admin", "staff"].includes(
+    session?.user?.role ?? "",
+  );
 
   // Handler to create a new team (server action or API call)
   const handleCreateTeam = async (values: CreateTeamFormValues) => {
@@ -86,7 +107,7 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
       if (onTeamAdded) onTeamAdded();
       toastAnnouncement(
         "success",
-        `Team created: ${values.name} (${TEAM_TYPES.find(t => t.value === values.type)?.label || values.type})`
+        `Team created: ${values.name} (${TEAM_TYPES.find((t) => t.value === values.type)?.label || values.type})`,
       );
     } catch (e) {
       setError((e as Error).message);
@@ -104,7 +125,7 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
         body: JSON.stringify({
           teamId: values.teamId,
           expiresAt: values.expiresAt.toISOString(),
-          maxUses: values.maxUses
+          maxUses: values.maxUses,
         }),
       });
       const data = await res.json();
@@ -120,9 +141,12 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
   if (!isTeacher) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
       <Form {...createTeamForm}>
-        <form onSubmit={createTeamForm.handleSubmit(handleCreateTeam)} className="space-y-4 p-4 border rounded bg-card">
+        <form
+          onSubmit={createTeamForm.handleSubmit(handleCreateTeam)}
+          className="space-y-4 p-4 border rounded bg-card"
+        >
           <h2 className="text-lg font-semibold">Add Team</h2>
           <FormField
             control={createTeamForm.control}
@@ -131,7 +155,12 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
               <FormItem>
                 <FormLabel>Team Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Team Name" maxLength={100} disabled={createTeamForm.formState.isSubmitting} {...field} />
+                  <Input
+                    placeholder="Team Name"
+                    maxLength={100}
+                    disabled={createTeamForm.formState.isSubmitting}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -143,14 +172,18 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={createTeamForm.formState.isSubmitting}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={createTeamForm.formState.isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a team type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {TEAM_TYPES.map(t => (
+                    {TEAM_TYPES.map((t) => (
                       <SelectItem key={t.value} value={t.value}>
                         {t.label}
                       </SelectItem>
@@ -162,12 +195,20 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
             )}
           />
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button type="submit" disabled={createTeamForm.formState.isSubmitting}>Create Team</Button>
+          <Button
+            type="submit"
+            disabled={createTeamForm.formState.isSubmitting}
+          >
+            Create Team
+          </Button>
         </form>
       </Form>
 
       <Form {...generateCodeForm}>
-        <form onSubmit={generateCodeForm.handleSubmit(handleGenerateCodeSubmit)} className="space-y-4 p-4 border rounded bg-card">
+        <form
+          onSubmit={generateCodeForm.handleSubmit(handleGenerateCodeSubmit)}
+          className="space-y-4 p-4 border rounded bg-card"
+        >
           <h2 className="text-lg font-semibold">Generate Invite Code</h2>
           <FormField
             control={generateCodeForm.control}
@@ -175,14 +216,18 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Select Team</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={generateCodeForm.formState.isSubmitting}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={generateCodeForm.formState.isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a team" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {teams.map(t => (
+                    {teams.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.name}
                       </SelectItem>
@@ -207,7 +252,11 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
                         className={`w-[240px] pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
                         disabled={generateCodeForm.formState.isSubmitting}
                       >
-                        {field.value ? format(field.value, "PPP HH:mm") : <span>Pick a date and time</span>}
+                        {field.value ? (
+                          format(field.value, "PPP HH:mm")
+                        ) : (
+                          <span>Pick a date and time</span>
+                        )}
                         {/* You might need to add a time picker component or input */}
                       </Button>
                     </FormControl>
@@ -226,14 +275,22 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
               </FormItem>
             )}
           />
-           <FormField
+          <FormField
             control={generateCodeForm.control}
             name="maxUses"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Max Uses</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="10" min={1} max={1000} disabled={generateCodeForm.formState.isSubmitting} {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    min={1}
+                    max={1000}
+                    disabled={generateCodeForm.formState.isSubmitting}
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -242,11 +299,24 @@ export function AddTeamForm({ teams, onTeamAdded }: { teams: { id: string; name:
           {inviteCode && (
             <div className="flex items-center gap-2 mt-2">
               <span className="font-mono text-lg font-bold">{inviteCode}</span>
-              <Button type="button" variant="outline" onClick={() => navigator.clipboard.writeText(inviteCode)}>Copy</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(inviteCode)}
+              >
+                Copy
+              </Button>
             </div>
           )}
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button type="submit" disabled={generateCodeForm.formState.isSubmitting}>{generateCodeForm.formState.isSubmitting ? "Generating..." : "Generate Code"}</Button>
+          <Button
+            type="submit"
+            disabled={generateCodeForm.formState.isSubmitting}
+          >
+            {generateCodeForm.formState.isSubmitting
+              ? "Generating..."
+              : "Generate Code"}
+          </Button>
         </form>
       </Form>
     </div>

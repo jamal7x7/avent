@@ -116,7 +116,7 @@ export default function DashboardContent({
             </SimpleTabsList>
           </SimpleTabs> */}
         </header>
-        <div className="flex flex-1 flex-col gap-4 lg:gap-6 py-2 lg:py-4">
+        <div className="flex flex-1 items-center flex-col gap-4 lg:gap-6 py-2 lg:py-4">
           {children}
         </div>
       </SidebarInset>

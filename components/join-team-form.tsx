@@ -1,27 +1,37 @@
 "use client";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { joinTeamWithCode } from "~/app/dashboard/team-management/actions"; // Import the server action
 import { toastAnnouncement } from "~/components/toast-announcement";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "~/components/ui/input-otp"; // Import InputOTP
 
 const joinTeamFormSchema = z.object({
-  code: z.string().length(6, { message: "Invite code must be 6 characters." }),
+  code: z.string().length(6, {
+    message: "Your one-time password must be 6 characters.",
+  }),
 });
 
 type JoinTeamFormValues = z.infer<typeof joinTeamFormSchema>;
 
 export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<JoinTeamFormValues>({
@@ -31,53 +41,68 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
     },
   });
 
-  const handleJoin = async (values: JoinTeamFormValues) => {
+  const handleJoin = (values: JoinTeamFormValues) => {
     setError(null);
-    form.formState.isSubmitting = true;
-    try {
-      const res = await fetch("/api/teams/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: values.code.trim().toUpperCase() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to join team");
-      form.reset();
-      toastAnnouncement("success", "Joined team!");
-      if (onJoined) onJoined();
-    } catch (e) {
-      setError((e as Error).message);
-      toastAnnouncement("error", "Failed to join team.");
-    } finally {
-      form.formState.isSubmitting = false;
-    }
+    startTransition(async () => {
+      try {
+        // Directly call the server action
+        const result = await joinTeamWithCode({
+          code: values.code.trim().toUpperCase(),
+          // userId will be handled within the action using auth
+        });
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        form.reset();
+        toastAnnouncement("success", "Successfully joined team!");
+        if (onJoined) onJoined();
+      } catch (e) {
+        const errorMessage = (e as Error).message || "Failed to join team.";
+        setError(errorMessage);
+        toastAnnouncement("error", errorMessage);
+      }
+    });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleJoin)} className="space-y-4 p-4 border rounded bg-card max-w-md w-full">
-        <h2 className="text-lg font-semibold">Join Team</h2>
+      <form onSubmit={form.handleSubmit(handleJoin)} className="space-y-6">
         <FormField
           control={form.control}
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Invite Code</FormLabel>
+              <FormLabel>Team Invite Code</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter 6-character code"
-                  maxLength={6}
-                  disabled={form.formState.isSubmitting}
-                  {...field}
-                />
+                <InputOTP maxLength={6} {...field} disabled={isPending}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  {/* Optional: Add a separator if desired */}
+                  {/* <InputOTPSeparator /> */}
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
               </FormControl>
+              <FormDescription>
+                Please enter the 6-character invite code provided by your team admin.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-        <Button type="submit" disabled={form.formState.isSubmitting || form.watch("code").length !== 6}>
-          {form.formState.isSubmitting ? "Joining..." : "Join Team"}
+
+        {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+
+        <Button type="submit" disabled={isPending || form.watch("code").length !== 6}>
+          {isPending ? "Joining..." : "Join Team"}
         </Button>
       </form>
     </Form>

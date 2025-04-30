@@ -1,0 +1,28 @@
+// types/index.ts
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "member";
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  type: string | null;
+  memberCount: number;
+}
+
+export interface Announcement {
+  id: string;
+  content: string;
+  createdAt: string;
+  teamId: string;
+  teamName: string;
+  sender: {
+    name: string;
+    image?: string | null;
+  } | null;
+}
+
+// Add other types if needed

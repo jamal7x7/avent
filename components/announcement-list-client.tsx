@@ -1,8 +1,17 @@
 "use client";
-import { useState } from "react";
+
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { AnnouncementCard } from "~/components/announcement-card";
+
 import { Button } from "~/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { AnnouncementCard } from "~/components/announcement-card"; // Import AnnouncementCard
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface Announcement {
   id: string;
@@ -11,55 +20,91 @@ interface Announcement {
   teamId: string;
   teamName: string;
   sender: {
-    name: string;
-    image?: string;
+    name: string | null;
+    image?: string | null;
   };
+}
+
+interface FetchResponse {
+  announcements: Announcement[];
+  nextCursor?: number; // Use cursor for pagination if API supports it, otherwise page number
+  hasMore: boolean;
 }
 
 interface AnnouncementListClientProps {
-  initialAnnouncements: Announcement[];
+  initialAnnouncements: Announcement[]; // Keep initial for SSR/first load
   teams: { id: string; name: string }[];
   initialTeam: string;
-  hasMore: boolean;
+  hasMore: boolean; // Keep initial for SSR/first load
   fetchUrl: string;
 }
 
+const fetchAnnouncements = async (
+  fetchUrl: string,
+  teamId: string,
+  pageParam = 1,
+): Promise<FetchResponse> => {
+  const res = await fetch(`${fetchUrl}?teamId=${teamId}&page=${pageParam}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch announcements");
+  }
+  // Assuming API returns { announcements: [], hasMore: boolean, nextPage: number | null }
+  // Adapt based on actual API response structure
+  const data = await res.json();
+  return {
+    announcements: data.announcements,
+    hasMore: data.hasMore,
+    nextCursor: data.hasMore ? pageParam + 1 : undefined,
+  };
+};
+
 export function AnnouncementListClient({
-  initialAnnouncements,
+  // initialAnnouncements, // No longer directly used for state
   teams,
   initialTeam,
-  hasMore: initialHasMore,
+  // hasMore: initialHasMore, // No longer directly used for state
   fetchUrl,
 }: AnnouncementListClientProps) {
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
   const [selectedTeam, setSelectedTeam] = useState(initialTeam);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialHasMore);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient(); // Get query client
 
-  const handleFilterChange = async (teamId: string) => {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+    error,
+    refetch, // Use refetch on filter change
+  } = useInfiniteQuery<FetchResponse, Error>({
+    queryKey: ["announcements", selectedTeam], // Query key includes the filter
+    queryFn: ({ pageParam }) =>
+      fetchAnnouncements(fetchUrl, selectedTeam, pageParam as number),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    // initialData: { // Optionally provide initial data from props
+    //   pages: [{ announcements: initialAnnouncements, hasMore: initialHasMore, nextCursor: initialHasMore ? 2 : undefined }],
+    //   pageParams: [1],
+    // },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Refetch when selectedTeam changes
+  useEffect(() => {
+    refetch();
+  }, [selectedTeam]);
+
+  const handleFilterChange = (teamId: string) => {
     setSelectedTeam(teamId);
-    setPage(1);
-    setIsLoading(true);
-    const res = await fetch(`${fetchUrl}?teamId=${teamId}&page=1`);
-    const data = await res.json();
-    setAnnouncements(data.announcements);
-    setHasMore(data.hasMore);
-    setIsLoading(false);
+    // No need to manually set state, useEffect triggers refetch
   };
 
-  const handleLoadMore = async () => {
-    const nextPage = page + 1;
-    setIsLoading(true);
-    const res = await fetch(`${fetchUrl}?teamId=${selectedTeam}&page=${nextPage}`);
-    const data = await res.json();
-    setAnnouncements(prev => [...prev, ...data.announcements]);
-    setPage(nextPage);
-    setHasMore(data.hasMore);
-    setIsLoading(false);
-  };
+  const allAnnouncements =
+    data?.pages.flatMap((page) => page.announcements) ?? [];
 
   return (
+    // Wrap with QueryProvider if not done globally
+    // <QueryProvider>
     <div className="w-full">
       <div className="flex items-center gap-2 mb-4">
         <span className="font-medium">Filter by team:</span>
@@ -77,24 +122,39 @@ export function AnnouncementListClient({
           </SelectContent>
         </Select>
       </div>
+      {error && (
+        <p className="text-destructive">
+          Error loading announcements: {error.message}
+        </p>
+      )}
       <ul className="space-y-4">
-        {announcements.length === 0 && !isLoading && (
-          <li className="text-muted-foreground text-center">No announcements found.</li>
+        {allAnnouncements.length === 0 && !isLoading && (
+          <li className="text-muted-foreground text-center">
+            No announcements found for this team.
+          </li>
         )}
-        {announcements.map((a) => (
-          <AnnouncementCard key={a.id} announcement={a} />
+        {allAnnouncements.map((a) => (
+          <AnnouncementCard key={`${a.id}-${a.teamId}`} announcement={a} />
         ))}
       </ul>
-      {hasMore && (
+      {hasNextPage && (
         <Button
           className="mt-4"
           variant="outline"
-          onClick={handleLoadMore}
-          disabled={isLoading}
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage || isLoading}
         >
-          {isLoading ? "Loading..." : "Load More"}
+          {isFetchingNextPage
+            ? "Loading more..."
+            : isLoading
+              ? "Loading..."
+              : "Load More"}
         </Button>
       )}
+      {isLoading && allAnnouncements.length === 0 && (
+        <p className="text-muted-foreground text-center mt-4">Loading...</p>
+      )}
     </div>
+    // </QueryProvider>
   );
 }

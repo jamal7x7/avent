@@ -28,7 +28,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
   const senderInitial = senderName.charAt(0).toUpperCase();
 
   return (
-    <Card className="shadow-sm lg:w-3xl hover:shadow-md transition-shadow duration-200">
+    <Card className="shadow-sm w-full md:w-2xl hover:shadow-md transition-shadow duration-200">
       <CardHeader className="flex flex-row items-start gap-3 space-y-0 pb-3 border-b">
         <Avatar className="h-10 w-10 border">
           <AvatarImage

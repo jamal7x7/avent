@@ -37,7 +37,7 @@ export function DashboardLayoutClient({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen flex-col w-full">
+      <div className="flex min-h-screen  flex-col w-full">
         <main className="flex-1">{children}</main>
       </div>
     </SidebarProvider>

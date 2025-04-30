@@ -4,14 +4,15 @@ import { AddTeamForm } from "~/components/add-team-form";
 import { AnnouncementForm } from "~/components/announcement-form";
 import AnnouncementList from "~/components/announcement-list";
 import { JoinTeamForm } from "~/components/join-team-form";
-import { TeamCard } from "~/components/team-card";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
-  SimpleTabs,
-  SimpleTabsContent,
-  SimpleTabsList,
-  SimpleTabsTrigger,
-} from "~/components/ui/simple-tabs"; // Import SimpleTabs component
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/components/primitives/tabs"; // Import SimpleTabs component
+// import { TeamCard } from "~/components/team-card"; // Replaced by YourTeamsTabContent
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { YourTeamsTabContent } from "~/components/your-teams-tab-content"; // Import the new component
 import { auth } from "~/lib/auth";
 import DashboardContent from "../DashboardContent";
 export const dynamic = "force-dynamic";
@@ -31,36 +32,26 @@ export default async function TeamManagementPage() {
 
   return (
     <DashboardContent>
-      <div className="h-full py-0 px-4 space-y-0">
+      <div className="h-full py-0 px-4 w-full space-y-0">
         {/* <h1 className="text-2xl font-bold mb-2">Announcements</h1>
         <p className="text-muted-foreground mb-6">
           Manage and send announcements to your teams.
         </p> */}
 
-        <SimpleTabs defaultValue="your-teams" className="w-full">
-          <SimpleTabsList className="flex justify-start border-b">
-            <SimpleTabsTrigger value="your-teams">Your Teams</SimpleTabsTrigger>
-            <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
-            <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
-          </SimpleTabsList>
+        <Tabs variant="underlined" defaultValue="your-teams" className="w-full">
+          <TabsList className="flex justify-start border-b">
+            <TabsTrigger value="your-teams">Your Teams</TabsTrigger>
+            <TabsTrigger value="add-team">Add Team</TabsTrigger>
+            <TabsTrigger value="join-team">Join Team</TabsTrigger>
+          </TabsList>
 
-          {/* Your Teams Tab */}
-          <SimpleTabsContent value="your-teams" className="mt-4">
-            {hasTeams ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teams.map((team) => (
-                  <TeamCard key={team.id} team={team} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted-foreground text-center py-8 border border-dashed rounded-lg">
-                No teams yet. Create or join a team using the tabs above.
-              </div>
-            )}
-          </SimpleTabsContent>
+          {/* Your Teams Tab - Uses the new layout component */}
+          <TabsContent value="your-teams" className="mt-4">
+            <YourTeamsTabContent teams={teams} hasTeams={hasTeams} />
+          </TabsContent>
 
           {/* Add Team Tab */}
-          <SimpleTabsContent value="add-team" className="mt-4">
+          <TabsContent value="add-team" className="mt-4">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
@@ -71,10 +62,10 @@ export default async function TeamManagementPage() {
                 <AddTeamForm teams={teams} />
               </CardContent>
             </Card>
-          </SimpleTabsContent>
+          </TabsContent>
 
           {/* Join Team Tab */}
-          <SimpleTabsContent value="join-team" className="mt-4">
+          <TabsContent value="join-team" className="mt-4">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
@@ -85,8 +76,8 @@ export default async function TeamManagementPage() {
                 <JoinTeamForm />
               </CardContent>
             </Card>
-          </SimpleTabsContent>
-        </SimpleTabs>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardContent>
   );
