@@ -78,10 +78,10 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
   const role = announcement.teamName.includes("Dev")
     ? "Developer"
     : announcement.teamName.includes("Design")
-    ? "Designer"
-    : announcement.teamName.includes("Market")
-    ? "Marketing"
-    : "Teacher";
+      ? "Designer"
+      : announcement.teamName.includes("Market")
+        ? "Marketing"
+        : "Teacher";
 
   useEffect(() => {
     setIsVisible(true);
@@ -258,9 +258,9 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                // onClick={handleShowAnnouncement}
-                // disabled={isPendingShowAnnouncement}
-                // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
+              // onClick={handleShowAnnouncement}
+              // disabled={isPendingShowAnnouncement}
+              // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
               >
                 <div className="flex items-center text-xs text-muted-foreground">
                   <EyeClosed className="h-4 w-4 mr-1 " />

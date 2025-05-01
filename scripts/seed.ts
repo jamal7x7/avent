@@ -5,6 +5,8 @@ import { nanoid } from "nanoid";
 import {
   accountTable,
   announcements,
+  announcementRecipients,
+  announcementUserStatus,
   sessionTable,
   teamInviteCodes,
   teamMembers,
@@ -291,15 +293,20 @@ async function seed() {
   }));
   await db.insert(teams).values(teamList);
 
-  // 3. Team Members (assign each student and teacher to a random team)
+  // 3. Team Members (assign each student to multiple teams - at least 7)
   const teamMemberList = [
-    ...students.map((student) => ({
-      id: nanoid(),
-      userId: student.id,
-      teamId: faker.helpers.arrayElement(teamList).id,
-      role: "student",
-      joinedAt: new Date(),
-    })),
+    ...students.flatMap((student) => {
+      // Assign each student to 7-10 random teams
+      const numTeams = 7 + Math.floor(Math.random() * 4);
+      const selectedTeams = faker.helpers.arrayElements(teamList, numTeams);
+      return selectedTeams.map((team) => ({
+        id: nanoid(),
+        userId: student.id,
+        teamId: team.id,
+        role: "student",
+        joinedAt: new Date(),
+      }));
+    }),
     ...teachers.map((teacher) => ({
       id: nanoid(),
       userId: teacher.id,
@@ -310,41 +317,87 @@ async function seed() {
   ];
   await db.insert(teamMembers).values(teamMemberList);
 
-  // 4. Announcements (school/class/grade/event content)
-  const announcementSubjects = [
-    "Upcoming Exam",
-    "Class Schedule",
-    "Grade Release",
-    "School Event",
-    "Parent-Teacher Meeting",
-    "Holiday Notice",
-    "Sports Day",
-    "Art Exhibition",
-    "Science Fair",
-    "Math Competition",
-    "Field Trip",
-    "Assignment Reminder",
-    "Project Submission",
-    "Extra Classes",
-    "Results Announcement",
-    "Workshop",
-    "Seminar",
-    "New Teacher Introduction",
-    "Classroom Change",
-    "Library Update",
-  ];
-  const announcementList = Array.from({ length: 100 }).map(() => {
-    const subject = faker.helpers.arrayElement(announcementSubjects);
-    const details = faker.lorem.sentences(2);
-    return {
+  // 4. Multilingual Announcements
+  const announcementSubjectsMultilingual = {
+    en: [
+      { subject: "Upcoming Final Exam", details: ["The final examination for Mathematics will be held next week", "Please prepare all necessary materials for the Biology practical exam", "English Literature exam will cover chapters 1-8"] },
+      { subject: "Class Schedule Change", details: ["Physics class will be moved to Room 204", "Chemistry lab sessions rescheduled to Wednesday", "New tutorial sessions added for Advanced Mathematics"] },
+      { subject: "Assignment Deadline", details: ["History essay submission deadline extended", "Group project presentations scheduled for next Monday", "Mathematics homework due tomorrow"] },
+      { subject: "Study Group Session", details: ["Extra revision session for Chemistry", "Peer tutoring available for Physics", "Mathematics problem-solving workshop"] },
+      { subject: "Academic Achievement", details: ["Congratulations to the Science Olympiad winners", "Outstanding performance in the National Math Contest", "School debate team reaches finals"] }
+    ],
+    fr: [
+      { subject: "Examen Final à Venir", details: ["L'examen final de mathématiques aura lieu la semaine prochaine", "Veuillez préparer tout le matériel nécessaire pour l'examen pratique de biologie", "L'examen de littérature française couvrira les chapitres 1-8"] },
+      { subject: "Changement d'Horaires", details: ["Le cours de physique sera déplacé en salle 204", "Les séances de laboratoire de chimie sont reportées à mercredi", "Nouvelles sessions de tutorat ajoutées pour les mathématiques avancées"] },
+      { subject: "Date Limite des Devoirs", details: ["Date limite de soumission de l'essai d'histoire prolongée", "Présentations des projets de groupe prévues lundi prochain", "Devoirs de mathématiques à rendre demain"] },
+      { subject: "Session de Groupe d'Étude", details: ["Session de révision supplémentaire pour la chimie", "Tutorat par les pairs disponible pour la physique", "Atelier de résolution de problèmes mathématiques"] },
+      { subject: "Réussite Académique", details: ["Félicitations aux gagnants de l'Olympiade des Sciences", "Performance exceptionnelle au Concours National de Mathématiques", "L'équipe de débat de l'école atteint la finale"] }
+    ],
+    ar: [
+      { subject: "الامتحان النهائي القادم", details: ["سيعقد الامتحان النهائي للرياضيات الأسبوع المقبل", "يرجى تحضير جميع المواد اللازمة لامتحان الأحياء العملي", "امتحان الأدب العربي سيغطي الفصول 1-8"] },
+      { subject: "تغيير جدول الحصص", details: ["سيتم نقل حصة الفيزياء إلى القاعة 204", "تمت إعادة جدولة جلسات مختبر الكيمياء إلى يوم الأربعاء", "إضافة حصص تقوية جديدة للرياضيات المتقدمة"] },
+      { subject: "موعد تسليم الواجبات", details: ["تم تمديد موعد تسليم مقال التاريخ", "عروض المشاريع الجماعية مقررة يوم الاثنين القادم", "واجب الرياضيات مستحق غداً"] },
+      { subject: "جلسة مجموعة الدراسة", details: ["حصة مراجعة إضافية للكيمياء", "دروس خصوصية متاحة لمادة الفيزياء", "ورشة عمل لحل مسائل الرياضيات"] },
+      { subject: "الإنجاز الأكاديمي", details: ["تهانينا للفائزين في أولمبياد العلوم", "أداء متميز في مسابقة الرياضيات الوطنية", "فريق المناظرات المدرسي يصل إلى النهائيات"] }
+    ]
+  };
+
+  const generateAnnouncement = () => {
+    const language = faker.helpers.arrayElement(['en', 'fr', 'ar']);
+    const subjectObj = faker.helpers.arrayElement(announcementSubjectsMultilingual[language]);
+    const details = faker.helpers.arrayElement(subjectObj.details);
+    const team = faker.helpers.arrayElement(teamList);
+    const announcement = {
       id: nanoid(),
-      senderId: faker.helpers.arrayElement([...students, ...teachers]).id,
-      content: `${subject}: ${details}`,
+      senderId: faker.helpers.arrayElement([...teachers, ...admins]).id,
+      content: `${subjectObj.subject}: ${details}`,
       createdAt: faker.date.recent({ days: 30 }),
       priority: faker.helpers.arrayElement(Object.values(AnnouncementPriority)),
+      type: "plain",
     };
+    return {
+      announcement,
+      team,
+    };
+  };
+
+  // Generate announcements with their recipients and user status
+  const announcementData = Array.from({ length: 300 }).map(generateAnnouncement);
+  
+  // Insert announcements
+  await db.insert(announcements).values(
+    announcementData.map(({ announcement }) => announcement)
+  );
+
+  // Insert announcement recipients (link announcements to teams)
+  await db.insert(announcementRecipients).values(
+    announcementData.map(({ announcement, team }) => ({
+      id: nanoid(),
+      announcementId: announcement.id,
+      teamId: team.id,
+    }))
+  );
+
+  // Insert announcement user status (for each student in the team)
+  const announcementUserStatusList = announcementData.flatMap(({ announcement, team }) => {
+    // Get all students in the team
+    const teamStudentMembers = teamMemberList.filter(
+      (member) => member.teamId === team.id && member.role === "student"
+    );
+
+    // Create status entries for each student
+    return teamStudentMembers.map((member) => ({
+      id: nanoid(),
+      userId: member.userId,
+      announcementId: announcement.id,
+      isReceived: Math.random() > 0.2, // 80% chance of being received
+      isFavorited: Math.random() > 0.8, // 20% chance of being favorited
+      receivedAt: faker.date.recent({ days: 30 }),
+      favoritedAt: Math.random() > 0.8 ? faker.date.recent({ days: 30 }) : null,
+    }));
   });
-  await db.insert(announcements).values(announcementList);
+
+  await db.insert(announcementUserStatus).values(announcementUserStatusList);
 
   // 5. Team Invite Codes (optional, keep small for demo)
   const inviteCodeList = Array.from({ length: 5 }).map(() => {
