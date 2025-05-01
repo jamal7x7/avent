@@ -59,7 +59,11 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
         </p>
       </CardContent>
       <CardFooter className="flex justify-end items-center pt-3">
-        <AnnouncementActions announcementId={announcement.id} />
+        <AnnouncementActions
+          announcementId={announcement.id}
+          initialIsReceived={announcement.isReceived}
+          initialIsFavorited={announcement.isFavorited}
+        />
       </CardFooter>
     </Card>
   );

@@ -17,5 +17,98 @@
   "feature_customization_desc": "Les administrateurs et enseignants contrôlent entièrement la confidentialité et l'accès.",
   "feature_privacy": "Confidentialité par conception",
   "feature_privacy_desc": "Conçu dès le départ pour la vie privée des élèves et enseignants.",
-  "hero_image_alt": "Élèves et enseignants connectés"
+  "hero_image_alt": "Élèves et enseignants connectés",
+  "auth": {
+    "signIn": {
+      "title": "Connexion",
+      "subtitle": "Entrez vos identifiants pour accéder à votre compte",
+      "emailLabel": "Email",
+      "emailPlaceholder": "nom@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "signInButton": "Se connecter",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "signUpLink": "S'inscrire",
+      "orContinueWith": "Ou continuer avec",
+      "errorMessage": "Email ou mot de passe incorrect",
+      "appName": "Avent",
+      "appDescription": "plateforme de communication scolaire sécurisée"
+    },
+    "signOut": {
+      "title": "Déconnexion",
+      "message": "Êtes-vous sûr de vouloir vous déconnecter ?",
+      "confirmButton": "Se déconnecter",
+      "cancelButton": "Annuler"
+    },
+
+    "backupCodes": {
+      "title": "Codes de secours",
+      "subtitle": "Codes de secours pour l'authentification à deux facteurs",
+      "description": "Les codes de secours peuvent être utilisés pour accéder à votre compte si vous perdez votre téléphone ou ne pouvez pas recevoir de codes d'authentification à deux facteurs. Chaque code ne peut être utilisé qu'une seule fois.",
+      "warning": "Conservez ces codes dans un endroit sûr. Ils ne seront plus affichés !",
+      "noCodes": "Aucun code de secours disponible. Générez de nouveaux codes ci-dessous.",
+      "generateButton": "Générer de nouveaux codes de secours",
+      "backButton": "Retour au profil"
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "enterCode": "Entrez votre code d'authentification",
+      "codeLabel": "Code de vérification",
+      "verifyButton": "Vérifier",
+      "enableButton": "Activer l'authentification à deux facteurs",
+      "disableButton": "Désactiver l'authentification à deux facteurs",
+      "scanQrCode": "Scannez ce code QR avec votre application d'authentification",
+      "manualEntry": "Ou entrez ce code manuellement :",
+      "successMessage": "Authentification à deux facteurs activée avec succès",
+      "errorMessage": "Code de vérification invalide"
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "subtitle": "Entrez vos informations pour créer votre compte",
+      "nameLabel": "Nom complet",
+      "namePlaceholder": "Jean Dupont",
+      "emailLabel": "Email",
+      "emailPlaceholder": "nom@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "roleLabel": "Rôle",
+      "rolePlaceholder": "Sélectionnez un rôle",
+      "createButton": "Créer un compte",
+      "creatingButton": "Création du compte...",
+      "orContinueWith": "Ou continuer avec",
+      "alreadyHaveAccount": "Vous avez déjà un compte ?",
+      "signInLink": "Se connecter",
+      "continueWithGitHub": "Continuer avec GitHub",
+      "signUpWithEmailButton": "S'inscrire avec Email",
+      "errorMessage": "Échec de l'inscription. Veuillez réessayer.",
+      "appName": "Avent",
+      "appDescription": "Boutique qui vous rend heureux."
+    },
+    "signUpEmail": {
+      "title": "S'inscrire avec Email",
+      "subtitle": "Créez votre compte en utilisant email et mot de passe",
+      "backButton": "Retour aux options d'inscription"
+    }
+  },
+
+  "Settings": {
+    "Appearance": {
+      "title": "Apparence",
+      "description": "Personnalisez l'apparence de l'application. Sélectionnez votre thème et vos couleurs préférés.",
+      "themeLabel": "Sélection du thème",
+      "lightTheme": "Thème clair",
+      "darkTheme": "Thème sombre",
+      "systemTheme": "Thème système",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "primaryColor": "Couleur primaire",
+      "backgroundColor": "Couleur de fond",
+      "preview": "Aperçu",
+      "previewHeading": "Exemple de titre",
+      "previewText": "Ceci est un exemple de texte pour prévisualiser vos choix de couleurs. L'arrière-plan utilise la couleur de fond sélectionnée et le texte utilise la couleur primaire.",
+      "previewButton": "Exemple de bouton",
+      "resetDefaults": "Réinitialiser aux valeurs par défaut"
+    }
+  }
 }

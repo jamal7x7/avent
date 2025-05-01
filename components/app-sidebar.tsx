@@ -29,7 +29,8 @@ import Link from "next/link";
 import { LanguageSwitcher } from "~/components/language-switcher";
 import { SearchForm } from "~/components/search-form";
 import { TeamSwitcher } from "~/components/team-switcher";
-import { ThemeToggle } from "~/components/theme-toggle";
+// Remove ThemeToggle import as it's moved to SettingsModal
+// import { ThemeToggle } from "~/components/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -52,6 +53,7 @@ import { useNavLayoutStore } from "~/hooks/use-nav-layout";
 import { useSession } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
 import { AuthAvatar } from "./auth-avatar";
+import { NotificationsWidget } from "./notifications/notifications-widget";
 import { Button } from "./ui/button";
 
 type NavItem = {
@@ -249,7 +251,8 @@ function DashboardTopNav() {
             </div>
           </form>
         </div>
-        <ThemeToggle />
+        {/* Remove ThemeToggle from top nav */}
+        {/* <ThemeToggle /> */}
         <LanguageSwitcher isCollapsed={true} />
         <AuthAvatar
           name={session?.user?.name || "User"}
@@ -384,8 +387,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               : "flex items-center gap-2 px-4 pb-2"
           }
         >
-          {/* Theme Toggle as sidebar icon */}
-          <SidebarMenuItem className="list-none ![&>button]:!list-none">
+          {/* Remove Theme Toggle from sidebar footer */}
+          {/* <SidebarMenuItem className="list-none ![&>button]:!list-none">
             <Tooltip>
               <TooltipTrigger asChild>
                 <SidebarMenuButton
@@ -400,7 +403,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 Toggle theme
               </TooltipContent>
             </Tooltip>
-          </SidebarMenuItem>
+          </SidebarMenuItem> */}
+
           {/* Language Switcher as sidebar icon */}
           <SidebarMenuItem className="list-none ![&>button]:!list-none">
             <Tooltip>

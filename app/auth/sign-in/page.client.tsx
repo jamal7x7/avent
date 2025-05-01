@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "i18next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -64,37 +65,41 @@ export function SignInPageClient() {
   return (
     <div className="grid h-screen w-screen md:grid-cols-2">
       {/* Left side - Image */}
-      <div className="relative hidden md:block">
-        <Image
-          // src="https://images.unsplash.com/photo-1719811059181-09032aef07b8?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3"
-          src="https://images.unsplash.com/photo-1604866830893-c13cafa515d5?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="Sign-in background image"
-          fill
-          priority
-          sizes="(max-width: 768px) 0vw, 50vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-        <div className="absolute bottom-8 left-8 z-10 text-white">
-          <h1 className="text-3xl font-bold">Avent</h1>
-          <p className="mt-2 max-w-md text-sm text-white/80">
-            school secure communication platform.
-          </p>
-        </div>
-      </div>
-
-      {/* Right side - Login form */}
       <div className="flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md space-y-4">
           <div className="text-center md:text-left space-y-4">
-            <h2 className="text-3xl font-bold">Sign In</h2>
+            <h2 className="text-3xl font-bold">{t("auth.signIn.title")}</h2>
             <p className="text-sm text-muted-foreground">
-              Enter your credentials to access your account
+              {t("auth.signIn.subtitle")}
             </p>
           </div>
 
           <Card className="border-none shadow-sm">
-            <CardContent className="pt-2">
+            <CardContent className="pt-2 space-y-4">
+              {/* Google Button First */}
+              <Button
+                variant="outline"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="flex w-full items-center gap-2"
+              >
+                <GoogleIcon className="h-5 w-5" />
+                {t("auth.signIn.continueWithGoogle")}
+              </Button>
+
+              {/* Separator */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    {t("auth.signIn.orContinueWithEmail")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Email/Password Form */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -103,11 +108,11 @@ export function SignInPageClient() {
                 className="space-y-4"
               >
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.signIn.emailLabel")}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder={t("auth.signIn.emailPlaceholder")}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -117,12 +122,14 @@ export function SignInPageClient() {
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">
+                      {t("auth.signIn.passwordLabel")}
+                    </Label>
                     <Link
                       href="#"
                       className="text-sm text-muted-foreground hover:underline"
                     >
-                      Forgot password?
+                      {t("auth.signIn.forgotPassword")}
                     </Link>
                   </div>
                   <Input
@@ -141,20 +148,14 @@ export function SignInPageClient() {
                   </div>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign in"}
+                  {loading
+                    ? t("auth.signIn.signingIn")
+                    : t("auth.signIn.signInButton")}
                 </Button>
               </form>
-              <div className="relative mt-6">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-              <div className="mt-6 grid grid-cols-2 gap-4">
+
+              {/* Other Social Logins (Optional) */}
+              <div className="mt-4 grid grid-cols-1 gap-4">
                 <Button
                   variant="outline"
                   onClick={handleGitHubLogin}
@@ -162,29 +163,41 @@ export function SignInPageClient() {
                   className="flex items-center gap-2"
                 >
                   <GitHubIcon className="h-5 w-5" />
-                  GitHub
+                  {t("auth.signIn.continueWithGithub")}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  className="flex items-center gap-2"
-                >
-                  <GoogleIcon className="h-5 w-5" />
-                  Google
-                </Button>
+                {/* Add other social logins here if needed */}
               </div>
               <div className="mt-6 text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                {t("auth.signIn.noAccount")}{" "}
                 <Link
                   href="/auth/sign-up"
                   className="text-primary underline-offset-4 hover:underline"
                 >
-                  Sign up
+                  {t("auth.signIn.signUpLink")}
                 </Link>
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* Right side - Login form */}
+      <div className="relative hidden md:block">
+        <Image
+          // src="https://images.unsplash.com/photo-1719811059181-09032aef07b8?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3"
+          src="https://images.unsplash.com/photo-1604866830893-c13cafa515d5?q=80&w=2487&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="Sign-in background image"
+          fill
+          priority
+          sizes="(max-width: 768px) 0vw, 50vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+        <div className="absolute bottom-8 left-8 z-10 text-white">
+          <h1 className="text-3xl font-bold">{t("auth.signIn.appName")}</h1>
+          <p className="mt-2 max-w-md text-sm text-white/80">
+            {t("auth.signIn.appDescription")}
+          </p>
         </div>
       </div>
     </div>

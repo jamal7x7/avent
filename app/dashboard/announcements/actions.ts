@@ -1,11 +1,11 @@
-import { and, count, desc, eq, inArray, or } from "drizzle-orm"; // Import count
+import { and, count, desc, eq, inArray, or, sql } from "drizzle-orm"; // Import sql
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
 import { db } from "~/db";
 import {
   accountTable,
   announcementRecipients,
+  announcementUserStatus, // Import the new table
   announcements,
   sessionTable,
   teamInviteCodes,
@@ -15,6 +15,7 @@ import {
   userTable,
   verificationTable,
 } from "~/db/schema";
+import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
 
 export const announcementSchema = z.object({
   content: z.string().min(1).max(300),
@@ -79,28 +80,27 @@ export async function createAnnouncement(input: AnnouncementInput) {
 }
 
 export async function fetchAnnouncements(
-  senderId: string,
+  userId: string, // Add userId parameter
   teamId?: string,
   page = 1,
   pageSize = 10,
 ) {
-  // Join announcements -> recipients -> teams
-  const where = [eq(announcements.senderId, senderId)];
-  if (teamId && teamId !== "all") {
-    where.push(eq(announcementRecipients.teamId, teamId));
-  }
-  const rows = await db
+  // Base query joining announcements and sender info
+  let query = db
     .select({
       id: announcements.id,
       content: announcements.content,
       createdAt: announcements.createdAt,
-      priority: announcements.priority, // Select priority
+      priority: announcements.priority,
       teamId: announcementRecipients.teamId,
       teamName: teams.name,
       sender: {
         name: userTable.name,
         image: userTable.image,
       },
+      // Select status fields, defaulting to false if no status record exists for the user
+      isReceived: sql<boolean>`coalesce(${announcementUserStatus.isReceived}, false)`,
+      isFavorited: sql<boolean>`coalesce(${announcementUserStatus.isFavorited}, false)`,
     })
     .from(announcements)
     .leftJoin(userTable, eq(announcements.senderId, userTable.id))
@@ -109,10 +109,38 @@ export async function fetchAnnouncements(
       eq(announcementRecipients.announcementId, announcements.id),
     )
     .leftJoin(teams, eq(announcementRecipients.teamId, teams.id))
-    .where(and(...where))
+    // Left join user status based on announcementId AND userId
+    .leftJoin(
+      announcementUserStatus,
+      and(
+        eq(announcementUserStatus.announcementId, announcements.id),
+        eq(announcementUserStatus.userId, userId),
+      ),
+    )
     .orderBy(desc(announcements.createdAt))
     .limit(pageSize)
     .offset((page - 1) * pageSize);
+
+  // Apply team filtering if teamId is provided and not 'all'
+  if (teamId && teamId !== "all") {
+    query = query.where(eq(announcementRecipients.teamId, teamId));
+  } else {
+    // If no specific team or 'all' teams, filter announcements relevant to the user's teams
+    const userTeamIdsQuery = db
+      .selectDistinct({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+
+    // Filter announcements where the recipient team is one the user belongs to,
+    // OR announcements with no specific recipients (implicitly for all teams the sender belongs to? - needs clarification on logic for no recipients)
+    // For now, let's assume announcements without recipients are not shown, or handle based on sender's teams if needed.
+    // We only show announcements explicitly sent to teams the user is in.
+    query = query.where(
+      inArray(announcementRecipients.teamId, userTeamIdsQuery),
+    );
+  }
+
+  const rows = await query;
   return rows;
 }
 

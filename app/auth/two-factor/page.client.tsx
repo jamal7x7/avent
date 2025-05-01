@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "i18next";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { twoFactor } from "~/lib/auth-client";
@@ -59,11 +60,11 @@ export function TwoFactorPageClient() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 rounded-lg border p-6 shadow-md">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Two-Factor Authentication</h1>
+          <h1 className="text-2xl font-bold">{t("auth.twoFactor.title")}</h1>
           <p className="mt-2 text-gray-600">
             {isUsingBackupCode
-              ? "Enter a backup code"
-              : "Enter your authentication code"}
+              ? t("auth.twoFactor.enterBackupCode")
+              : t("auth.twoFactor.enterCode")}
           </p>
         </div>
 
@@ -77,7 +78,9 @@ export function TwoFactorPageClient() {
           <div className="space-y-4">
             <div>
               <label htmlFor="code" className="block text-sm font-medium">
-                {isUsingBackupCode ? "Backup Code" : "Verification Code"}
+                {isUsingBackupCode
+                  ? t("auth.twoFactor.backupCodeLabel")
+                  : t("auth.twoFactor.codeLabel")}
               </label>
               <input
                 id="code"
@@ -90,15 +93,17 @@ export function TwoFactorPageClient() {
                 }}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 placeholder={
-                  isUsingBackupCode ? "Enter backup code" : "6-digit code"
+                  isUsingBackupCode
+                    ? t("auth.twoFactor.backupCodePlaceholder")
+                    : t("auth.twoFactor.codePlaceholder")
                 }
                 maxLength={isUsingBackupCode ? undefined : 6}
                 pattern={isUsingBackupCode ? undefined : "[0-9]{6}"}
               />
               <p className="mt-1 text-sm text-gray-500">
                 {isUsingBackupCode
-                  ? "Enter one of your backup codes"
-                  : "Enter the 6-digit code from your authenticator app"}
+                  ? t("auth.twoFactor.backupCodeDescription")
+                  : t("auth.twoFactor.codeDescription")}
               </p>
             </div>
 
@@ -121,11 +126,10 @@ export function TwoFactorPageClient() {
                     htmlFor="trustDevice"
                     className="font-medium text-gray-700"
                   >
-                    Trust this device
+                    {t("auth.twoFactor.trustDeviceLabel")}
                   </label>
                   <p className="text-gray-500">
-                    You won't need to enter a verification code on this device
-                    for 30 days
+                    {t("auth.twoFactor.trustDeviceDescription")}
                   </p>
                 </div>
               </div>
@@ -138,7 +142,9 @@ export function TwoFactorPageClient() {
               disabled={loading}
               className="flex w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {loading ? "Verifying..." : "Verify"}
+              {loading
+                ? t("auth.twoFactor.verifying")
+                : t("auth.twoFactor.verifyButton")}
             </button>
 
             <button
@@ -147,8 +153,8 @@ export function TwoFactorPageClient() {
               className="flex w-full justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               {isUsingBackupCode
-                ? "Use authenticator app instead"
-                : "Use a backup code instead"}
+                ? t("auth.twoFactor.useAuthenticatorInstead")
+                : t("auth.twoFactor.useBackupCodeInstead")}
             </button>
           </div>
         </form>

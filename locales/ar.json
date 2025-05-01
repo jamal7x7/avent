@@ -17,5 +17,97 @@
   "feature_customization_desc": "يتمتع المدراء والمعلمون بتحكم كامل في الخصوصية والوصول.",
   "feature_privacy": "الخصوصية حسب التصميم",
   "feature_privacy_desc": "مصمم من البداية لخصوصية الطلاب والمعلمين.",
-  "hero_image_alt": "طلاب ومعلمون متصلون"
+  "hero_image_alt": "طلاب ومعلمون متصلون",
+  "auth": {
+    "signIn": {
+      "title": "تسجيل الدخول",
+      "subtitle": "أدخل بيانات الاعتماد الخاصة بك للوصول إلى حسابك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "passwordLabel": "كلمة المرور",
+      "rememberMe": "تذكرني",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "signInButton": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUpLink": "اشتراك",
+      "orContinueWith": "أو متابعة مع",
+      "errorMessage": "بريد إلكتروني أو كلمة مرور غير صحيحة",
+      "appName": "أفنت",
+      "appDescription": "منصة تواصل مدرسي آمن"
+    },
+    "signOut": {
+      "title": "تسجيل الخروج",
+      "message": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+      "confirmButton": "تسجيل الخروج",
+      "cancelButton": "إلغاء"
+    },
+
+    "backupCodes": {
+      "title": "رموز النسخ الاحتياطي",
+      "subtitle": "رموز النسخ الاحتياطي للمصادقة الثنائية",
+      "description": "يمكن استخدام رموز النسخ الاحتياطي للوصول إلى حسابك إذا فقدت هاتفك أو لا يمكنك استقبال رموز المصادقة الثنائية. يمكن استخدام كل رمز مرة واحدة فقط.",
+      "warning": "احتفظ بهذه الرموز في مكان آمن. لن يتم عرضها مرة أخرى!",
+      "noCodes": "لا توجد رموز نسخ احتياطي متاحة. قم بإنشاء رموز جديدة أدناه.",
+      "generateButton": "إنشاء رموز نسخ احتياطي جديدة",
+      "backButton": "العودة إلى الملف الشخصي"
+    },
+    "twoFactor": {
+      "title": "المصادقة الثنائية",
+      "enterCode": "أدخل رمز المصادقة الخاص بك",
+      "codeLabel": "رمز التحقق",
+      "verifyButton": "تحقق",
+      "enableButton": "تفعيل المصادقة الثنائية",
+      "disableButton": "تعطيل المصادقة الثنائية",
+      "scanQrCode": "امسح رمز QR هذا باستخدام تطبيق المصادقة الخاص بك",
+      "manualEntry": "أو أدخل هذا الرمز يدويًا:",
+      "successMessage": "تم تفعيل المصادقة الثنائية بنجاح",
+      "errorMessage": "رمز تحقق غير صالح"
+    },
+    "signUp": {
+      "title": "إنشاء حساب",
+      "subtitle": "أدخل بياناتك لإنشاء حساب",
+      "nameLabel": "الاسم الكامل",
+      "namePlaceholder": "محمد أحمد",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "passwordLabel": "كلمة المرور",
+      "roleLabel": "الدور",
+      "rolePlaceholder": "اختر دورًا",
+      "createButton": "إنشاء حساب",
+      "creatingButton": "جاري إنشاء الحساب...",
+      "orContinueWith": "أو متابعة مع",
+      "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+      "signInLink": "تسجيل الدخول",
+      "continueWithGitHub": "المتابعة باستخدام GitHub",
+      "signUpWithEmailButton": "التسجيل باستخدام البريد الإلكتروني",
+      "errorMessage": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+      "appName": "أفنت",
+      "appDescription": "متجر يجعلك سعيدًا."
+    },
+    "signUpEmail": {
+      "title": "التسجيل باستخدام البريد الإلكتروني",
+      "subtitle": "أنشئ حسابك باستخدام البريد الإلكتروني وكلمة المرور",
+      "backButton": "العودة إلى خيارات التسجيل"
+    }
+  },
+  "Settings": {
+    "Appearance": {
+      "title": "المظهر",
+      "description": "تخصيص شكل وأسلوب التطبيق. حدد المظهر والألوان المفضلة لديك.",
+      "themeLabel": "اختيار المظهر",
+      "lightTheme": "المظهر الفاتح",
+      "darkTheme": "المظهر الداكن",
+      "systemTheme": "مظهر النظام",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "النظام",
+      "primaryColor": "اللون الأساسي",
+      "backgroundColor": "لون الخلفية",
+      "preview": "معاينة",
+      "previewHeading": "عنوان نموذجي",
+      "previewText": "هذا نص نموذجي لمعاينة اختيارات الألوان الخاصة بك. تستخدم الخلفية لون الخلفية المحدد، ويستخدم النص اللون الأساسي.",
+      "previewButton": "زر نموذجي",
+      "resetDefaults": "إعادة التعيين إلى الافتراضيات"
+    }
+  }
 }

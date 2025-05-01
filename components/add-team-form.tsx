@@ -71,6 +71,8 @@ export function AddTeamForm({
   const { data: session } = useSession();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingTeam, setIsCreatingTeam] = useState(false);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
   const createTeamForm = useForm<CreateTeamFormValues>({
     resolver: zodResolver(createTeamFormSchema),
@@ -93,9 +95,9 @@ export function AddTeamForm({
     session?.user?.role ?? "",
   );
 
-  // Handler to create a new team (server action or API call)
   const handleCreateTeam = async (values: CreateTeamFormValues) => {
     setError(null);
+    setIsCreatingTeam(true);
     try {
       const res = await fetch("/api/teams", {
         method: "POST",
@@ -112,12 +114,14 @@ export function AddTeamForm({
     } catch (e) {
       setError((e as Error).message);
       toastAnnouncement("error", "Failed to create team.");
+    } finally {
+      setIsCreatingTeam(false);
     }
   };
 
-  // Handler to generate invite code for selected team
   const handleGenerateCodeSubmit = async (values: GenerateCodeFormValues) => {
     setError(null);
+    setIsGeneratingCode(true);
     try {
       const res = await fetch("/api/teams/invite", {
         method: "POST",
@@ -135,71 +139,99 @@ export function AddTeamForm({
     } catch (e) {
       setError((e as Error).message);
       toastAnnouncement("error", "Failed to generate code.");
+    } finally {
+      setIsGeneratingCode(false);
     }
   };
 
   if (!isTeacher) return null;
 
   return (
-    <div className="space-y-8 w-full">
+    <div className="space-y-8 w-full max-w-2xl mx-auto">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">Team Management</h2>
+        <p className="text-muted-foreground">Create new teams and generate invite codes for your students.</p>
+      </div>
+
       <Form {...createTeamForm}>
         <form
           onSubmit={createTeamForm.handleSubmit(handleCreateTeam)}
-          className="space-y-4 p-4 border rounded bg-card"
+          className="space-y-6 p-6 border rounded-lg bg-card shadow-sm"
         >
-          <h2 className="text-lg font-semibold">Add Team</h2>
-          <FormField
-            control={createTeamForm.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Team Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Team Name"
-                    maxLength={100}
-                    disabled={createTeamForm.formState.isSubmitting}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={createTeamForm.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={createTeamForm.formState.isSubmitting}
-                >
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Create New Team</h3>
+            <p className="text-sm text-muted-foreground">Set up a new team for your students to join.</p>
+          </div>
+
+          <div className="grid gap-4">
+            <FormField
+              control={createTeamForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Team Name</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a team type" />
-                    </SelectTrigger>
+                    <Input
+                      placeholder="Enter team name"
+                      maxLength={100}
+                      disabled={isCreatingTeam}
+                      className="h-10"
+                      {...field}
+                    />
                   </FormControl>
-                  <SelectContent>
-                    {TEAM_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={createTeamForm.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Team Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isCreatingTeam}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select a team type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {TEAM_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={createTeamForm.formState.isSubmitting}
+            disabled={isCreatingTeam}
+            className="w-full"
           >
-            Create Team
+            {isCreatingTeam ? (
+              <>
+                <span className="mr-2">Creating...</span>
+                <span className="animate-spin">⏳</span>
+              </>
+            ) : (
+              "Create Team"
+            )}
           </Button>
         </form>
       </Form>
@@ -207,115 +239,144 @@ export function AddTeamForm({
       <Form {...generateCodeForm}>
         <form
           onSubmit={generateCodeForm.handleSubmit(handleGenerateCodeSubmit)}
-          className="space-y-4 p-4 border rounded bg-card"
+          className="space-y-6 p-6 border rounded-lg bg-card shadow-sm"
         >
-          <h2 className="text-lg font-semibold">Generate Invite Code</h2>
-          <FormField
-            control={generateCodeForm.control}
-            name="teamId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Team</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={generateCodeForm.formState.isSubmitting}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a team" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={generateCodeForm.control}
-            name="expiresAt"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Expiration Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Generate Invite Code</h3>
+            <p className="text-sm text-muted-foreground">Create an invite code for students to join an existing team.</p>
+          </div>
+
+          <div className="grid gap-4">
+            <FormField
+              control={generateCodeForm.control}
+              name="teamId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Team</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isGeneratingCode}
+                  >
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={`w-[240px] pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                        disabled={generateCodeForm.formState.isSubmitting}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP HH:mm")
-                        ) : (
-                          <span>Pick a date and time</span>
-                        )}
-                        {/* You might need to add a time picker component or input */}
-                      </Button>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select a team" />
+                      </SelectTrigger>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
+                    <SelectContent>
+                      {teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={generateCodeForm.control}
+              name="expiresAt"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Expiration Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={`h-10 w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                          disabled={isGeneratingCode}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP HH:mm")
+                          ) : (
+                            <span>Pick a date and time</span>
+                          )}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={generateCodeForm.control}
+              name="maxUses"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Uses</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="10"
+                      min={1}
+                      max={1000}
+                      disabled={isGeneratingCode}
+                      className="h-10"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                     />
-                    {/* Add a time input here */}
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={generateCodeForm.control}
-            name="maxUses"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Max Uses</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="10"
-                    min={1}
-                    max={1000}
-                    disabled={generateCodeForm.formState.isSubmitting}
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           {inviteCode && (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="font-mono text-lg font-bold">{inviteCode}</span>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigator.clipboard.writeText(inviteCode)}
-              >
-                Copy
-              </Button>
+            <div className="p-4 rounded-lg bg-muted">
+              <div className="flex flex-col space-y-2">
+                <p className="text-sm font-medium">Invite Code</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 rounded bg-background font-mono text-lg font-bold">
+                    {inviteCode}
+                  </code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteCode);
+                      toastAnnouncement("success", "Code copied to clipboard!");
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+
+          {error && (
+            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={generateCodeForm.formState.isSubmitting}
+            disabled={isGeneratingCode}
+            className="w-full"
           >
-            {generateCodeForm.formState.isSubmitting
-              ? "Generating..."
-              : "Generate Code"}
+            {isGeneratingCode ? (
+              <>
+                <span className="mr-2">Generating...</span>
+                <span className="animate-spin">⏳</span>
+              </>
+            ) : (
+              "Generate Code"
+            )}
           </Button>
         </form>
       </Form>

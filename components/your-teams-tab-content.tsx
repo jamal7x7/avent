@@ -42,13 +42,13 @@ export function YourTeamsTabContent({
   return (
     // Wrap with QueryClientProvider if not already provided higher up
     <QueryClientProvider client={queryClient}>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
+      <div className="grid  grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
         {" "}
         {/* Adjust height as needed */}
         {/* Left Sidebar - Team List */}
         {/* Add role="region" and aria-labelledby for accessibility */}
         <section
-          className="md:col-span-1 lg:col-span-1 h-full"
+          className="md:col-span-1 lg:col-span-1 h-full "
           aria-describedby="team-list-heading"
           aria-labelledby="team-list-heading"
         >

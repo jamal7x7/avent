@@ -11,6 +11,10 @@ export interface Team {
   name: string;
   type: string | null;
   memberCount: number;
+  image?: string;
+  description?: string;
+  role?: string;
+  lastActivity?: string;
 }
 
 export interface Announcement {

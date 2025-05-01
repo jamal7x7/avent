@@ -18,7 +18,8 @@ import {
 import { cn } from "~/lib/utils";
 import { LanguageSwitcher } from "./language-switcher";
 import { NotificationsWidget } from "./notifications/notifications-widget";
-import { ThemeToggle } from "./theme-toggle";
+// Remove ThemeToggle import as it's moved to SettingsModal
+// import { ThemeToggle } from "./theme-toggle";
 
 interface HeaderProps {
   showAuth?: boolean;
@@ -120,7 +121,8 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
 
             <NotificationsWidget />
 
-            {!isDashboard && <ThemeToggle />}
+            {/* Remove ThemeToggle from header */}
+            {/* {!isDashboard && <ThemeToggle />} */}
 
             {showAuth && (
               <div className="hidden md:block">
@@ -215,8 +217,6 @@ export function Header({ showAuth = true, isDashboard = false }: HeaderProps) {
                 )}
               </div>
             )}
-
-           
 
             {/* Mobile menu button */}
             <Button

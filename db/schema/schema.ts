@@ -16,6 +16,7 @@ import { userTable } from "./users"; // Adjust path if needed
 export const teams = pgTable("teams", {
   id: text("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
+  image: text("image"),
   type: varchar("type", { length: 32 }).notNull().default("class"),
   order: integer("order").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -108,7 +109,9 @@ export const announcements = pgTable("announcements", {
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  priority: text("priority", { enum: Object.values(AnnouncementPriority) })
+  priority: text("priority", {
+    enum: Object.values(AnnouncementPriority) as [string, ...string[]],
+  })
     .notNull()
     .default(AnnouncementPriority.NORMAL), // Add priority column
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -123,6 +126,21 @@ export const announcementRecipients = pgTable("announcement_recipients", {
   teamId: text("team_id")
     .notNull()
     .references(() => teams.id, { onDelete: "cascade" }),
+});
+
+// --- Announcement User Status ---
+export const announcementUserStatus = pgTable("announcement_user_status", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  announcementId: text("announcement_id")
+    .notNull()
+    .references(() => announcements.id, { onDelete: "cascade" }),
+  isReceived: boolean("is_received").notNull().default(false),
+  isFavorited: boolean("is_favorited").notNull().default(false),
+  receivedAt: timestamp("received_at"),
+  favoritedAt: timestamp("favorited_at"),
 });
 
 // --- Courses ---

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { hashPassword } from "better-auth/crypto"; // Import hashPassword
+import { hashPassword } from "better-auth/crypto";
 import { sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import {
@@ -11,7 +11,7 @@ import {
   teams,
   userTable,
 } from "~/db/schema";
-import { AnnouncementPriority } from "~/db/types"; // Added import for priority
+import { AnnouncementPriority } from "~/db/types";
 import { db } from "../db";
 
 async function seed() {
@@ -242,14 +242,13 @@ async function seed() {
   await db.insert(userTable).values(userList);
 
   // 1b. Accounts (for email/password login)
-  // Use better-auth's hashPassword to generate the hash in salt:key format
   const passwordHash = await hashPassword("password123");
   const accountList = userList.map((user) => ({
     id: nanoid(),
     accountId: user.email,
-    providerId: "credential", // as required by better-auth
+    providerId: "credential",
     userId: user.id,
-    password: passwordHash, // Store the combined salt:key hash
+    password: passwordHash,
     createdAt: new Date(),
     updatedAt: new Date(),
   }));
@@ -342,7 +341,7 @@ async function seed() {
       senderId: faker.helpers.arrayElement([...students, ...teachers]).id,
       content: `${subject}: ${details}`,
       createdAt: faker.date.recent({ days: 30 }),
-      // type: 'plain',
+      priority: faker.helpers.arrayElement(Object.values(AnnouncementPriority)),
     };
   });
   await db.insert(announcements).values(announcementList);
@@ -361,112 +360,6 @@ async function seed() {
     };
   });
   await db.insert(teamInviteCodes).values(inviteCodeList);
-
-  console.log("Seed complete!");
-  process.exit(0);
-}
-
-seed().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
-
-
-  // Seed Teams and Members
-  const createdTeams = [];
-  for (let i = 0; i < 5; i++) {
-    const teamId = `team-${nanoid(8)}`;
-    const teamName = faker.company.name();
-    await db.insert(teams).values({
-      id: teamId,
-      name: teamName,
-      ownerId: createdUsers[i % createdUsers.length].id, // Assign owner
-      createdAt: faker.date.past(),
-      updatedAt: new Date(),
-    });
-    createdTeams.push({ id: teamId, name: teamName });
-
-    // Add owner as member
-    await db.insert(teamMembers).values({
-      id: `member-${nanoid(8)}`,
-      teamId: teamId,
-      userId: createdUsers[i % createdUsers.length].id,
-      role: "admin", // Owner is admin
-      joinedAt: new Date(),
-    });
-
-    // Add some other members
-    const memberCount = faker.number.int({ min: 2, max: 5 });
-    for (let j = 0; j < memberCount; j++) {
-      const memberIndex = (i + j + 1) % createdUsers.length; // Ensure different members
-      // Avoid adding the owner again
-      if (createdUsers[memberIndex].id !== createdUsers[i % createdUsers.length].id) {
-        await db.insert(teamMembers).values({
-          id: `member-${nanoid(8)}`,
-          teamId: teamId,
-          userId: createdUsers[memberIndex].id,
-          role: faker.helpers.arrayElement(["member", "editor"]), // Random role
-          joinedAt: faker.date.past(),
-        });
-      }
-    }
-
-    // Seed Invite Codes for each team
-    const inviteCodeCount = faker.number.int({ min: 1, max: 3 });
-    for (let k = 0; k < inviteCodeCount; k++) {
-      await db.insert(teamInviteCodes).values({
-        id: `invite-${nanoid(8)}`,
-        code: nanoid(10), // Generate a unique invite code
-        teamId: teamId,
-        expiresAt: faker.date.future(),
-        createdAt: new Date(),
-        createdBy: createdUsers[i % createdUsers.length].id, // Created by owner
-        maxUses: faker.helpers.arrayElement([null, 5, 10]), // Optional max uses
-        uses: 0,
-      });
-    }
-
-    // Seed Announcements for each team (Existing English)
-    const announcementCount = faker.number.int({ min: 5, max: 15 });
-    const priorities = Object.values(AnnouncementPriority);
-    for (let l = 0; l < announcementCount; l++) {
-      const senderIndex = (i + l) % createdUsers.length;
-      await db.insert(announcements).values({
-        id: `announcement-${nanoid(12)}`,
-        content: faker.lorem.paragraph(),
-        priority: faker.helpers.arrayElement(priorities),
-        teamId: teamId,
-        senderId: createdUsers[senderIndex].id,
-        createdAt: faker.date.past(),
-      });
-    }
-
-    // Seed 10 Arabic Announcements for each team
-    for (let m = 0; m < 10; m++) {
-      const senderIndex = (i + m) % createdUsers.length;
-      await db.insert(announcements).values({
-        id: `announcement-ar-${nanoid(10)}`,
-        content: `AR: ${faker.lorem.paragraph()}`, // Placeholder Arabic content
-        priority: faker.helpers.arrayElement(priorities),
-        teamId: teamId,
-        senderId: createdUsers[senderIndex].id,
-        createdAt: faker.date.past(),
-      });
-    }
-
-    // Seed 10 French Announcements for each team
-    for (let n = 0; n < 10; n++) {
-      const senderIndex = (i + n) % createdUsers.length;
-      await db.insert(announcements).values({
-        id: `announcement-fr-${nanoid(10)}`,
-        content: `FR: ${faker.lorem.paragraph()}`, // Placeholder French content
-        priority: faker.helpers.arrayElement(priorities),
-        teamId: teamId,
-        senderId: createdUsers[senderIndex].id,
-        createdAt: faker.date.past(),
-      });
-    }
-  }
 
   console.log("✅ Database seeded successfully!");
 }

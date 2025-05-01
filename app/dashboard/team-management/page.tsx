@@ -52,16 +52,7 @@ export default async function TeamManagementPage() {
 
           {/* Add Team Tab */}
           <TabsContent value="add-team" className="mt-4">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">
-                  Create a New Team
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AddTeamForm teams={teams} />
-              </CardContent>
-            </Card>
+            <AddTeamForm teams={teams} />
           </TabsContent>
 
           {/* Join Team Tab */}

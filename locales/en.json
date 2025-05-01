@@ -17,5 +17,100 @@
   "feature_customization_desc": "Admins and teachers have full control over privacy and access.",
   "feature_privacy": "Privacy by Design",
   "feature_privacy_desc": "Built from the ground up for student and teacher privacy.",
-  "hero_image_alt": "Connected students and teachers"
+  "hero_image_alt": "Connected students and teachers",
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to access your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "orContinueWith": "Or continue with",
+      "errorMessage": "Invalid email or password",
+      "appName": "Avent",
+      "appDescription": "school secure communication platform"
+    },
+    "signOut": {
+      "title": "Sign Out",
+      "message": "Are you sure you want to sign out?",
+      "confirmButton": "Sign Out",
+      "cancelButton": "Cancel"
+    },
+
+    "backupCodes": {
+      "enterBackupCode": "Enter a backup code",
+      "backupCodeLabel": "Backup Code",
+      "backupCodePlaceholder": "Enter backup code",
+      "backupCodeDescription": "Enter one of your backup codes",
+      "trustDeviceLabel": "Trust this device",
+      "trustDeviceDescription": "You won't need to enter a verification code on this device for 30 days",
+      "verifying": "Verifying...",
+      "useAuthenticatorInstead": "Use authenticator app instead",
+      "useBackupCodeInstead": "Use a backup code instead"
+    },
+
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "enterCode": "Enter your authentication code",
+      "codeLabel": "Verification Code",
+      "verifyButton": "Verify",
+      "enableButton": "Enable Two-Factor",
+      "disableButton": "Disable Two-Factor",
+      "scanQrCode": "Scan this QR code with your authenticator app",
+      "manualEntry": "Or enter this code manually:",
+      "successMessage": "Two-factor authentication enabled successfully",
+      "errorMessage": "Invalid verification code"
+    },
+    "signUp": {
+      "title": "Create Account",
+      "subtitle": "Enter your details to create your account",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "John Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "roleLabel": "Role",
+      "rolePlaceholder": "Select a role",
+      "createButton": "Create account",
+      "creatingButton": "Creating account...",
+      "orContinueWith": "Or continue with",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "continueWithGitHub": "Continue with GitHub",
+      "signUpWithEmailButton": "Sign up with Email",
+      "errorMessage": "Registration failed. Please try again.",
+      "appName": "Avent",
+      "appDescription": "Store which makes you happy."
+    },
+    "signUpEmail": {
+      "title": "Sign Up with Email",
+      "subtitle": "Create your account using email and password",
+      "backButton": "Back to Sign Up Options"
+    }
+  },
+  "Settings": {
+    "Appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel of the application. Select your preferred theme and colors.",
+      "themeLabel": "Theme selection",
+      "lightTheme": "Light theme",
+      "darkTheme": "Dark theme",
+      "systemTheme": "System theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "primaryColor": "Primary Color",
+      "backgroundColor": "Background Color",
+      "preview": "Preview",
+      "previewHeading": "Sample Heading",
+      "previewText": "This is some sample text to preview your color choices. The background uses the selected background color, and the text uses the primary color.",
+      "previewButton": "Sample Button",
+      "resetDefaults": "Reset to Defaults"
+    }
+  }
 }

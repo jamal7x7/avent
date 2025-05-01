@@ -1,6 +1,12 @@
 "use client";
 
-import { BookmarkIcon, CheckIcon, HeartIcon, Loader2 } from "lucide-react";
+import {
+  BookmarkIcon,
+  CheckCheck,
+  CheckIcon,
+  HeartIcon,
+  Loader2,
+} from "lucide-react";
 import { useState, useTransition } from "react";
 import { Button } from "~/components/ui/button";
 // import { useSession } from "better-auth/react"; // Assuming path for auth hook
@@ -29,6 +35,8 @@ AnnouncementActionsProps) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [isPendingReceive, startReceiveTransition] = useTransition();
   const [isPendingFavorite, startFavoriteTransition] = useTransition();
+
+  const [receivedCount, setReceivedCount] = useState(12); // Dummy initial count - This should come from backend
 
   const handleReceive = () => {
     // if (!userId) return; // Add proper auth check
@@ -77,10 +85,21 @@ AnnouncementActionsProps) {
         {isPendingReceive ? (
           <Loader2 className="w-4 h-4 mr-1 animate-spin" />
         ) : (
-          <CheckIcon className="w-4 h-4 mr-1" />
+          ""
         )}
-        {isReceived ? "Received" : "Mark as Received"}
+
+        {!isReceived ? (
+          <CheckIcon className="w-4 h-4 mr-0" />
+        ) : (
+          <CheckCheck className="w-4 h-4 mr-0" />
+        )}
+        {isReceived ? "Received" : ""}
       </Button>
+
+      <div className="flex items-center text-xs text-muted-foreground">
+        <span>{receivedCount} Received</span>
+      </div>
+
       <Button
         variant="ghost"
         size="sm"
@@ -92,10 +111,10 @@ AnnouncementActionsProps) {
           <Loader2 className="w-4 h-4 mr-1 animate-spin" />
         ) : (
           <BookmarkIcon
-            className={`w-4 h-4 mr-1 transition-colors ${isFavorited ? "fill-yellow-500 dark:fill-yellow-400" : ""}`}
+            className={`w-4 h-4 mr-0 transition-colors ${isFavorited ? "fill-yellow-500 dark:fill-yellow-400" : ""}`}
           />
         )}
-        {isFavorited ? "Favorited" : "Favorite"}
+        {/* {isFavorited ? "Favorited" : "Favorite"} */}
       </Button>
     </div>
   );

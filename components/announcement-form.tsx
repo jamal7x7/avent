@@ -268,7 +268,7 @@ export function AnnouncementForm() {
   };
 
   return (
-    <div className="w-full max-w-2xl p-4 space-y-6 border rounded-lg bg-card shadow-sm">
+    <div className="w-full max-w-2xl p-4 space-y-6 border rounded-2xl bg-card shadow-sm">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Content Textarea */}
@@ -345,10 +345,14 @@ export function AnnouncementForm() {
 
           {/* Team Selection - Always Visible */}
           <div className="space-y-3 pt-4 border-t">
-            <FormLabel className="font-medium">Target Teams (Optional - Defaults to all your teams)</FormLabel>
+            <FormLabel className="font-medium">
+              Target Teams (Optional - Defaults to all your teams)
+            </FormLabel>
             <div className="flex flex-wrap gap-3">
               {teams.length === 0 && !mutation.isPending && (
-                <p className="text-sm text-muted-foreground">No teams found or loading...</p>
+                <p className="text-sm text-muted-foreground">
+                  No teams found or loading...
+                </p>
               )}
               {teams.map((team) => (
                 <div
@@ -378,7 +382,8 @@ export function AnnouncementForm() {
           {/* Error Display */}
           {(error || mutation.error) && (
             <div className="text-destructive text-sm font-medium p-3 bg-destructive/10 rounded-md border border-destructive/20">
-              <strong>Error:</strong> {error || (mutation.error as Error)?.message}
+              <strong>Error:</strong>{" "}
+              {error || (mutation.error as Error)?.message}
             </div>
           )}
         </form>

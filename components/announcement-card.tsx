@@ -4,11 +4,15 @@ import { RiAlertFill } from "@remixicon/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import {
+  ActivitySquare,
   AlertCircle,
   BookmarkIcon,
   Check,
   Clock,
   ClockAlert,
+  EyeClosed,
+  EyeClosedIcon,
+  EyeOff,
   Star,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -43,6 +47,8 @@ interface AnnouncementCardProps {
     sender: {
       name: string | null; // Allow null for name
       image?: string | null; // Allow null for image
+      email: string; // Add email property
+      role?: string; // Add role property if needed
     };
   };
   // Add initial states if fetched server-side
@@ -66,6 +72,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
   // Get sender information
   const senderName = announcement.sender.name ?? "Unknown User";
   const senderInitial = senderName.charAt(0).toUpperCase();
+  const teamNameInitial = announcement.teamName.charAt(0).toUpperCase();
 
   // Dummy role based on team name
   const role = announcement.teamName.includes("Dev")
@@ -74,7 +81,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
     ? "Designer"
     : announcement.teamName.includes("Market")
     ? "Marketing"
-    : "Project Manager";
+    : "Teacher";
 
   useEffect(() => {
     setIsVisible(true);
@@ -90,7 +97,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
   );
 
   const roleColors = {
-    "Project Manager": "bg-emerald-900/60 text-emerald-300",
+    Teacher: "bg-emerald-900/60 text-emerald-300",
     Developer: "bg-violet-900/60 text-violet-300",
     Designer: "bg-pink-900/60 text-pink-300",
     Marketing: "bg-amber-900/60 text-amber-300",
@@ -152,7 +159,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Card className="w-full md:w-2xl transition-shadow duration-300 hover:shadow-lg">
+          <Card className="w-full md:w-2xl rounded-2xl transition-shadow duration-300 hover:shadow-lg ">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
               <div className="relative">
                 <Avatar
@@ -163,11 +170,14 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
                   )}
                 >
                   <AvatarImage
-                    src={announcement.sender.image ?? undefined}
+                    src={
+                      announcement.sender.image ??
+                      `https://avatar.vercel.sh/${announcement.teamName}.png`
+                    }
                     alt={senderName}
                   />
                   <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                    {senderInitial}
+                    {teamNameInitial}
                   </AvatarFallback>
                 </Avatar>
                 {priority === AnnouncementPriority.URGENT && (
@@ -178,8 +188,8 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
-                    {senderName}
+                  <CardTitle className="text-sm font-semibold tracking-tight text-foreground/90">
+                    {announcement.teamName}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Tooltip>
@@ -197,13 +207,16 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge
-                    variant="secondary"
-                    className="border-transparent py-1 px-2 font-medium bg-primary/10 text-primary hover:bg-primary/20"
+                    variant="outline"
+                    className="py-1 pr-1 pl-2 font-normal text-accent-foreground/40 hover:bg-accent/20"
                   >
-                    {role}
-                  </Badge>
-                  <Badge variant="secondary" className="py-1 px-2 font-normal">
-                    To: {announcement.teamName}
+                    {announcement.sender.name}
+                    <Badge
+                      variant="secondary"
+                      className="border-transparent  font-medium bg-primary/10 text-primary/50 hover:bg-primary/20"
+                    >
+                      {role}
+                    </Badge>
                   </Badge>
                   {priority !== AnnouncementPriority.NORMAL && (
                     <Tooltip>
@@ -235,18 +248,25 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               </div>
             </CardHeader>
 
-            <CardContent className="pt-4 pb-5 px-6 text-card-foreground text-sm leading-relaxed">
+            <CardContent className="pt-4 pb-5 px-6 text-card-foreground text-md leading-relaxed">
               <div className="pl-4 border-l-4 border-border py-1">
                 <p>{announcement.content}</p>
               </div>
             </CardContent>
 
             <CardFooter className="flex justify-between items-center pt-4 pb-0 px-6 border-t border-border/40">
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Check className="h-4 w-4 mr-1 text-green-500" />
-                <span>{receivedCount} Received</span>
-              </div>
-
+              <Button
+                variant="ghost"
+                size="sm"
+                // onClick={handleShowAnnouncement}
+                // disabled={isPendingShowAnnouncement}
+                // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
+              >
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <EyeClosed className="h-4 w-4 mr-1 " />
+                  <span> Hide</span>
+                </div>
+              </Button>
               <AnnouncementActions
                 announcementId={announcement.id}
                 initialIsReceived={false}
