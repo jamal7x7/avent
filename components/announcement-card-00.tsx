@@ -20,6 +20,8 @@ interface AnnouncementCardProps {
       name: string | null; // Allow null for name
       image?: string | null; // Allow null for image
     };
+    isReceived: boolean; // Add isReceived
+    isFavorited: boolean; // Add isFavorited
   };
 }
 

@@ -33,7 +33,11 @@
       "orContinueWith": "Or continue with",
       "errorMessage": "Invalid email or password",
       "appName": "Avent",
-      "appDescription": "school secure communication platform"
+      "appDescription": "school secure communication platform",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook",
+      "continueWithGithub": "Continue with GitHub",
+      "orContinueWithEmail": "Sign in with Email"
     },
     "signOut": {
       "title": "Sign Out",
@@ -85,7 +89,9 @@
       "signUpWithEmailButton": "Sign up with Email",
       "errorMessage": "Registration failed. Please try again.",
       "appName": "Avent",
-      "appDescription": "Store which makes you happy."
+      "appDescription": "Store which makes you happy.",
+      "continueWithGoogle": "Continue with Google",
+      "orSignUpWithEmail": "Or Sign up with Email"
     },
     "signUpEmail": {
       "title": "Sign Up with Email",

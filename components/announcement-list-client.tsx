@@ -24,7 +24,10 @@ interface Announcement {
   sender: {
     name: string | null;
     image?: string | null;
+    email: string; // Add sender email
   };
+  isReceived: boolean; // Add isReceived
+  isFavorited: boolean; // Add isFavorited
 }
 
 interface FetchResponse {

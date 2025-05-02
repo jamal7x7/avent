@@ -33,7 +33,12 @@
       "orContinueWith": "Ou continuer avec",
       "errorMessage": "Email ou mot de passe incorrect",
       "appName": "Avent",
-      "appDescription": "plateforme de communication scolaire sécurisée"
+      "appDescription": "plateforme de communication scolaire sécurisée",
+      "continueWithGoogle": "Continuer avec Google",
+
+      "continueWithFacebook": "Continuer avec Facebook",
+      "continueWithGithub": "Continuer avec GitHub",
+      "orContinueWithEmail": "S'inscrire avec Email"
     },
     "signOut": {
       "title": "Déconnexion",
@@ -82,7 +87,8 @@
       "signUpWithEmailButton": "S'inscrire avec Email",
       "errorMessage": "Échec de l'inscription. Veuillez réessayer.",
       "appName": "Avent",
-      "appDescription": "Boutique qui vous rend heureux."
+      "appDescription": "Boutique qui vous rend heureux.",
+      "orSignUpWithEmail": "Ou S'inscrire avec Email"
     },
     "signUpEmail": {
       "title": "S'inscrire avec Email",

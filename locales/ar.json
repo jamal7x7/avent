@@ -33,7 +33,11 @@
       "orContinueWith": "أو متابعة مع",
       "errorMessage": "بريد إلكتروني أو كلمة مرور غير صحيحة",
       "appName": "أفنت",
-      "appDescription": "منصة تواصل مدرسي آمن"
+      "appDescription": "منصة تواصل مدرسي آمن",
+      "continueWithGoogle": "متابعة مع Google",
+      "continueWithFacebook": "متابعة مع Facebook",
+      "continueWithGithub": "متابعة مع GitHub",
+      "orContinueWithEmail": "تسجيل الدخول باستخدام البريد الإلكتروني"
     },
     "signOut": {
       "title": "تسجيل الخروج",
@@ -78,11 +82,16 @@
       "orContinueWith": "أو متابعة مع",
       "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
       "signInLink": "تسجيل الدخول",
+      "continueWithGoogle": "المتابعة باستخدام Google",
+      "continueWithFacebook": "المتابعة باستخدام Facebook",
       "continueWithGitHub": "المتابعة باستخدام GitHub",
+      "continueWithEmail": "تسجيل الدخول باستخدام البريد الإلكتروني",
+      "continueWithApple": "المتابعة باستخدام Apple",
       "signUpWithEmailButton": "التسجيل باستخدام البريد الإلكتروني",
       "errorMessage": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
       "appName": "أفنت",
-      "appDescription": "متجر يجعلك سعيدًا."
+      "appDescription": "متجر يجعلك سعيدًا.",
+      "orSignUpWithEmail": "تسجيل باستخدام البريد الإلكتروني"
     },
     "signUpEmail": {
       "title": "التسجيل باستخدام البريد الإلكتروني",

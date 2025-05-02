@@ -76,11 +76,11 @@ export function SignUpPageClient() {
   };
 
   return (
-    <div className="grid h-screen w-screen md:grid-cols-2">
+    <div className="grid w-full ">
       {/* Left side - Image */}
-      <div className="flex items-center justify-center p-4 md:p-8">
+      <div className="flex items-center justify-center p-4 md:p-4">
         <div className="w-full max-w-md space-y-4">
-          <div className="text-center md:text-left space-y-4">
+          <div className="text-center  space-y-4">
             <h2 className="text-3xl font-bold">{t("auth.signUp.title")}</h2>
             <p className="text-sm text-muted-foreground">
               {t("auth.signUp.subtitle")}
@@ -107,21 +107,10 @@ export function SignUpPageClient() {
                 </div>
               </form>
 
-              {/* Separator */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    {t("auth.signUp.orContinueWith")}
-                  </span>
-                </div>
-              </div>
-
               {/* Google Button */}
               <Button
-                variant="outline"
+                variant="secondary"
+                size={"lg"}
                 onClick={handleGoogleSignUp}
                 disabled={loading}
                 className="flex w-full items-center gap-2"
@@ -133,6 +122,7 @@ export function SignUpPageClient() {
               {/* GitHub Button */}
               <Button
                 variant="outline"
+                size={"lg"}
                 onClick={handleGitHubSignUp}
                 disabled={loading}
                 className="flex w-full items-center gap-2"
@@ -183,15 +173,6 @@ export function SignUpPageClient() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden items-center justify-center bg-muted md:flex">
-        <Image
-          src="/placeholder.svg" // Replace with your actual image
-          alt={t("auth.signUp.appName")}
-          width={500}
-          height={500}
-          className="dark:brightness-[0.2] dark:grayscale"
-        />
-      </div>
     </div>
   );
 }

@@ -27,7 +27,7 @@ export function AnnouncementActions({
   initialIsReceived,
   initialIsFavorited,
 }: // userId,
-  AnnouncementActionsProps) {
+AnnouncementActionsProps) {
   // const { data: session } = useSession();
   // const userId = session?.user?.id;
 

@@ -86,7 +86,7 @@ export async function fetchAnnouncements(
   pageSize = 10,
 ) {
   // Base query joining announcements and sender info
-  let query = db
+  const query = db
     .select({
       id: announcements.id,
       content: announcements.content,
@@ -97,6 +97,7 @@ export async function fetchAnnouncements(
       sender: {
         name: userTable.name,
         image: userTable.image,
+        email: userTable.email, // Add sender email
       },
       // Select status fields, defaulting to false if no status record exists for the user
       isReceived: sql<boolean>`coalesce(${announcementUserStatus.isReceived}, false)`,
@@ -121,26 +122,25 @@ export async function fetchAnnouncements(
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
-  // Apply team filtering if teamId is provided and not 'all'
+  // Conditionally apply the where clause based on teamId
+  let finalQuery;
   if (teamId && teamId !== "all") {
-    query = query.where(eq(announcementRecipients.teamId, teamId));
+    // Filter by specific teamId
+    finalQuery = query.where(eq(announcementRecipients.teamId, teamId));
   } else {
-    // If no specific team or 'all' teams, filter announcements relevant to the user's teams
+    // Filter by user's teams if teamId is 'all' or not provided
     const userTeamIdsQuery = db
       .selectDistinct({ teamId: teamMembers.teamId })
       .from(teamMembers)
       .where(eq(teamMembers.userId, userId));
 
-    // Filter announcements where the recipient team is one the user belongs to,
-    // OR announcements with no specific recipients (implicitly for all teams the sender belongs to? - needs clarification on logic for no recipients)
-    // For now, let's assume announcements without recipients are not shown, or handle based on sender's teams if needed.
-    // We only show announcements explicitly sent to teams the user is in.
-    query = query.where(
+    // Apply the where clause to the original query structure
+    finalQuery = query.where(
       inArray(announcementRecipients.teamId, userTeamIdsQuery),
     );
   }
 
-  const rows = await query;
+  const rows = await finalQuery;
   return rows;
 }
 

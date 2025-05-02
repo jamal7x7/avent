@@ -4,9 +4,9 @@ import { sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import {
   accountTable,
-  announcements,
   announcementRecipients,
   announcementUserStatus,
+  announcements,
   sessionTable,
   teamInviteCodes,
   teamMembers,
@@ -320,31 +320,138 @@ async function seed() {
   // 4. Multilingual Announcements
   const announcementSubjectsMultilingual = {
     en: [
-      { subject: "Upcoming Final Exam", details: ["The final examination for Mathematics will be held next week", "Please prepare all necessary materials for the Biology practical exam", "English Literature exam will cover chapters 1-8"] },
-      { subject: "Class Schedule Change", details: ["Physics class will be moved to Room 204", "Chemistry lab sessions rescheduled to Wednesday", "New tutorial sessions added for Advanced Mathematics"] },
-      { subject: "Assignment Deadline", details: ["History essay submission deadline extended", "Group project presentations scheduled for next Monday", "Mathematics homework due tomorrow"] },
-      { subject: "Study Group Session", details: ["Extra revision session for Chemistry", "Peer tutoring available for Physics", "Mathematics problem-solving workshop"] },
-      { subject: "Academic Achievement", details: ["Congratulations to the Science Olympiad winners", "Outstanding performance in the National Math Contest", "School debate team reaches finals"] }
+      {
+        subject: "Upcoming Final Exam",
+        details: [
+          "The final examination for Mathematics will be held next week",
+          "Please prepare all necessary materials for the Biology practical exam",
+          "English Literature exam will cover chapters 1-8",
+        ],
+      },
+      {
+        subject: "Class Schedule Change",
+        details: [
+          "Physics class will be moved to Room 204",
+          "Chemistry lab sessions rescheduled to Wednesday",
+          "New tutorial sessions added for Advanced Mathematics",
+        ],
+      },
+      {
+        subject: "Assignment Deadline",
+        details: [
+          "History essay submission deadline extended",
+          "Group project presentations scheduled for next Monday",
+          "Mathematics homework due tomorrow",
+        ],
+      },
+      {
+        subject: "Study Group Session",
+        details: [
+          "Extra revision session for Chemistry",
+          "Peer tutoring available for Physics",
+          "Mathematics problem-solving workshop",
+        ],
+      },
+      {
+        subject: "Academic Achievement",
+        details: [
+          "Congratulations to the Science Olympiad winners",
+          "Outstanding performance in the National Math Contest",
+          "School debate team reaches finals",
+        ],
+      },
     ],
     fr: [
-      { subject: "Examen Final à Venir", details: ["L'examen final de mathématiques aura lieu la semaine prochaine", "Veuillez préparer tout le matériel nécessaire pour l'examen pratique de biologie", "L'examen de littérature française couvrira les chapitres 1-8"] },
-      { subject: "Changement d'Horaires", details: ["Le cours de physique sera déplacé en salle 204", "Les séances de laboratoire de chimie sont reportées à mercredi", "Nouvelles sessions de tutorat ajoutées pour les mathématiques avancées"] },
-      { subject: "Date Limite des Devoirs", details: ["Date limite de soumission de l'essai d'histoire prolongée", "Présentations des projets de groupe prévues lundi prochain", "Devoirs de mathématiques à rendre demain"] },
-      { subject: "Session de Groupe d'Étude", details: ["Session de révision supplémentaire pour la chimie", "Tutorat par les pairs disponible pour la physique", "Atelier de résolution de problèmes mathématiques"] },
-      { subject: "Réussite Académique", details: ["Félicitations aux gagnants de l'Olympiade des Sciences", "Performance exceptionnelle au Concours National de Mathématiques", "L'équipe de débat de l'école atteint la finale"] }
+      {
+        subject: "Examen Final à Venir",
+        details: [
+          "L'examen final de mathématiques aura lieu la semaine prochaine",
+          "Veuillez préparer tout le matériel nécessaire pour l'examen pratique de biologie",
+          "L'examen de littérature française couvrira les chapitres 1-8",
+        ],
+      },
+      {
+        subject: "Changement d'Horaires",
+        details: [
+          "Le cours de physique sera déplacé en salle 204",
+          "Les séances de laboratoire de chimie sont reportées à mercredi",
+          "Nouvelles sessions de tutorat ajoutées pour les mathématiques avancées",
+        ],
+      },
+      {
+        subject: "Date Limite des Devoirs",
+        details: [
+          "Date limite de soumission de l'essai d'histoire prolongée",
+          "Présentations des projets de groupe prévues lundi prochain",
+          "Devoirs de mathématiques à rendre demain",
+        ],
+      },
+      {
+        subject: "Session de Groupe d'Étude",
+        details: [
+          "Session de révision supplémentaire pour la chimie",
+          "Tutorat par les pairs disponible pour la physique",
+          "Atelier de résolution de problèmes mathématiques",
+        ],
+      },
+      {
+        subject: "Réussite Académique",
+        details: [
+          "Félicitations aux gagnants de l'Olympiade des Sciences",
+          "Performance exceptionnelle au Concours National de Mathématiques",
+          "L'équipe de débat de l'école atteint la finale",
+        ],
+      },
     ],
     ar: [
-      { subject: "الامتحان النهائي القادم", details: ["سيعقد الامتحان النهائي للرياضيات الأسبوع المقبل", "يرجى تحضير جميع المواد اللازمة لامتحان الأحياء العملي", "امتحان الأدب العربي سيغطي الفصول 1-8"] },
-      { subject: "تغيير جدول الحصص", details: ["سيتم نقل حصة الفيزياء إلى القاعة 204", "تمت إعادة جدولة جلسات مختبر الكيمياء إلى يوم الأربعاء", "إضافة حصص تقوية جديدة للرياضيات المتقدمة"] },
-      { subject: "موعد تسليم الواجبات", details: ["تم تمديد موعد تسليم مقال التاريخ", "عروض المشاريع الجماعية مقررة يوم الاثنين القادم", "واجب الرياضيات مستحق غداً"] },
-      { subject: "جلسة مجموعة الدراسة", details: ["حصة مراجعة إضافية للكيمياء", "دروس خصوصية متاحة لمادة الفيزياء", "ورشة عمل لحل مسائل الرياضيات"] },
-      { subject: "الإنجاز الأكاديمي", details: ["تهانينا للفائزين في أولمبياد العلوم", "أداء متميز في مسابقة الرياضيات الوطنية", "فريق المناظرات المدرسي يصل إلى النهائيات"] }
-    ]
+      {
+        subject: "الامتحان النهائي القادم",
+        details: [
+          "سيعقد الامتحان النهائي للرياضيات الأسبوع المقبل",
+          "يرجى تحضير جميع المواد اللازمة لامتحان الأحياء العملي",
+          "امتحان الأدب العربي سيغطي الفصول 1-8",
+        ],
+      },
+      {
+        subject: "تغيير جدول الحصص",
+        details: [
+          "سيتم نقل حصة الفيزياء إلى القاعة 204",
+          "تمت إعادة جدولة جلسات مختبر الكيمياء إلى يوم الأربعاء",
+          "إضافة حصص تقوية جديدة للرياضيات المتقدمة",
+        ],
+      },
+      {
+        subject: "موعد تسليم الواجبات",
+        details: [
+          "تم تمديد موعد تسليم مقال التاريخ",
+          "عروض المشاريع الجماعية مقررة يوم الاثنين القادم",
+          "واجب الرياضيات مستحق غداً",
+        ],
+      },
+      {
+        subject: "جلسة مجموعة الدراسة",
+        details: [
+          "حصة مراجعة إضافية للكيمياء",
+          "دروس خصوصية متاحة لمادة الفيزياء",
+          "ورشة عمل لحل مسائل الرياضيات",
+        ],
+      },
+      {
+        subject: "الإنجاز الأكاديمي",
+        details: [
+          "تهانينا للفائزين في أولمبياد العلوم",
+          "أداء متميز في مسابقة الرياضيات الوطنية",
+          "فريق المناظرات المدرسي يصل إلى النهائيات",
+        ],
+      },
+    ],
   };
 
   const generateAnnouncement = () => {
-    const language = faker.helpers.arrayElement(['en', 'fr', 'ar']);
-    const subjectObj = faker.helpers.arrayElement(announcementSubjectsMultilingual[language]);
+    const language = faker.helpers.arrayElement(["en", "fr", "ar"]);
+    const subjectObj = faker.helpers.arrayElement(
+      announcementSubjectsMultilingual[language],
+    );
     const details = faker.helpers.arrayElement(subjectObj.details);
     const team = faker.helpers.arrayElement(teamList);
     const announcement = {
@@ -362,12 +469,14 @@ async function seed() {
   };
 
   // Generate announcements with their recipients and user status
-  const announcementData = Array.from({ length: 300 }).map(generateAnnouncement);
-  
-  // Insert announcements
-  await db.insert(announcements).values(
-    announcementData.map(({ announcement }) => announcement)
+  const announcementData = Array.from({ length: 300 }).map(
+    generateAnnouncement,
   );
+
+  // Insert announcements
+  await db
+    .insert(announcements)
+    .values(announcementData.map(({ announcement }) => announcement));
 
   // Insert announcement recipients (link announcements to teams)
   await db.insert(announcementRecipients).values(
@@ -375,29 +484,37 @@ async function seed() {
       id: nanoid(),
       announcementId: announcement.id,
       teamId: team.id,
-    }))
+    })),
   );
 
   // Insert announcement user status (for each student in the team)
-  const announcementUserStatusList = announcementData.flatMap(({ announcement, team }) => {
-    // Get all students in the team
-    const teamStudentMembers = teamMemberList.filter(
-      (member) => member.teamId === team.id && member.role === "student"
-    );
+  const announcementUserStatusList = announcementData.flatMap(
+    ({ announcement, team }) => {
+      // Get all students in the team
+      const teamStudentMembers = teamMemberList.filter(
+        (member) => member.teamId === team.id && member.role === "student",
+      );
 
-    // Create status entries for each student
-    return teamStudentMembers.map((member) => ({
-      id: nanoid(),
-      userId: member.userId,
-      announcementId: announcement.id,
-      isReceived: Math.random() > 0.2, // 80% chance of being received
-      isFavorited: Math.random() > 0.8, // 20% chance of being favorited
-      receivedAt: faker.date.recent({ days: 30 }),
-      favoritedAt: Math.random() > 0.8 ? faker.date.recent({ days: 30 }) : null,
-    }));
-  });
+      // Create status entries for each student
+      return teamStudentMembers.map((member) => ({
+        id: nanoid(),
+        userId: member.userId,
+        announcementId: announcement.id,
+        isReceived: faker.datatype.boolean({ probability: 0.8 }), // 80% chance received
+        isFavorited: faker.datatype.boolean({ probability: 0.2 }), // 20% chance favorited
+        receivedAt: faker.datatype.boolean({ probability: 0.8 })
+          ? faker.date.recent({ days: 5 })
+          : null,
+        favoritedAt: faker.datatype.boolean({ probability: 0.2 })
+          ? faker.date.recent({ days: 5 })
+          : null,
+      }));
+    },
+  );
 
-  await db.insert(announcementUserStatus).values(announcementUserStatusList);
+  if (announcementUserStatusList.length > 0) {
+    await db.insert(announcementUserStatus).values(announcementUserStatusList);
+  }
 
   // 5. Team Invite Codes (optional, keep small for demo)
   const inviteCodeList = Array.from({ length: 5 }).map(() => {

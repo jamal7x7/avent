@@ -23,6 +23,18 @@ import { USER_ROLES, toBetterAuthRole } from "~/types/role";
 
 import { t } from "i18next";
 
+// Define specific types for better type safety
+interface BasicUser {
+  id: string;
+  email: string;
+  // Add other potential properties if known
+}
+
+interface ListUsersResponse {
+  users: BasicUser[];
+  // Add other potential properties if known
+}
+
 // Exclude 'name' as it's handled on the previous page or assumed collected via social
 const emailSignUpSchema = signUpSchema.omit({ name: true });
 type EmailSignUpSchema = Omit<SignUpSchema, "name">;
@@ -61,18 +73,56 @@ export function SignUpEmailPageClient() {
       });
 
       if (data.role !== "student") {
-        const usersResp = await admin.listUsers({
-          query: { searchValue: data.email, searchField: "email" },
-        });
-        const users = Array.isArray((usersResp as any).users)
-          ? (usersResp as any).users
-          : [];
-        const user = users.find((u: any) => u.email === data.email);
-        if (user?.id) {
-          await admin.setRole({
-            userId: user.id,
-            role: toBetterAuthRole(data.role),
+        let users: BasicUser[] = [];
+        try {
+          const usersResp = await admin.listUsers({
+            query: { searchValue: data.email, searchField: "email" },
           });
+
+          // Check if the response is valid and contains the users array
+          if (
+            usersResp &&
+            typeof usersResp === "object" &&
+            usersResp !== null && // Explicit null check for objects
+            "users" in usersResp && // Check if 'users' property exists
+            Array.isArray(usersResp.users) // Now check if it's an array
+          ) {
+            // Type assertion is safer here after all checks pass
+            users = (usersResp as ListUsersResponse).users;
+          } else {
+            console.warn(
+              "Unexpected response structure or missing 'users' array from admin.listUsers:", // Improved warning
+              usersResp,
+            );
+            // Consider setting an error state or handling this case more robustly
+          }
+        } catch (listUsersError) {
+          console.error("Error fetching users:", listUsersError);
+          setError("Failed to verify user details. Please try again later.");
+          setLoading(false); // Ensure loading state is reset
+          return; // Exit the onSubmit function
+        }
+
+        const user = users.find((u) => u.email === data.email);
+        if (user?.id) {
+          try {
+            await admin.setRole({
+              userId: user.id,
+              role: toBetterAuthRole(data.role),
+            });
+          } catch (setRoleError) {
+            console.error("Error setting user role:", setRoleError);
+            setError(
+              "Failed to set user role. Please contact support if this persists.",
+            );
+            // Decide if you want to stop the process or just log the error and continue
+            // Current logic continues to router.push below
+          }
+        } else if (users.length > 0) {
+          // This case might indicate an issue if a user was expected but not found by email
+          console.warn(
+            `User with email ${data.email} created but not found immediately in listUsers response.`,
+          );
         }
       }
       router.push("/auth/sign-in?registered=true");
@@ -85,9 +135,9 @@ export function SignUpEmailPageClient() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+    <div className="flex  items-center justify-center bg-background p-4">
+      <Card className="w-full">
+        <CardHeader className="text-center border-non shadow-non">
           <CardTitle className="text-2xl font-bold">
             {t("auth.signUpEmail.title")}
           </CardTitle>{" "}
