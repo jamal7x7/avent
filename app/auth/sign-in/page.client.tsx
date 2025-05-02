@@ -1,10 +1,10 @@
 "use client";
 
-import { t } from "i18next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next"; // Add this import
 import { GitHubIcon } from "~/components/icons/github";
 import { GoogleIcon } from "~/components/icons/google";
 import { Button } from "~/components/ui/button";
@@ -15,6 +15,7 @@ import { Separator } from "~/components/ui/separator";
 import { signIn } from "~/lib/auth-client";
 
 export function SignInPageClient() {
+  const { t } = useTranslation(); // Use the hook
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +32,7 @@ export function SignInPageClient() {
         email,
         password,
       });
-      router.push("/dashboard");
+      router.push("/dashboard/announcements");
     } catch (err) {
       setError("Invalid email or password");
       console.error(err);
@@ -126,6 +127,7 @@ export function SignInPageClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="email">{t("auth.signIn.emailLabel")}</Label>
                   <Input
+                    dir="ltr"
                     id="email"
                     type="email"
                     placeholder={t("auth.signIn.emailPlaceholder")}
@@ -149,6 +151,7 @@ export function SignInPageClient() {
                     </Link>
                   </div>
                   <Input
+                    dir="ltr"
                     id="password"
                     type="password"
                     value={password}

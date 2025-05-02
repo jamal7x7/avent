@@ -76,25 +76,40 @@
       "emailLabel": "Email",
       "emailPlaceholder": "nom@exemple.com",
       "passwordLabel": "Mot de passe",
-      "roleLabel": "Rôle",
-      "rolePlaceholder": "Sélectionnez un rôle",
-      "createButton": "Créer un compte",
-      "creatingButton": "Création du compte...",
-      "orContinueWith": "Ou continuer avec",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "confirmPasswordLabel": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
+      "roleLabel": "Sélectionnez votre rôle",
+      "roleStudent": "Étudiant",
+      "roleTeacher": "Enseignant",
+      "roleParent": "Parent",
+      "signUpButton": "Créer un compte",
       "alreadyHaveAccount": "Vous avez déjà un compte ?",
       "signInLink": "Se connecter",
-      "continueWithGitHub": "Continuer avec GitHub",
-      "signUpWithEmailButton": "S'inscrire avec Email",
+      "orContinueWith": "Ou continuer avec",
+      "continueWithGoogle": "Continuer avec Google",
+      "continueWithFacebook": "Continuer avec Facebook",
+      "continueWithGithub": "Continuer avec GitHub",
+      "orContinueWithEmail": "S'inscrire avec Email",
+      "termsPrefix": "En cliquant sur continuer, vous acceptez nos ",
+      "termsLink": "Conditions d'utilisation",
+      "termsSuffix": " et notre ",
+      "privacyLink": "Politique de confidentialité",
       "errorMessage": "Échec de l'inscription. Veuillez réessayer.",
-      "appName": "Avent",
-      "appDescription": "Boutique qui vous rend heureux.",
-      "orSignUpWithEmail": "Ou S'inscrire avec Email"
-    },
-    "signUpEmail": {
-      "title": "S'inscrire avec Email",
-      "subtitle": "Créez votre compte en utilisant email et mot de passe",
-      "backButton": "Retour aux options d'inscription"
+      "successMessage": "Inscription réussie ! Veuillez vérifier votre email pour vérifier votre compte."
     }
+  },
+  "signUpEmail": {
+    "title": "S'inscrire avec Email",
+    "subtitle": "Créez votre compte en utilisant email et mot de passe",
+    "backButton": "Retour aux options d'inscription"
+  },
+  "roles": {
+    "student": "etudiant",
+    "teacher": "enseignant",
+    "staff": "personnel",
+    "admin": "administrateur",
+    "superAdmin": "Super Admin"
   },
 
   "Settings": {

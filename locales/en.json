@@ -47,6 +47,13 @@
     },
 
     "backupCodes": {
+      "title": "Backup Codes",
+      "subtitle": "Two-Factor Authentication Backup Codes",
+      "description": "Backup codes can be used to access your account if you lose your phone or cannot receive two-factor authentication codes. Each code can only be used once.",
+      "warning": "Keep these codes in a safe place. They will not be shown again!",
+      "noCodes": "No backup codes available. Generate new codes below.",
+      "generateButton": "Generate New Backup Codes",
+      "backButton": "Back to Profile",
       "enterBackupCode": "Enter a backup code",
       "backupCodeLabel": "Backup Code",
       "backupCodePlaceholder": "Enter backup code",
@@ -78,26 +85,48 @@
       "emailLabel": "Email",
       "emailPlaceholder": "name@example.com",
       "passwordLabel": "Password",
-      "roleLabel": "Role",
-      "rolePlaceholder": "Select a role",
-      "createButton": "Create account",
-      "creatingButton": "Creating account...",
-      "orContinueWith": "Or continue with",
+      "passwordPlaceholder": "Enter your password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "roleLabel": "Select Your Role",
+      "roleStudent": "Student",
+      "roleTeacher": "Teacher",
+      "roleParent": "Parent",
+      "signUpButton": "Create Account",
       "alreadyHaveAccount": "Already have an account?",
       "signInLink": "Sign in",
-      "continueWithGitHub": "Continue with GitHub",
-      "signUpWithEmailButton": "Sign up with Email",
-      "errorMessage": "Registration failed. Please try again.",
-      "appName": "Avent",
-      "appDescription": "Store which makes you happy.",
+      "orContinueWith": "Or continue with",
       "continueWithGoogle": "Continue with Google",
-      "orSignUpWithEmail": "Or Sign up with Email"
+      "continueWithFacebook": "Continue with Facebook",
+      "continueWithGithub": "Continue with GitHub",
+      "orContinueWithEmail": "Sign up with Email",
+      "termsPrefix": "By clicking continue, you agree to our ",
+      "termsLink": "Terms of Service",
+      "termsSuffix": " and ",
+      "privacyLink": "Privacy Policy",
+      "errorMessage": "Registration failed. Please try again.",
+      "successMessage": "Registration successful! Please check your email to verify your account."
     },
-    "signUpEmail": {
-      "title": "Sign Up with Email",
-      "subtitle": "Create your account using email and password",
-      "backButton": "Back to Sign Up Options"
-    }
+    "roles": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "staff": "Stuff",
+      "admin": "Admin",
+      "superAdmin": "Super Admin"
+    },
+    "signInLink": "Sign in",
+    "continueWithGitHub": "Continue with GitHub",
+    "signUpWithEmailButton": "Sign up with Email",
+    "errorMessage": "Registration failed. Please try again.",
+    "appName": "Avent",
+    "appDescription": "Store which makes you happy.",
+    "continueWithGoogle": "Continue with Google",
+    "orSignUpWithEmail": "Or Sign up with Email"
+  },
+  "signUpEmail": {
+    "title": "Sign Up with Email",
+    "subtitle": "Create your account using email and password",
+    "backButton": "Back to Sign Up Options"
   },
   "Settings": {
     "Appearance": {
