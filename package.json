@@ -115,6 +115,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "knip": "^5.50.5",
     "magic-string": "^0.30.17",
+    "supabase": "^2.22.6",
     "tailwindcss": "^4.1.4",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
