@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { db } from "../db";
 import { accountTable } from "~/db/schema";
+import { db } from "../db";
 
 async function main() {
   const accountId = "teacher1@example.com";

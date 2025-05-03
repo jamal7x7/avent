@@ -13,8 +13,8 @@ import {
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 import type { User } from "~/db/types";
-import { signOut, useSession } from "~/lib/auth-client";
 import { useNavLayoutStore } from "~/hooks/use-nav-layout";
+import { signOut, useSession } from "~/lib/auth-client";
 
 interface DashboardPageClientProps {
   user?: User | null;

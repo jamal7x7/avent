@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 import { joinTeamWithCode } from "~/app/dashboard/team-management/actions";
 import { auth } from "~/lib/auth";
-import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });

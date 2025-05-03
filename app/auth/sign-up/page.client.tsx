@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiGoogleFill } from "@remixicon/react";
 import { BriefcaseIcon, GraduationCapIcon, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next"; // Add this import
+import * as z from "zod"; // Add zod import
+import FacebookIcon from "~/components/icons/facebook";
 import { GitHubIcon } from "~/components/icons/github";
 import { GoogleIcon } from "~/components/icons/google";
 import { Button } from "~/components/ui/button";
@@ -19,14 +22,15 @@ import { Separator } from "~/components/ui/separator";
 import { admin, signIn, signUp } from "~/lib/auth-client";
 import { USER_ROLES, toBetterAuthRole } from "~/types/role";
 import type { UserRole } from "~/types/role";
-import * as z from "zod"; // Add zod import
 
 // Define explicit validation schema since lib/validation.ts is missing
 const signUpSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["student", "teacher", "staff"], { message: "Role is required" }),
+  role: z.enum(["student", "teacher", "staff"], {
+    message: "Role is required",
+  }),
 });
 type SignUpSchema = z.infer<typeof signUpSchema>;
 
@@ -163,6 +167,17 @@ export function SignUpPageClient() {
     }
   };
 
+  const handleFacebookSignUp = () => {
+    setLoading(true);
+    try {
+      void signIn.social({ provider: "facebook" });
+    } catch (err) {
+      setError("Failed to sign up with Facebook");
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="grid w-full ">
       {/* Left side - Image */}
@@ -229,14 +244,14 @@ export function SignUpPageClient() {
                 size={"lg"}
                 onClick={handleGoogleSignUp}
                 disabled={loading}
-                className="flex w-full items-center gap-2"
+                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8]  gap-2"
               >
-                <GoogleIcon className="h-5 w-5" />
+                <RiGoogleFill className="h-5 w-5" />
                 {t("auth.signUp.continueWithGoogle")}
               </Button>
 
               {/* GitHub Button */}
-              <Button
+              {/* <Button
                 variant="outline"
                 size={"lg"}
                 onClick={handleGitHubSignUp}
@@ -245,6 +260,18 @@ export function SignUpPageClient() {
               >
                 <GitHubIcon className="h-5 w-5" />
                 {t("auth.signUp.continueWithGithub")}
+              </Button> */}
+
+              {/* Facebook Button */}
+              <Button
+                variant="outline"
+                size={"lg"}
+                onClick={handleFacebookSignUp}
+                disabled={loading}
+                className="flex w-full items-center gap-2 bg-[#1877F2] text-white hover:bg-[#166FE5] hover:text-white"
+              >
+                <FacebookIcon className="h-5 w-5" />
+                {t("auth.signUp.continueWithFacebook")}
               </Button>
 
               {/* Separator */}

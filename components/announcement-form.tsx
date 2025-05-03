@@ -137,11 +137,15 @@ export function AnnouncementForm() {
       };
 
       // Helper function for immutable update
-      const updateCacheImmutably = (oldData: InfiniteQueryData | undefined): InfiniteQueryData | undefined => {
+      const updateCacheImmutably = (
+        oldData: InfiniteQueryData | undefined,
+      ): InfiniteQueryData | undefined => {
         if (!oldData || !oldData.pages || oldData.pages.length === 0) {
           // Return a new structure if cache is empty/invalid
           return {
-            pages: [{ announcements: [optimisticAnnouncement], hasMore: false }],
+            pages: [
+              { announcements: [optimisticAnnouncement], hasMore: false },
+            ],
             pageParams: [undefined],
           };
         }
@@ -151,7 +155,10 @@ export function AnnouncementForm() {
           // Only modify the first page
           if (index === 0) {
             // Create a new announcements array for the first page
-            const newAnnouncements = [optimisticAnnouncement, ...page.announcements];
+            const newAnnouncements = [
+              optimisticAnnouncement,
+              ...page.announcements,
+            ];
             // Return a new page object with the new announcements array
             return { ...page, announcements: newAnnouncements };
           }
@@ -166,18 +173,17 @@ export function AnnouncementForm() {
         };
       };
 
-
       // Update 'all' query cache using the immutable helper
       queryClient.setQueryData<InfiniteQueryData>(
         ["announcements", "all"],
-        updateCacheImmutably
+        updateCacheImmutably,
       );
 
       // Update specific team query caches similarly
       for (const teamId of newAnnouncementData.teamIds) {
         queryClient.setQueryData<InfiniteQueryData>(
           ["announcements", teamId],
-          updateCacheImmutably
+          updateCacheImmutably,
         );
       }
 
@@ -215,13 +221,15 @@ export function AnnouncementForm() {
       queryClient.invalidateQueries({ queryKey: ["announcements", "all"] });
       // Invalidate specific teams involved in the mutation
       if (variables?.teamIds) {
-         for (const teamId of variables.teamIds) {
-           queryClient.invalidateQueries({ queryKey: ["announcements", teamId] });
-         }
+        for (const teamId of variables.teamIds) {
+          queryClient.invalidateQueries({
+            queryKey: ["announcements", teamId],
+          });
+        }
       } else {
-         // If no specific teams, maybe invalidate all announcement queries more broadly?
-         // Or rely on the 'all' invalidation. For now, just invalidate 'all' and specific ones if provided.
-         queryClient.invalidateQueries({ queryKey: ["announcements"] }); // Broader invalidation if needed
+        // If no specific teams, maybe invalidate all announcement queries more broadly?
+        // Or rely on the 'all' invalidation. For now, just invalidate 'all' and specific ones if provided.
+        queryClient.invalidateQueries({ queryKey: ["announcements"] }); // Broader invalidation if needed
       }
     },
   });

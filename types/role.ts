@@ -13,4 +13,3 @@ export function toBetterAuthRole(role: UserRole): "admin" | "user" {
   if (role === "admin" || role === "superadmin") return "admin";
   return "user";
 }
-

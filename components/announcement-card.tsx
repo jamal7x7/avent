@@ -93,7 +93,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 
   const exactDate = format(
     new Date(announcement.createdAt),
-    "MMM d, yyyy 'at' h:mm a"
+    "MMM d, yyyy 'at' h:mm a",
   );
 
   const roleColors = {
@@ -165,7 +165,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
                 <Avatar
                   className={cn(
                     "h-12 w-12 border-2 border-border ring-2 ring-offset-2 ring-offset-background shadow-lg",
-                    effectivePriorityStyles[priority]?.ring
+                    effectivePriorityStyles[priority]?.ring,
                     // priority === AnnouncementPriority.URGENT && "animate-pulse"
                   )}
                 >
@@ -229,7 +229,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
                           }
                           className={cn(
                             "gap-1 capitalize",
-                            effectivePriorityStyles[priority].badge
+                            effectivePriorityStyles[priority].badge,
                           )}
                         >
                           {effectivePriorityStyles[priority].icon}
@@ -258,9 +258,9 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-              // onClick={handleShowAnnouncement}
-              // disabled={isPendingShowAnnouncement}
-              // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
+                // onClick={handleShowAnnouncement}
+                // disabled={isPendingShowAnnouncement}
+                // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
               >
                 <div className="flex items-center text-xs text-muted-foreground">
                   <EyeClosed className="h-4 w-4 mr-1 " />

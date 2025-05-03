@@ -150,7 +150,9 @@ export function AddTeamForm({
     <div className="space-y-8 w-full max-w-2xl mx-auto">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Team Management</h2>
-        <p className="text-muted-foreground">Create new teams and generate invite codes for your students.</p>
+        <p className="text-muted-foreground">
+          Create new teams and generate invite codes for your students.
+        </p>
       </div>
 
       <Form {...createTeamForm}>
@@ -160,7 +162,9 @@ export function AddTeamForm({
         >
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Create New Team</h3>
-            <p className="text-sm text-muted-foreground">Set up a new team for your students to join.</p>
+            <p className="text-sm text-muted-foreground">
+              Set up a new team for your students to join.
+            </p>
           </div>
 
           <div className="grid gap-4">
@@ -219,11 +223,7 @@ export function AddTeamForm({
             </div>
           )}
 
-          <Button
-            type="submit"
-            disabled={isCreatingTeam}
-            className="w-full"
-          >
+          <Button type="submit" disabled={isCreatingTeam} className="w-full">
             {isCreatingTeam ? (
               <>
                 <span className="mr-2">Creating...</span>
@@ -243,7 +243,9 @@ export function AddTeamForm({
         >
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Generate Invite Code</h3>
-            <p className="text-sm text-muted-foreground">Create an invite code for students to join an existing team.</p>
+            <p className="text-sm text-muted-foreground">
+              Create an invite code for students to join an existing team.
+            </p>
           </div>
 
           <div className="grid gap-4">
@@ -364,11 +366,7 @@ export function AddTeamForm({
             </div>
           )}
 
-          <Button
-            type="submit"
-            disabled={isGeneratingCode}
-            className="w-full"
-          >
+          <Button type="submit" disabled={isGeneratingCode} className="w-full">
             {isGeneratingCode ? (
               <>
                 <span className="mr-2">Generating...</span>

@@ -1,25 +1,31 @@
 "use client";
 
+import { formatDistanceToNow } from "date-fns";
 import { Clock, MoreVertical, Plus, Settings, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { Card, CardContent } from "~/components/ui/card";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { cn } from "~/lib/utils";
 import type { Team } from "~/types";
+import { AddTeamForm } from "./add-team-form";
+import { toastAnnouncement } from "./toast-announcement";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Badge } from "./ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { formatDistanceToNow } from "date-fns";
 import { Input } from "./ui/input";
-import { AddTeamForm } from "./add-team-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { toastAnnouncement } from "./toast-announcement";
 
 interface TeamListProps {
   teams: Team[];
@@ -40,7 +46,7 @@ export function TeamList({
   const [isAddTeamOpen, setIsAddTeamOpen] = useState(false);
 
   const filteredTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(searchQuery.toLowerCase())
+    team.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleTeamAdded = () => {
@@ -51,10 +57,10 @@ export function TeamList({
   };
 
   // Map teams to the correct type for AddTeamForm
-  const mappedTeams = teams.map(team => ({
+  const mappedTeams = teams.map((team) => ({
     id: team.id,
     name: team.name,
-    type: team.type ?? "classroom"
+    type: team.type ?? "classroom",
   }));
 
   return (
@@ -78,7 +84,10 @@ export function TeamList({
                 <DialogHeader>
                   <DialogTitle>Create New Team</DialogTitle>
                 </DialogHeader>
-                <AddTeamForm teams={mappedTeams} onTeamAdded={handleTeamAdded} />
+                <AddTeamForm
+                  teams={mappedTeams}
+                  onTeamAdded={handleTeamAdded}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -95,24 +104,24 @@ export function TeamList({
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-2">
             {filteredTeams.map((team) => (
-              <div
-                key={team.id}
-                className="group relative"
-              >
+              <div key={team.id} className="group relative">
                 <div
                   onClick={() => onSelectTeam(team.id)}
                   className={cn(
                     "w-full border border-transparent cursor-pointer p-3 text-left rounded-md transition-all duration-200 flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     selectedTeamId === team.id
                       ? "bg-primary/10 hover:bg-primary/20 border-primary/20 shadow-sm"
-                      : "hover:border-primary/20 hover:bg-muted/50"
+                      : "hover:border-primary/20 hover:bg-muted/50",
                   )}
                   aria-current={selectedTeamId === team.id ? "true" : undefined}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <Avatar className="h-8 w-8 ring-2 ring-background shrink-0">
                       <AvatarImage
-                        src={team.image ?? `https://avatar.vercel.sh/${team.name}.png`}
+                        src={
+                          team.image ??
+                          `https://avatar.vercel.sh/${team.name}.png`
+                        }
                         alt={team.name}
                       />
                       <AvatarFallback className="bg-primary/10 text-primary">
@@ -121,7 +130,9 @@ export function TeamList({
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-medium truncate min-w-0">{team.name}</span>
+                        <span className="font-medium truncate min-w-0">
+                          {team.name}
+                        </span>
                         {team.role && (
                           <Badge
                             variant="secondary"

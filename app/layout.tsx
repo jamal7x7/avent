@@ -30,9 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark scheme-only-dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        // Removed inline style to rely on CSS variables from globals.css
       >
         <ThemeProvider
           attribute="class"

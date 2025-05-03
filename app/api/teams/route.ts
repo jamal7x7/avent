@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
-import { auth } from "~/lib/auth";
-import { headers } from "next/headers";
-import { db } from "~/db";
-import { teams, teamMembers } from "~/db/schema";
 import { nanoid } from "nanoid";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
+import { db } from "~/db";
+import { teamMembers, teams } from "~/db/schema";
+import { auth } from "~/lib/auth";
 
 const createTeamSchema = z.object({
   name: z.string().min(1).max(100),

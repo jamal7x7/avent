@@ -52,29 +52,31 @@ const primaryColors = [
   "#a855f7", // purple-500
 ];
 
-// Define theme-aware background colors using Tailwind classes
+// Define background color pairs (light hex, dark hex)
 const backgroundColors = [
-  "bg-white dark:bg-black", // Default White/Black
-  "bg-stone-100 dark:bg-stone-900", // Stone
-  "bg-neutral-100 dark:bg-neutral-900", // Neutral
-  "bg-zinc-100 dark:bg-zinc-900", // Zinc
-  "bg-gray-100 dark:bg-gray-900", // Gray
-  "bg-slate-100 dark:bg-slate-900", // Slate (Shadcn default-ish)
+  { light: "#ffffff", dark: "#000000", name: "White/Black" },
+  { light: "#f5f5f4", dark: "#1c1917", name: "Stone" }, // stone-100, stone-900 approx
+  { light: "#f5f5f5", dark: "#171717", name: "Neutral" }, // neutral-100, neutral-900 approx
+  { light: "#f4f4f5", dark: "#18181b", name: "Zinc" }, // zinc-100, zinc-900 approx
+  { light: "#f3f4f6", dark: "#111827", name: "Gray" }, // gray-100, gray-900 approx
+  { light: "#f1f5f9", dark: "#0f172a", name: "Slate" }, // slate-100, slate-900 (Shadcn default-ish)
 ];
 
 // Reusable Color Circle Component
 interface ColorCircleProps {
-  color: string;
+  hexColor?: string; // Use hex color for inline style
   isSelected: boolean;
   onClick: () => void;
   isCustom?: boolean;
+  ariaLabel?: string; // More specific aria-label
 }
 
 function ColorCircle({
-  color,
+  hexColor,
   isSelected,
   onClick,
   isCustom = false,
+  ariaLabel,
 }: ColorCircleProps) {
   return (
     <button
@@ -86,9 +88,10 @@ function ColorCircle({
           ? "border-ring ring-2 ring-ring ring-offset-2 ring-offset-background"
           : "border-muted hover:border-foreground/50",
         isCustom && "border-dashed",
-        !isCustom && color, // Apply the background color class if not custom
+        // Removed applying color class here
       )}
-      aria-label={isCustom ? "Select custom color" : `Select color ${color}`}
+      style={!isCustom && hexColor ? { backgroundColor: hexColor } : {}} // Apply background color via inline style
+      aria-label={ariaLabel || (isCustom ? "Select custom color" : `Select color ${hexColor}`)}
     >
       {isCustom && <Palette className="h-4 w-4 text-muted-foreground" />}
     </button>
@@ -104,45 +107,155 @@ export function SettingsModal({ children }: SettingsModalProps) {
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
   const {
-    primaryColor,
-    backgroundColor,
-    setPrimaryColor,
-    setBackgroundColor,
+    primaryColorLight,
+    primaryColorDark,
+    backgroundColorLight,
+    backgroundColorDark,
+    setPrimaryColorLight,
+    setPrimaryColorDark,
+    setBackgroundColorLight,
+    setBackgroundColorDark,
     resetColors,
+    getPrimaryColor,
+    getBackgroundColor,
   } = useThemeStore();
 
-  const primaryColorInputRef = useRef<HTMLInputElement>(null);
-  const backgroundColorInputRef = useRef<HTMLInputElement>(null);
-  const isDesktop = !useIsMobile(); // Detect desktop screen
+  const primaryColorInputLightRef = useRef<HTMLInputElement>(null);
+  const primaryColorInputDarkRef = useRef<HTMLInputElement>(null);
+  const backgroundColorInputLightRef = useRef<HTMLInputElement>(null);
+  const backgroundColorInputDarkRef = useRef<HTMLInputElement>(null);
+  const isDesktop = !useIsMobile();
 
   const handleReset = () => {
     resetColors();
   };
 
-  const handleCustomPrimaryClick = () => {
-    primaryColorInputRef.current?.click();
+  const handleCustomPrimaryClick = (mode: 'light' | 'dark') => {
+    if (mode === 'light') primaryColorInputLightRef.current?.click();
+    else primaryColorInputDarkRef.current?.click();
   };
 
-  const handleCustomBackgroundClick = () => {
-    backgroundColorInputRef.current?.click();
+  const handleCustomBackgroundClick = (mode: 'light' | 'dark') => {
+    if (mode === 'light') backgroundColorInputLightRef.current?.click();
+    else backgroundColorInputDarkRef.current?.click();
   };
+
+  // Helper to render color pickers for a given mode
+  const renderColorPickers = (mode: 'light' | 'dark') => (
+    <>
+      {/* Primary Color Selection */}
+      <div>
+        <Label className="mb-2 block font-medium">
+          {t(
+            `settings.appearance.primaryColor${mode === 'dark' ? 'Dark' : 'Light'}`,
+            `Primary Color (${mode.charAt(0).toUpperCase() + mode.slice(1)})`,
+          )}
+        </Label>
+        <div className="flex flex-wrap items-center gap-3">
+          {primaryColors.map((color) => (
+            <ColorCircle
+              key={color + mode}
+              hexColor={color} // Use hexColor prop
+              isSelected={
+                (mode === 'light' ? primaryColorLight : primaryColorDark) === color
+              }
+              onClick={() =>
+                mode === 'light'
+                  ? setPrimaryColorLight(color)
+                  : setPrimaryColorDark(color)
+              }
+              ariaLabel={`Select primary color ${color} (${mode})`} // Add specific aria-label
+            />
+          ))}
+          <ColorCircle
+            // Removed color prop
+            isSelected={
+              !primaryColors.includes(
+                mode === 'light' ? primaryColorLight : primaryColorDark,
+              )
+            }
+            onClick={() => handleCustomPrimaryClick(mode)}
+            isCustom
+            ariaLabel={`Select custom primary color (${mode})`} // Add specific aria-label
+          />
+          <input
+            ref={mode === 'light' ? primaryColorInputLightRef : primaryColorInputDarkRef}
+            type="color"
+            value={mode === 'light' ? primaryColorLight : primaryColorDark}
+            onChange={(e) =>
+              mode === 'light'
+                ? setPrimaryColorLight(e.target.value)
+                : setPrimaryColorDark(e.target.value)
+            }
+            className="absolute h-0 w-0 opacity-0"
+            aria-label={t(
+              `settings.appearance.customPrimaryColor${mode === 'dark' ? 'Dark' : 'Light'}`,
+              `Custom primary color picker (${mode})`,
+            )}
+          />
+        </div>
+      </div>
+      {/* Background Color Selection */}
+      <div>
+        <Label className="mb-2 block font-medium">
+          {t(
+            `settings.appearance.backgroundColor${mode === 'dark' ? 'Dark' : 'Light'}`,
+            `Background Color (${mode.charAt(0).toUpperCase() + mode.slice(1)})`,
+          )}
+        </Label>
+        <div className="flex flex-wrap items-center gap-3">
+          {backgroundColors.map((bgColor) => {
+            const currentBgColor = mode === 'light' ? bgColor.light : bgColor.dark;
+            const isSelected =
+              (mode === 'light'
+                ? backgroundColorLight === bgColor.light
+                : backgroundColorDark === bgColor.dark);
+
+            return (
+              <button
+                key={bgColor.name + mode}
+                type="button"
+                onClick={() => {
+                  if (mode === 'light') {
+                    setBackgroundColorLight(bgColor.light);
+                  } else {
+                    setBackgroundColorDark(bgColor.dark);
+                  }
+                }}
+                className={cn(
+                  "h-8 w-8 rounded-full border-2 transition-all duration-200 ease-in-out",
+                  isSelected
+                    ? "border-ring ring-2 ring-ring ring-offset-2 ring-offset-background"
+                    : "border-muted hover:border-foreground/50",
+                )}
+                style={{ backgroundColor: currentBgColor }} // Apply background color directly
+                aria-label={`Select background ${bgColor.name} (${mode})`}
+              />
+            );
+          })}
+          {/* Consider adding a custom background color picker here if needed */}
+          {/* Example: Similar structure to the primary color custom picker */}
+        </div>
+      </div>
+    </>
+  );
 
   const SettingsContent = () => (
     <Tabs
       defaultValue="appearance"
-      orientation={isDesktop ? "vertical" : "horizontal"} // Conditional orientation
+      orientation={isDesktop ? "vertical" : "horizontal"}
       className="h-full"
     >
       <div
         className={cn(
-          "flex h-full flex-col gap-6 p-6 md:grid md:grid-cols-[180px_1fr]", // Conditional layout
-          !isDesktop && "pt-0", // Adjust padding for mobile drawer
+          "flex h-full flex-col gap-6 p-6 md:grid md:grid-cols-[180px_1fr]",
+          !isDesktop && "pt-0",
         )}
       >
         <TabsList
           className={cn(
             "flex items-start justify-start gap-2 bg-transparent p-0",
-            isDesktop ? "flex-col" : "flex-row border-b pb-2", // Conditional flex direction and border
+            isDesktop ? "flex-col" : "flex-row border-b pb-2",
           )}
         >
           <TabsTrigger
@@ -157,11 +270,8 @@ export function SettingsModal({ children }: SettingsModalProps) {
           >
             <User className="mr-2 h-4 w-4" /> Account
           </TabsTrigger>
-          {/* Add more tabs here as needed */}
         </TabsList>
         <div className={cn(!isDesktop && "mt-4")}>
-          {" "}
-          {/* Add margin top on mobile */}
           <TabsContent value="appearance" className="mt-0 pl-0 md:pl-4">
             {/* --- Integrated Appearance Settings Start --- */}
             <div className="space-y-6">
@@ -171,7 +281,7 @@ export function SettingsModal({ children }: SettingsModalProps) {
                   {t("settings.appearance.theme", "Theme")}
                 </Label>
                 <RadioGroup
-                  value={theme ?? "system"} // Ensure value is not undefined
+                  value={theme ?? "system"}
                   onValueChange={setTheme}
                   className="grid max-w-md grid-cols-1 gap-4 sm:grid-cols-3"
                   aria-label={t(
@@ -236,64 +346,31 @@ export function SettingsModal({ children }: SettingsModalProps) {
                 </RadioGroup>
               </div>
 
-              {/* Primary Color Selection */}
-              <div>
-                <Label className="mb-2 block font-medium">
-                  {t("settings.appearance.primaryColor", "Primary Color")}
-                </Label>
-                <div className="flex flex-wrap items-center gap-3">
-                  {primaryColors.map((color) => (
-                    <ColorCircle
-                      key={color}
-                      color={`bg-[${color}]`} // Use Tailwind arbitrary value syntax
-                      isSelected={primaryColor === color}
-                      onClick={() => setPrimaryColor(color)}
-                    />
-                  ))}
-                  <ColorCircle
-                    color=""
-                    isSelected={!primaryColors.includes(primaryColor)}
-                    onClick={handleCustomPrimaryClick}
-                    isCustom
-                  />
-                  <input
-                    ref={primaryColorInputRef}
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="absolute h-0 w-0 opacity-0"
-                    aria-label={t(
-                      "settings.appearance.customPrimaryColor",
-                      "Custom primary color picker",
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Background Color Selection */}
-              <div>
-                <Label className="mb-2 block font-medium">
-                  {t("settings.appearance.backgroundColor", "Background Color")}
-                </Label>
-                <div className="flex flex-wrap items-center gap-3">
-                  {backgroundColors.map((bgColorClass) => (
-                    <button
-                      key={bgColorClass}
-                      type="button"
-                      onClick={() => setBackgroundColor(bgColorClass)}
-                      className={cn(
-                        "h-8 w-8 rounded-full border-2 transition-all duration-200 ease-in-out",
-                        backgroundColor === bgColorClass
-                          ? "border-ring ring-2 ring-ring ring-offset-2 ring-offset-background"
-                          : "border-muted hover:border-foreground/50",
-                        bgColorClass, // Apply the background class
+              {/* Color Pickers for Light/Dark */}
+              {theme === "system" && (
+                <div className="space-y-8">
+                  <div>
+                    <div className="mb-2 font-semibold text-sm text-muted-foreground">
+                      {t(
+                        "settings.appearance.lightModeColors",
+                        "Light Mode Colors",
                       )}
-                      aria-label={`Select background ${bgColorClass}`}
-                    />
-                  ))}
-                  {/* No custom background picker for now, using predefined classes */}
+                    </div>
+                    {renderColorPickers("light")}
+                  </div>
+                  <div>
+                    <div className="mb-2 font-semibold text-sm text-muted-foreground">
+                      {t(
+                        "settings.appearance.darkModeColors",
+                        "Dark Mode Colors",
+                      )}
+                    </div>
+                    {renderColorPickers("dark")}
+                  </div>
                 </div>
-              </div>
+              )}
+              {theme === "light" && renderColorPickers("light")}
+              {theme === "dark" && renderColorPickers("dark")}
 
               {/* Reset Button */}
               <div>
@@ -328,7 +405,6 @@ export function SettingsModal({ children }: SettingsModalProps) {
               <Button>Save changes</Button>
             </div>
           </TabsContent>
-          {/* Add more TabsContent here as needed */}
         </div>
       </div>
     </Tabs>

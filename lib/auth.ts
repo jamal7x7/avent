@@ -26,13 +26,22 @@ interface GoogleProfile {
   [key: string]: unknown;
 }
 
+interface FacebookProfile {
+  id?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
 interface SocialProviderConfig {
   clientId: string;
   clientSecret: string;
   redirectURI?: string;
   scope: string[];
   mapProfileToUser: (
-    profile: GitHubProfile | GoogleProfile,
+    profile: GitHubProfile | GoogleProfile | FacebookProfile,
   ) => Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -48,6 +57,12 @@ const hasGoogleCredentials =
   process.env.AUTH_GOOGLE_SECRET &&
   process.env.AUTH_GOOGLE_ID.length > 0 &&
   process.env.AUTH_GOOGLE_SECRET.length > 0;
+
+const hasFacebookCredentials =
+  process.env.AUTH_FACEBOOK_ID &&
+  process.env.AUTH_FACEBOOK_SECRET &&
+  process.env.AUTH_FACEBOOK_ID.length > 0 &&
+  process.env.AUTH_FACEBOOK_SECRET.length > 0;
 
 // Build social providers configuration
 const socialProviders: Record<string, SocialProviderConfig> = {};
@@ -84,6 +99,24 @@ if (hasGoogleCredentials) {
         age: 0,
         firstName: profile.given_name ?? "",
         lastName: profile.family_name ?? "",
+      };
+    },
+  };
+}
+
+if (hasFacebookCredentials) {
+  socialProviders.facebook = {
+    clientId: process.env.AUTH_FACEBOOK_ID ?? "",
+    clientSecret: process.env.AUTH_FACEBOOK_SECRET ?? "",
+    scope: ["email", "public_profile"],
+    mapProfileToUser: (profile: FacebookProfile) => {
+      return {
+        age: 0,
+        firstName: profile.first_name ?? profile.name?.split(" ")[0] ?? "",
+        lastName:
+          profile.last_name ??
+          profile.name?.split(" ").slice(1).join(" ") ??
+          "",
       };
     },
   };

@@ -76,9 +76,10 @@ export async function POST(req: NextRequest) {
       priority: validation.data.priority,
       senderId: session.user.id,
       senderRole: session.user.role as "teacher" | "admin" | "staff",
-      teamIds: (validation.data.teamIds ?? []).length > 0
-        ? validation.data.teamIds
-        : undefined,
+      teamIds:
+        (validation.data.teamIds ?? []).length > 0
+          ? validation.data.teamIds
+          : undefined,
     };
 
     const newAnnouncement = await createAnnouncement({

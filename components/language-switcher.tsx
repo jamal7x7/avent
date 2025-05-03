@@ -1,6 +1,6 @@
 "use client";
-import { useTranslation } from "react-i18next";
 import { RiGlobalLine } from "@remixicon/react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,10 @@ const languages = [
   { code: "ar_ma", label: "العربية" },
 ];
 
-export function LanguageSwitcher({ className, isCollapsed }: { className?: string; isCollapsed?: boolean }) {
+export function LanguageSwitcher({
+  className,
+  isCollapsed,
+}: { className?: string; isCollapsed?: boolean }) {
   const { t, i18n } = useTranslation();
   const normalizedLang = (i18n.language || "").toLowerCase().replace("-", "_");
   const current =

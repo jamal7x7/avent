@@ -1,5 +1,5 @@
-import { db } from "../db";
 import { accountTable } from "~/db/schema";
+import { db } from "../db";
 
 async function main() {
   const accounts = await db.select().from(accountTable);

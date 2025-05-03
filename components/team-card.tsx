@@ -1,12 +1,9 @@
 "use client";
-import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { ClipboardCopyIcon, LogOutIcon } from "lucide-react";
+import { UsersIcon } from "lucide-react"; // Import UsersIcon
 import { useState, useTransition } from "react";
-import { leaveTeamAction } from "~/app/dashboard/team-management/actions";
-import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
+import { leaveTeamAction } from "~/app/dashboard/team-management/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +15,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { UsersIcon } from "lucide-react"; // Import UsersIcon
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 interface TeamCardProps {
   team: {
@@ -64,7 +69,9 @@ export function TeamCard({ team }: TeamCardProps) {
                 <ClipboardCopyIcon className="w-4 h-4 text-muted-foreground" />
               </button>
             </TooltipTrigger>
-            <TooltipContent>{copied ? "Copied!" : "Copy Team ID"}</TooltipContent>
+            <TooltipContent>
+              {copied ? "Copied!" : "Copy Team ID"}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -80,7 +87,8 @@ export function TeamCard({ team }: TeamCardProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. You will leave the team "{team.name}".
+                This action cannot be undone. You will leave the team "
+                {team.name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

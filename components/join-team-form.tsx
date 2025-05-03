@@ -92,16 +92,22 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
                 </InputOTP>
               </FormControl>
               <FormDescription>
-                Please enter the 6-character invite code provided by your team admin.
+                Please enter the 6-character invite code provided by your team
+                admin.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+        {error && (
+          <p className="text-sm font-medium text-destructive">{error}</p>
+        )}
 
-        <Button type="submit" disabled={isPending || form.watch("code").length !== 6}>
+        <Button
+          type="submit"
+          disabled={isPending || form.watch("code").length !== 6}
+        >
           {isPending ? "Joining..." : "Join Team"}
         </Button>
       </form>

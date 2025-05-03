@@ -1,32 +1,28 @@
-import { LucideIcon } from 'lucide-react';
-import { type ComponentType } from 'react';
-import { type LucideProps } from 'lucide-react';
-
-
-
+import { LucideIcon } from "lucide-react";
+import type { LucideProps } from "lucide-react";
+import type { ComponentType } from "react";
 
 export interface BreadcrumbItem {
-    title: string;
-    href: string;
+  title: string;
+  href: string;
 }
 
 export interface NavGroup {
-    title: string;
-    items: NavItem[];
+  title: string;
+  items: NavItem[];
 }
 
 export interface NavItem {
-    title: string;
-    url: string;
-    icon: 'layout-grid' | 'folder' | 'book-open';
-    isActive?: boolean;
+  title: string;
+  url: string;
+  icon: "layout-grid" | "folder" | "book-open";
+  isActive?: boolean;
 }
 
-
 export interface SharedData {
-    name: string;
-    quote: { message: string; author: string };
-    auth: Auth;
+  name: string;
+  quote: { message: string; author: string };
+  auth: Auth;
 
-    [key: string]: unknown;
+  [key: string]: unknown;
 }

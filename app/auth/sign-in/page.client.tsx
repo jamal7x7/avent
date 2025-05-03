@@ -1,10 +1,12 @@
 "use client";
 
+import { RiFacebookFill, RiGoogleFill } from "@remixicon/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next"; // Add this import
+import FacebookIcon from "~/components/icons/facebook";
 import { GitHubIcon } from "~/components/icons/github";
 import { GoogleIcon } from "~/components/icons/google";
 import { Button } from "~/components/ui/button";
@@ -63,6 +65,17 @@ export function SignInPageClient() {
     }
   };
 
+  const handleFacebookLogin = () => {
+    setLoading(true);
+    try {
+      void signIn.social({ provider: "facebook" });
+    } catch (err) {
+      setError("Failed to sign in with Facebook");
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="grid  w-full">
       {/* Left side - Image */}
@@ -83,15 +96,15 @@ export function SignInPageClient() {
                 size={"lg"}
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="flex w-full items-center  gap-2"
+                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8]  gap-2"
               >
-                <GoogleIcon className="h-5 w-5" />
+                <RiGoogleFill className="h-5 w-5" />
                 {t("auth.signIn.continueWithGoogle")}
               </Button>
 
               {/* Other Social Logins (Optional) */}
               <div className="mt-4 grid grid-cols-1 gap-4">
-                <Button
+                {/* <Button
                   size={"lg"}
                   variant="outline"
                   onClick={handleGitHubLogin}
@@ -100,6 +113,18 @@ export function SignInPageClient() {
                 >
                   <GitHubIcon className="h-5 w-5" />
                   {t("auth.signIn.continueWithGithub")}
+                </Button> */}
+
+                {/* Facebook Button */}
+                <Button
+                  size={"lg"}
+                  variant="outline"
+                  onClick={handleFacebookLogin}
+                  disabled={loading}
+                  className="flex items-center gap-2 "
+                >
+                  <RiFacebookFill className="h-5 w-5" />
+                  {t("auth.signIn.continueWithFacebook")}
                 </Button>
                 {/* Add other social logins here if needed */}
               </div>
