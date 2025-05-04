@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation"; // Import usePathname
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useTransition } from "react";
@@ -89,13 +90,13 @@ export const data = {
           title: "Dashboard",
           url: "/dashboard",
           icon: RiScanLine,
-          isActive: true,
+          // isActive: true, // Removed
         },
         {
           title: "Contacts",
           url: "/dashboard/contacts",
           icon: RiUserFollowLine,
-          isActive: false,
+          // isActive: false, // Removed
         },
         {
           title: "Announcements",
@@ -148,6 +149,8 @@ function DashboardTopNav() {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
+  const pathname = usePathname(); // Get current pathname
+
   // Focus input when expanded
   useEffect(() => {
     if (searchExpanded && searchInputRef.current) {
@@ -181,7 +184,7 @@ function DashboardTopNav() {
               {/* Removed group title for cleaner topnav */}
               <div className="flex flex-row gap-2 md:gap-4">
                 {group.items.map((item) => {
-                  const isActive = "isActive" in item && item.isActive;
+                  const isActive = pathname === item.url; // Dynamic check
                   return (
                     <Link
                       key={item.title}
@@ -268,6 +271,7 @@ function DashboardTopNav() {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const toggleNavLayout = useNavLayoutStore((state) => state.toggleNavLayout);
   const { data: session } = useSession();
+  const pathname = usePathname(); // Get current pathname
   // Detect collapsed state using sidebar context data attribute
   const [isCollapsed, setIsCollapsed] = useState(false);
   useEffect(() => {
@@ -354,7 +358,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           ? "justify-center p-2 min-w-0 w-9 h-9"
                           : "gap-3 h-9"
                       }
-                      isActive={!!item.isActive}
+                      isActive={pathname === item.url}
                       tooltip={isCollapsed ? item.title : undefined}
                     >
                       <Link
@@ -459,3 +463,80 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   );
 }
+
+export const data1 = {
+  teams: [
+    {
+      name: "InnovaCraft",
+      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+    },
+    {
+      name: "Acme Corp.",
+      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+    },
+    {
+      name: "Evil Corp.",
+      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+    },
+  ],
+  navMain: [
+    {
+      title: "Sections",
+      url: "#",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: RiScanLine,
+          // isActive: true, // Removed
+        },
+        {
+          title: "Contacts",
+          url: "/dashboard/contacts",
+          icon: RiUserFollowLine,
+          // isActive: false, // Removed
+        },
+        {
+          title: "Announcements",
+          url: "/dashboard/announcements",
+          icon: RiNotification3Line,
+          roles: ["teacher"],
+        },
+        {
+          title: "Team Management",
+          url: "/dashboard/team-management",
+          icon: RiTeamLine,
+          roles: ["teacher"],
+        },
+        {
+          title: "Courses",
+          url: "/dashboard/courses",
+          icon: RiBookOpenLine,
+          roles: ["teacher"],
+        },
+        {
+          title: "Schedule",
+          url: "/dashboard/schedule",
+          icon: RiCalendar2Line,
+          roles: ["teacher"],
+        },
+      ] as NavItem[],
+    },
+    // {
+    //   title: "Other",
+    //   url: "#",
+    //   items: [
+    //     {
+    //       title: "Settings",
+    //       url: "#",
+    //       icon: RiSettings3Line,
+    //     },
+    //     {
+    //       title: "Help Center",
+    //       url: "#",
+    //       icon: RiLeafLine,
+    //     },
+    //   ],
+    // },
+  ],
+};

@@ -96,7 +96,7 @@ export function SignInPageClient() {
                 size={"lg"}
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8]  gap-2"
+                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8] text-white  gap-2"
               >
                 <RiGoogleFill className="h-5 w-5" />
                 {t("auth.signIn.continueWithGoogle")}
@@ -104,7 +104,8 @@ export function SignInPageClient() {
 
               {/* Other Social Logins (Optional) */}
               <div className="mt-4 grid grid-cols-1 gap-4">
-                {/* <Button
+                <Button
+                  hidden={true}
                   size={"lg"}
                   variant="outline"
                   onClick={handleGitHubLogin}
@@ -113,10 +114,11 @@ export function SignInPageClient() {
                 >
                   <GitHubIcon className="h-5 w-5" />
                   {t("auth.signIn.continueWithGithub")}
-                </Button> */}
+                </Button>
 
                 {/* Facebook Button */}
                 <Button
+                  hidden={true}
                   size={"lg"}
                   variant="outline"
                   onClick={handleFacebookLogin}
@@ -126,6 +128,7 @@ export function SignInPageClient() {
                   <RiFacebookFill className="h-5 w-5" />
                   {t("auth.signIn.continueWithFacebook")}
                 </Button>
+
                 {/* Add other social logins here if needed */}
               </div>
 

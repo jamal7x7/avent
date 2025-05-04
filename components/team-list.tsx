@@ -64,9 +64,9 @@ export function TeamList({
   }));
 
   return (
-    <Card className="h-full border-0 bg-transparent ">
+    <Card className="h-full border-0 bg-transparent shadow-background/0">
       <CardContent className="p-0 h-full w-full flex flex-col">
-        <div className="p-4 border-b bg-card">
+        <div className="p-4 border-b ">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Your Teams</h3>
             <Dialog open={isAddTeamOpen} onOpenChange={setIsAddTeamOpen}>
@@ -130,7 +130,7 @@ export function TeamList({
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-medium truncate min-w-0">
+                        <span className="font-medium truncate max-w-16 min-w-0">
                           {team.name}
                         </span>
                         {team.role && (

@@ -10,6 +10,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Use Geist Sans as the default sans font, Tajawal will be applied conditionally
+        sans: ["var(--font-geist-sans)"],
+        mono: ["var(--font-geist-mono)"],
+      },
       // Add custom theme extensions here
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

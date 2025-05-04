@@ -1,6 +1,7 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// Import Tajawal alongside Geist
+import { Geist, Geist_Mono, Tajawal } from "next/font/google";
 import { ThemeProvider } from "~/components/theme-provider";
 import { CartProvider } from "~/lib/hooks/use-cart";
 import ClientLayout from "./client-layout";
@@ -19,6 +20,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Configure Tajawal font
+const tajawal = Tajawal({
+  variable: "--font-tajawal",
+  weight: ["300", "400", "500", "700", "800"], // Specify weights used
+  subsets: ["arabic", "latin"], // Include necessary subsets
+  display: "swap", // Font display strategy
+});
+
 export const metadata: Metadata = {
   title: "Avent",
   description: "Avent",
@@ -32,8 +41,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark scheme-only-dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        // Removed inline style to rely on CSS variables from globals.css
+        // Add Tajawal variable alongside Geist
+        className={`${tajawal.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

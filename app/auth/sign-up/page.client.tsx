@@ -210,13 +210,15 @@ export function SignUpPageClient() {
                           role === "student"
                             ? GraduationCapIcon
                             : role === "teacher"
-                              ? BriefcaseIcon
-                              : UserIcon;
+                            ? BriefcaseIcon
+                            : UserIcon;
                         return (
                           <Label
                             key={role}
                             htmlFor={`role-${role}`}
-                            className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${field.value === role ? "border-primary" : ""}`}
+                            className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground ${
+                              field.value === role ? "border-primary" : ""
+                            }`}
                           >
                             <RadioGroupItem
                               value={role}
@@ -244,14 +246,15 @@ export function SignUpPageClient() {
                 size={"lg"}
                 onClick={handleGoogleSignUp}
                 disabled={loading}
-                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8]  gap-2"
+                className="flex w-full items-center  bg-[#4285f4] hover:bg-[#1a73e8] text-white  gap-2"
               >
                 <RiGoogleFill className="h-5 w-5" />
                 {t("auth.signUp.continueWithGoogle")}
               </Button>
 
               {/* GitHub Button */}
-              {/* <Button
+              <Button
+                hidden={true}
                 variant="outline"
                 size={"lg"}
                 onClick={handleGitHubSignUp}
@@ -260,10 +263,11 @@ export function SignUpPageClient() {
               >
                 <GitHubIcon className="h-5 w-5" />
                 {t("auth.signUp.continueWithGithub")}
-              </Button> */}
+              </Button>
 
               {/* Facebook Button */}
               <Button
+                hidden={true}
                 variant="outline"
                 size={"lg"}
                 onClick={handleFacebookSignUp}
