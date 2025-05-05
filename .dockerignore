@@ -1,0 +1,83 @@
+# Node.js dependencies
+node_modules/
+
+# Next.js build output
+.next/
+
+# Build outputs
+build/
+dist/
+out/
+
+# Test and debug artifacts
+test/
+tests/
+debug/
+*.log
+
+# IDE/editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Version control
+.git/
+.gitignore
+.svn/
+.hg/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+
+# Temporary and cache files
+tmp/
+temp/
+*.tmp
+.DS_Store
+*.DS_Store
+
+# Project-specific and documentation
+docs/
+README*
+*.md
+
+# Local development
+.local/
+local/
+
+# Miscellaneous
+*.bak
+*.old
+*.orig
+
+# Supabase temp files
+supabase/.temp/
+
+# OS-specific files
+Thumbs.db
+
+# Exclude public assets (keep public/)
+!public/
+
+# Exclude database migrations and schema (keep db/)
+!db/
+
+# Exclude scripts (keep scripts/ and script/)
+!scripts/
+!script/
+
+# Exclude source code (keep src/, app/, components/, etc.)
+!app/
+!components/
+!hooks/
+!lib/
+!types/
+!locales/
+!addons/
+!archive/

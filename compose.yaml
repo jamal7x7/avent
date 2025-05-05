@@ -1,0 +1,41 @@
+services:
+  typescript-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: typescript-app
+    restart: unless-stopped
+    init: true
+    # env_file: ./.env  # Uncomment if .env file exists
+    ports:
+      - "3000:3000"  # Next.js default port
+    depends_on:
+      - postgres
+    networks:
+      - appnet
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: relivator
+      POSTGRES_PASSWORD: relivator
+      POSTGRES_DB: relivator
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U relivator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

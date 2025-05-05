@@ -64,6 +64,57 @@ To get started:
 | `bun db:auth`   | Update auth-related tables     |
 | `bun db:studio` | Open visual DB editor          |
 
+## Docker Setup
+
+You can run Relivator locally using Docker Compose for a fully containerized development or production environment.
+
+### Requirements
+
+- **Docker** and **Docker Compose** installed
+- No local Node.js or PostgreSQL required (handled by containers)
+
+### Project-specific Docker Details
+
+- **Node.js version:** 22.14.0 (as specified in the Dockerfile)
+- **pnpm version:** 10.4.1 (managed via corepack in the Dockerfile)
+- **Database:** PostgreSQL (containerized, default user/password/db: `relivator`)
+- **App port:** 3000 (Next.js default, exposed by the container)
+- **Database port:** 5432 (PostgreSQL default, internal to Docker network)
+
+### Environment Variables
+
+- The app expects a `.env` file for configuration. Copy `.env.example` to `.env` and fill in required values before building.
+- The Docker Compose file is preconfigured to use `.env` (uncomment the `env_file` line if you want to pass it automatically).
+
+### Build & Run
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   # Edit .env as needed
+   ```
+2. Build and start the stack:
+   ```bash
+   docker compose up --build
+   ```
+   This will build the Next.js app and start both the app and PostgreSQL containers.
+
+3. Access the app at [http://localhost:3000](http://localhost:3000)
+
+### Ports
+
+| Service         | Port (host:container) |
+|-----------------|----------------------|
+| Next.js App     | 3000:3000            |
+| PostgreSQL      | (internal:5432)      |
+
+### Notes
+
+- The app container is built for production and runs as a non-root user for security.
+- The PostgreSQL container uses default credentials (`relivator`/`relivator`). Change these in `docker-compose.yml` and your `.env` for production.
+- The app container depends on the database and will wait for it to be healthy before starting.
+- If you need to persist database data, Docker Compose uses a named volume `pgdata` by default.
+
 ## Notes
 
 - Relivator **1.4.0+** is AI-ready — optimized for AI-powered IDEs like Cursor, making onboarding effortless even for beginners.
