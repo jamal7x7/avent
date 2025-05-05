@@ -1,18 +1,15 @@
 import { headers } from "next/headers";
 import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
-import { AddTeamForm } from "~/components/add-team-form";
-import { AnnouncementForm } from "~/components/announcement-form";
-import AnnouncementList from "~/components/announcement-list";
 import { JoinTeamForm } from "~/components/join-team-form";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "~/components/primitives/tabs"; // Import SimpleTabs component
-// import { TeamCard } from "~/components/team-card"; // Replaced by YourTeamsTabContent
+} from "~/components/primitives/tabs";
+import { TeamManagementTabs } from "~/components/team-management-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { YourTeamsTabContent } from "~/components/your-teams-tab-content"; // Import the new component
+import { YourTeamsTabContent } from "~/components/your-teams-tab-content";
 import { auth } from "~/lib/auth";
 import DashboardContent from "../DashboardContent";
 export const dynamic = "force-dynamic";
@@ -52,7 +49,7 @@ export default async function TeamManagementPage() {
 
           {/* Add Team Tab */}
           <TabsContent value="add-team" className="mt-4">
-            <AddTeamForm teams={teams} />
+            <TeamManagementTabs teams={teams} />
           </TabsContent>
 
           {/* Join Team Tab */}

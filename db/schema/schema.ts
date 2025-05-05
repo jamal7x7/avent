@@ -257,6 +257,7 @@ export const teamsRelations = relations(teams, ({ many }) => ({
   activityLogs: many(activityLogs),
   invitations: many(invitations),
   invitationCodes: many(invitationCodes),
+  teamInviteCodes: many(teamInviteCodes),
   announcementRecipients: many(announcementRecipients),
 }));
 
@@ -296,6 +297,8 @@ export const invitationsRelations = relations(invitations, ({ one }) => ({
 export const invitationCodesRelations = relations(
   invitationCodes,
   ({ one, many }) => ({
+
+
     team: one(teams, {
       fields: [invitationCodes.teamId],
       references: [teams.id],
@@ -321,6 +324,18 @@ export const invitationCodeUsesRelations = relations(
     }),
   }),
 );
+
+// --- Team Invite Codes Relations ---
+export const teamInviteCodesRelations = relations(teamInviteCodes, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamInviteCodes.teamId],
+    references: [teams.id],
+  }),
+  creator: one(userTable, {
+    fields: [teamInviteCodes.createdBy],
+    references: [userTable.id],
+  }),
+}));
 
 export const announcementsRelations = relations(
   announcements,
