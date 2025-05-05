@@ -33,6 +33,7 @@ type JoinTeamFormValues = z.infer<typeof joinTeamFormSchema>;
 export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const form = useForm<JoinTeamFormValues>({
     resolver: zodResolver(joinTeamFormSchema),
@@ -43,6 +44,7 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
 
   const handleJoin = (values: JoinTeamFormValues) => {
     setError(null);
+    setSuccess(false);
     startTransition(async () => {
       try {
         // Directly call the server action
@@ -56,6 +58,7 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
         }
 
         form.reset();
+        setSuccess(true);
         toastAnnouncement("success", "Successfully joined team!");
         if (onJoined) onJoined();
       } catch (e) {
@@ -76,24 +79,28 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
             <FormItem>
               <FormLabel>Team Invite Code</FormLabel>
               <FormControl>
-                <InputOTP maxLength={6} {...field} disabled={isPending}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
+                <InputOTP
+                  size={28}
+                  maxLength={6}
+                  {...field}
+                  disabled={isPending || success}
+                >
+                  <InputOTPGroup className="space-x-2 p-3">
+                    <InputOTPSlot index={0} className="rounded-md border-l " />
+                    <InputOTPSlot index={1} className="rounded-md border-l" />
+                    <InputOTPSlot index={2} className="rounded-md border-l" />
                   </InputOTPGroup>
-                  {/* Optional: Add a separator if desired */}
-                  {/* <InputOTPSeparator /> */}
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
+                  <InputOTPSeparator />
+                  <InputOTPGroup className="space-x-2">
+                    <InputOTPSlot index={3} className="rounded-md border-l" />
+                    <InputOTPSlot index={4} className="rounded-md border-l" />
+                    <InputOTPSlot index={5} className="rounded-md border-l" />
                   </InputOTPGroup>
                 </InputOTP>
               </FormControl>
               <FormDescription>
                 Please enter the 6-character invite code provided by your team
-                admin.
+                admin. Codes are case-insensitive.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -101,15 +108,39 @@ export function JoinTeamForm({ onJoined }: { onJoined?: () => void }) {
         />
 
         {error && (
-          <p className="text-sm font-medium text-destructive">{error}</p>
+          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="p-3 rounded-md bg-green-100 text-green-800 text-sm">
+            Successfully joined team! You can now access team resources.
+          </div>
         )}
 
         <Button
           type="submit"
-          disabled={isPending || form.watch("code").length !== 6}
+          disabled={isPending || success || form.watch("code").length !== 6}
+          className="w-full"
         >
-          {isPending ? "Joining..." : "Join Team"}
+          {isPending ? (
+            <>
+              <span className="mr-2">Joining...</span>
+              <span className="animate-spin">⏳</span>
+            </>
+          ) : success ? (
+            "Joined Successfully"
+          ) : (
+            "Join Team"
+          )}
         </Button>
+
+        {form.watch("code").length > 0 && form.watch("code").length < 6 && (
+          <p className="text-xs text-muted-foreground text-center">
+            Please enter all 6 characters of the invite code
+          </p>
+        )}
       </form>
     </Form>
   );

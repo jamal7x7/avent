@@ -73,9 +73,11 @@ type GenerateCodeFormValues = z.infer<typeof generateCodeFormSchema>;
 export function TeamManagementTabs({
   teams,
   onTeamAdded,
+  activeTab = "create-team",
 }: {
   teams: { id: string; name: string; type: string }[];
   onTeamAdded?: () => void;
+  activeTab?: "create-team" | "invite-codes";
 }) {
   const { data: session } = useSession();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -155,20 +157,17 @@ export function TeamManagementTabs({
 
   if (!isTeacher) return null;
 
+  // When used within a tab, we don't need the outer container and title
   return (
-    <div className="space-y-6 w-full max-w-2xl mx-auto">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Team Management</h2>
-        <p className="text-muted-foreground">
-          Create new teams and generate invite codes for your students.
-        </p>
-      </div>
-
-      <Tabs defaultValue="create-team" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="create-team">Create New Team</TabsTrigger>
-          <TabsTrigger value="invite-codes">Invite Codes</TabsTrigger>
-        </TabsList>
+    <div className="w-full">
+      <Tabs defaultValue={activeTab} className="w-full">
+        {/* Hide the tabs when used within the main page tabs */}
+        <div className="hidden">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="create-team">Create New Team</TabsTrigger>
+            <TabsTrigger value="invite-codes">Invite Codes</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Create Team Tab */}
         <TabsContent value="create-team" className="mt-4">
