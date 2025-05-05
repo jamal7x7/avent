@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { AnnouncementActions } from "./announcement-actions";
+import { AnnouncementActions } from "../components/announcement-actions";
 
 interface AnnouncementCardProps {
   announcement: {

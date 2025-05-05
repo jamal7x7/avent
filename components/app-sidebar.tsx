@@ -7,6 +7,7 @@ import { useTransition } from "react";
 
 import {
   type RemixiconComponentType,
+  RiAddFill,
   RiArrowDownSLine,
   RiArrowLeftSLine,
   RiArrowUpSLine,
@@ -26,8 +27,10 @@ import {
   RiTeamLine,
   RiUserFollowLine,
 } from "@remixicon/react";
+import { PlusIcon, PlusSquare } from "lucide-react";
 import Link from "next/link";
 import { LanguageSwitcher } from "~/components/language-switcher";
+import { QuickAddDialog } from "~/components/quick-add-dialog";
 import { SearchForm } from "~/components/search-form";
 import { TeamSwitcher } from "~/components/team-switcher";
 // Remove ThemeToggle import as it's moved to SettingsModal
@@ -48,6 +51,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider, // Added
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { useNavLayoutStore } from "~/hooks/use-nav-layout";
@@ -69,16 +73,16 @@ type NavItem = {
 export const data = {
   teams: [
     {
-      name: "InnovaCraft",
-      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+      name: "Connect",
+      logo: `https://avatar.vercel.sh/${"Connect"}.png`,
     },
     {
-      name: "Acme Corp.",
-      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+      name: "Editor",
+      logo: `https://avatar.vercel.sh/${"Editor"}.png`,
     },
     {
-      name: "Evil Corp.",
-      logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+      name: "Content",
+      logo: `https://avatar.vercel.sh/${"Content"}.png`,
     },
   ],
   navMain: [
@@ -92,12 +96,12 @@ export const data = {
           icon: RiScanLine,
           // isActive: true, // Removed
         },
-        {
-          title: "Contacts",
-          url: "/dashboard/contacts",
-          icon: RiUserFollowLine,
-          // isActive: false, // Removed
-        },
+        // {
+        //   title: "Contacts",
+        //   url: "/dashboard/contacts",
+        //   icon: RiUserFollowLine,
+        //   // isActive: false, // Removed
+        // },
         {
           title: "Announcements",
           url: "/dashboard/announcements",
@@ -105,7 +109,7 @@ export const data = {
           roles: ["teacher"],
         },
         {
-          title: "Team Management",
+          title: "Teams",
           url: "/dashboard/team-management",
           icon: RiTeamLine,
           roles: ["teacher"],
@@ -190,7 +194,7 @@ function DashboardTopNav() {
                       key={item.title}
                       href={item.url}
                       className={cn(
-                        "relative inline-flex flex-col md:flex-row items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition",
+                        "relative inline-flex flex-col md:flex-row items-center gap-1 px-3 py-1.5 rounded-md text-accent-foreground text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition",
                         isActive && "bg-primary/10 text-primary",
                       )}
                     >
@@ -297,6 +301,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
   return (
     <Sidebar
+      className={cn(
+        "transition-transform duration-300 ease-in-out",
+        isCollapsed ? "translate-x-0" : "-translate-x-full",
+        "md:translate-x-0", // Always show on md+
+      )}
       collapsible="icon"
       variant="inset"
       {...props}
@@ -324,7 +333,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
         <hr className="border-t border-border mx-2 -mt-px" />
         {/* Search: icon only in collapsed mode */}
-        {isCollapsed ? (
+        {/* {isCollapsed ? (
           <Button
             className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-sidebar-accent focus:outline-none focus:ring mx-auto mt-3 cursor-pointer"
             aria-label="Search"
@@ -334,7 +343,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Button>
         ) : (
           <SearchForm className="mt-3" />
-        )}
+        )} */}
+
+        {/* --- Quick Add Dialog/Drawer --- */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="mt-6 w-full">
+                <QuickAddDialog isCollapsed={isCollapsed} className="w-full" />
+              </div>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" sideOffset={5}>
+                Quick Add
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+        {/* --- End Quick Add Dialog/Drawer --- */}
       </SidebarHeader>
       <SidebarContent>
         {/* SidebarGroup: only icons and tooltips in collapsed mode */}
@@ -373,7 +399,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             aria-hidden="true"
                           />
                         )}
-                        {!isCollapsed && <span>{item.title}</span>}
+                        {!isCollapsed && (
+                          <span
+                            className={cn(
+                              " text-accent-foreground/60 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition",
+                              pathname === item.url &&
+                                "text-sidebar-accent-foreground ",
+                            )}
+                          >
+                            {item.title}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -383,83 +419,83 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter>
-        <div
-          className={
-            isCollapsed
-              ? "flex flex-col items-center gap-2 px-1 pb-2"
-              : "flex items-center gap-2 px-4 pb-2"
-          }
-        >
-          {/* Remove Theme Toggle from sidebar footer */}
-          {/* <SidebarMenuItem className="list-none ![&>button]:!list-none">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarMenuButton
-                  className={
-                    "flex items-center justify-center p-2 min-w-0 w-9 h-9"
-                  }
-                >
-                  <ThemeToggle className="w-6 h-6" />
-                </SidebarMenuButton>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="select-none">
-                Toggle theme
-              </TooltipContent>
-            </Tooltip>
-          </SidebarMenuItem> */}
 
-          {/* Language Switcher as sidebar icon */}
-          <SidebarMenuItem className="list-none ![&>button]:!list-none">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarMenuButton
-                  className={
-                    isCollapsed
-                      ? "flex items-center justify-center p-2 min-w-0 w-9 h-9"
-                      : "gap-3 h-9 w-full min-w-[140px] justify-start px-3 flex items-center"
-                  }
-                >
-                  <LanguageSwitcher
-                    isCollapsed={isCollapsed}
-                    className={isCollapsed ? "w-6 h-6" : "w-6 h-6"}
+      {/* Footer: only icons and tooltips in collapsed mode */}
+      <SidebarFooter
+        className={cn(
+          "flex flex-col gap-2 border-t border-border",
+          isCollapsed ? "items-center p-2" : "p-4",
+        )}
+      >
+        {/* Settings Button */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                asChild
+                variant="ghost"
+                size={isCollapsed ? "icon" : "default"}
+                className={cn(
+                  "w-full justify-center",
+                  isCollapsed ? "h-9 w-9" : "h-auto p-2",
+                  "hover:bg-sidebar-accent focus:outline-none focus:ring cursor-pointer",
+                )}
+                aria-label="Settings"
+              >
+                <Link href="/dashboard/settings">
+                  <RiSettings3Line
+                    size={isCollapsed ? 20 : 16}
+                    className={cn(!isCollapsed && "mr-2")}
                   />
-                </SidebarMenuButton>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="select-none">
-                Switch language
+                  {!isCollapsed && <span>Settings</span>}
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" sideOffset={5}>
+                Settings
               </TooltipContent>
-            </Tooltip>
-          </SidebarMenuItem>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Language Switcher */}
+        <div
+          className={cn(
+            "flex",
+            isCollapsed ? "justify-center" : "justify-start",
+          )}
+        >
+          <LanguageSwitcher isCollapsed={isCollapsed} />
         </div>
-        <hr className="border-t border-border mx-2 -mt-px" />
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className={
-                isCollapsed
-                  ? "min-h-[48px] w-9 h-9 justify-center"
-                  : "group/menu-button min-h-[64px] rounded-md p-0 flex items-center w-full"
-              }
-            >
-              <AuthAvatar
-                className={
-                  isCollapsed
-                    ? "size-8 mx-auto"
-                    : "flex items-center w-full px-3"
-                }
-                name={session?.user?.name || "User"}
-                email={isCollapsed ? undefined : session?.user?.email || ""}
-                role={isCollapsed ? undefined : session?.user?.role || "User"}
-                image={session?.user?.image || undefined}
-                isDashboard={true}
-                showDetails={!isCollapsed}
-              />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+
+        {/* Theme Toggle - Removed, handled in SettingsModal */}
+        {/* <div
+          className={cn(
+            "flex",
+            isCollapsed ? "justify-center" : "justify-start",
+          )}
+        >
+          <ThemeToggle isCollapsed={isCollapsed} />
+        </div> */}
+
+        {/* User Avatar/Auth */}
+        <div
+          className={cn(
+            "flex w-full",
+            isCollapsed ? "justify-center" : "justify-start",
+          )}
+        >
+          <AuthAvatar
+            name={session?.user?.name || "User"}
+            email={session?.user?.email || ""}
+            image={session?.user?.image || undefined}
+            role={session?.user?.role || "user"}
+            showDetails={!isCollapsed}
+            isDashboard={true} // Assuming this is always in the dashboard context
+          />
+        </div>
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

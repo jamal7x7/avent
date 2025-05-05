@@ -55,7 +55,7 @@ export function AuthAvatar({
             className,
           )}
         >
-          {true ? (
+          {isDashboard ? (
             <Avatar
               src={image ?? `https://avatar.vercel.sh/${email}.png`}
               alt={name}
@@ -63,7 +63,7 @@ export function AuthAvatar({
               className="h-9 w-9"
             />
           ) : (
-            <Avatar size={36} className="h-9 w-9" />
+            <Avatar size={24} className="h-9 w-9" />
           )}
           {showDetails && (
             <span className="flex flex-col ml-2 text-left ">
@@ -83,7 +83,7 @@ export function AuthAvatar({
       <DropdownMenuContent align="end" className="w-56">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-            {true ? (
+            {isDashboard ? (
               <Avatar
                 src={image ?? `https://avatar.vercel.sh/${email}.png`}
                 alt={name}

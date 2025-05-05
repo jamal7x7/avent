@@ -136,7 +136,7 @@ export function AnnouncementForm() {
       if (!session?.user?.id || !validRoles.includes(role)) return;
       try {
         // const res = await fetch(`/api/users/${session.user.id}/teams`);
-        const res = await fetch(`/api/teams`);
+        const res = await fetch("/api/teams");
 
         // const res = await fetch("/api/teams"); // Corrected endpoint
         if (!res.ok) throw new Error("Failed to fetch teams");

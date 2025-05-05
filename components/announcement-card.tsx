@@ -159,7 +159,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Card className="w-full md:w-2xl rounded-2xl transition-shadow duration-300 hover:shadow-lg ">
+          <Card className="w-full md:w-2xl rounded-2xl transition-shadow duration-300 hover:shadow-lg  ">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
               <div className="relative">
                 <Avatar
