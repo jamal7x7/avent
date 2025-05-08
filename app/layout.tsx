@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 // Import Tajawal alongside Geist
 import { Geist, Geist_Mono, Tajawal } from "next/font/google";
 import { ThemeProvider } from "~/components/theme-provider";
+import { Toaster } from "~/components/ui/sonner";
 import { CartProvider } from "~/lib/hooks/use-cart";
 import ClientLayout from "./client-layout";
 
@@ -40,6 +41,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="dark scheme-only-dark">
+      <head>
+        {/* <script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        /> */}
+        {/* rest of your scripts go under */}
+      </head>
       <body
         // Add Tajawal variable alongside Geist
         className={`${tajawal.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -54,6 +62,7 @@ export default function RootLayout({
             <div className="flex min-h-screen flex-col">
               <ClientLayout>{children}</ClientLayout>
             </div>
+            <Toaster />
           </CartProvider>
         </ThemeProvider>
         <SpeedInsights />

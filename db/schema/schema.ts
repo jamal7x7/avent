@@ -9,13 +9,14 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { AnnouncementPriority } from "~/db/types"; // Updated import path
+import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Import both enums
 import { userTable } from "./users"; // Adjust path if needed
 
 // --- Teams ---
 export const teams = pgTable("teams", {
   id: text("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
+  abbreviation: varchar("abbreviation", { length: 10 }), // Added abbreviation field
   image: text("image"),
   type: varchar("type", { length: 32 }).notNull().default("class"),
   order: integer("order").default(0),
@@ -25,7 +26,7 @@ export const teams = pgTable("teams", {
   stripeSubscriptionId: text("stripe_subscription_id").unique(),
   stripeProductId: text("stripe_product_id"),
   planName: varchar("plan_name", { length: 50 }),
-  subscriptionStatus: varchar("subscription_status", { length: 20 }),
+  subscriptionStatus: varchar("subscription_status", { length: 20 })
 });
 
 // --- Team Members ---
@@ -113,9 +114,15 @@ export const announcements = pgTable("announcements", {
     enum: Object.values(AnnouncementPriority) as [string, ...string[]],
   })
     .notNull()
-    .default(AnnouncementPriority.NORMAL), // Add priority column
+    .default(AnnouncementPriority.NORMAL),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   type: text("type").notNull().default("plain"),
+  scheduledDate: timestamp("scheduled_date"),
+  status: text("status", {
+    enum: Object.values(AnnouncementStatus) as [string, ...string[]],
+  })
+    .notNull()
+    .default(AnnouncementStatus.PUBLISHED),
 });
 
 export const announcementRecipients = pgTable("announcement_recipients", {
@@ -137,10 +144,10 @@ export const announcementUserStatus = pgTable("announcement_user_status", {
   announcementId: text("announcement_id")
     .notNull()
     .references(() => announcements.id, { onDelete: "cascade" }),
-  isReceived: boolean("is_received").notNull().default(false),
-  isFavorited: boolean("is_favorited").notNull().default(false),
-  receivedAt: timestamp("received_at"),
-  favoritedAt: timestamp("favorited_at"),
+  isAcknowledged: boolean("is_acknowledged").notNull().default(false),
+  isBookmarked: boolean("is_bookmarked").notNull().default(false),
+  acknowledgedAt: timestamp("acknowledged_at"),
+  bookmarkedAt: timestamp("bookmarked_at"),
 });
 
 // --- Courses ---

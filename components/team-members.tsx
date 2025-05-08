@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
 import { fetchTeamMembers } from "~/app/dashboard/team-management/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -47,6 +48,20 @@ export function TeamMembers({
     );
   }
 
+  const listVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+      },
+    },
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <Card className="h-full shadow-sm" aria-live="polite">
       <CardHeader>
@@ -81,36 +96,50 @@ export function TeamMembers({
           </output>
         )}
         {!isLoading && !error && members && members.length > 0 && (
-          <ul className="space-y-4">
-            {members.map((member) => (
-              <li key={member.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    {/* Placeholder for actual avatar logic */}
-                    <AvatarImage
-                      src={`https://avatar.vercel.sh/${member.email}.png`}
-                      alt={member.name}
-                    />
-                    <AvatarFallback>
-                      {member.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.email}
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  variant={member.role === "admin" ? "default" : "secondary"}
+          <AnimatePresence>
+            <motion.ul
+              className="space-y-4"
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={listVariants}
+            >
+              {members.map((member) => (
+                <motion.li
+                  key={member.id}
+                  className="flex items-center justify-between"
+                  variants={itemVariants}
+                  transition={{ type: "tween" }}
                 >
-                  {member.role}
-                </Badge>
-              </li>
-            ))}
-          </ul>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      {/* Placeholder for actual avatar logic */}
+                      <AvatarImage
+                        src={`https://avatar.vercel.sh/${member.email}.png`}
+                        alt={member.name}
+                      />
+                      <AvatarFallback>
+                        {member.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{member.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {member.email}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={member.role === "admin" ? "default" : "secondary"}
+                  >
+                    {member.role}
+                  </Badge>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </AnimatePresence>
         )}
+
         {!isLoading && !error && members && members.length === 0 && (
           <p className="text-muted-foreground text-center py-4">
             This team doesn't have any members yet.

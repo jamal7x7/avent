@@ -6,10 +6,12 @@ import { fetchUserTeams } from "~/app/dashboard/announcements/actions";
 import { db } from "~/db";
 import { teamMembers, teams } from "~/db/schema";
 import { auth } from "~/lib/auth";
+import { generateTeamAbbreviation } from "~/lib/utils";
 
 const createTeamSchema = z.object({
   name: z.string().min(1).max(100),
   type: z.string().min(1).max(32),
+  abbreviation: z.string().max(10).optional(), // Added optional abbreviation
 });
 
 export async function GET(req: NextRequest) {
@@ -31,12 +33,15 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { name, type } = parsed.data;
+  const { name, type, abbreviation: providedAbbreviation } = parsed.data;
   const teamId = nanoid();
+  const abbreviation = providedAbbreviation || generateTeamAbbreviation(name);
+
   await db.insert(teams).values({
     id: teamId,
     name,
     type,
+    abbreviation, // Use provided or generated abbreviation
     createdAt: new Date(),
     updatedAt: new Date(),
   });

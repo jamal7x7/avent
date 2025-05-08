@@ -9,6 +9,7 @@ export interface TeamMember {
 export interface Team {
   id: string;
   name: string;
+  abbreviation: string; // Added mandatory abbreviation
   type: string | null;
   memberCount: number;
   image?: string;

@@ -74,15 +74,18 @@ export const data = {
   teams: [
     {
       name: "Connect",
-      logo: `https://avatar.vercel.sh/${"Connect"}.png`,
+      abbreviation: "CON",
+      image: `https://avatar.vercel.sh/${"CON"}.png`,
     },
     {
       name: "Editor",
-      logo: `https://avatar.vercel.sh/${"Editor"}.png`,
+      abbreviation: "EDI",
+      image: `https://avatar.vercel.sh/${"EDI"}.png`,
     },
     {
       name: "Content",
-      logo: `https://avatar.vercel.sh/${"Content"}.png`,
+      abbreviation: "CTN",
+      image: `https://avatar.vercel.sh/${"CTN"}.png`,
     },
   ],
   navMain: [

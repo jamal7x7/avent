@@ -272,6 +272,55 @@ async function seed() {
 
   // 2. Teams
   const teamCount = 40;
+
+  // Helper function to generate abbreviation from team name
+  const generateAbbreviation = (name: string) => {
+    // Handle specific cases for French names like "Première Année" or "Deuxième Année"
+    const processedName = name
+      .replace(/Première Année/gi, "1A")
+      .replace(/Deuxième Année/gi, "2A")
+      .replace(/Tronc Commun/gi, "TC");
+
+    return processedName
+      .split(/\s|-|É|È|Ê|À|Â|Ô|Û|Î|Ç|Œ|Æ/)
+      .map((word) => {
+        // Remove accents and take the first letter
+        const firstLetter = word
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+          .charAt(0)
+          .toUpperCase();
+        return firstLetter;
+      })
+      .join("");
+  };
+
+  const moroccanClassNames = [
+    "Tronc Commun Scientifique",
+    "Tronc Commun Littéraire",
+    "Tronc Commun Technologique",
+    "Première Année Bac Sciences Mathématiques A",
+    "Première Année Bac Sciences Mathématiques B",
+    "Première Année Bac Sciences Expérimentales",
+    "Première Année Bac Sciences et Technologies Électriques",
+    "Première Année Bac Sciences et Technologies Mécaniques",
+    "Première Année Bac Sciences Économiques et Gestion",
+    "Première Année Bac Arts Appliqués",
+    "Première Année Bac Lettres et Sciences Humaines",
+    "Deuxième Année Bac Sciences Mathématiques A",
+    "Deuxième Année Bac Sciences Mathématiques B",
+    "Deuxième Année Bac Sciences Physiques",
+    "Deuxième Année Bac Sciences de la Vie et de la Terre",
+    "Deuxième Année Bac Sciences Agronomiques",
+    "Deuxième Année Bac Sciences et Technologies Électriques",
+    "Deuxième Année Bac Sciences et Technologies Mécaniques",
+    "Deuxième Année Bac Sciences Économiques",
+    "Deuxième Année Bac Techniques de Gestion Comptable",
+    "Deuxième Année Bac Arts Appliqués",
+    "Deuxième Année Bac Lettres",
+    "Deuxième Année Bac Sciences Humaines",
+  ];
+
   const teamTypes = [
     "classroom",
     "club",
@@ -284,13 +333,17 @@ async function seed() {
     "art",
     "debate",
   ];
-  const teamList = Array.from({ length: teamCount }).map((_, i) => ({
-    id: nanoid(),
-    name: `${faker.word.adjective()} ${faker.word.noun()} Team ${i + 1}`,
-    type: faker.helpers.arrayElement(teamTypes),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }));
+  const teamList = Array.from({ length: teamCount }).map((_, i) => {
+    const name = moroccanClassNames[i % moroccanClassNames.length];
+    return {
+      id: nanoid(),
+      name: name,
+      abbreviation: generateAbbreviation(name),
+      type: faker.helpers.arrayElement(teamTypes),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  });
   await db.insert(teams).values(teamList);
 
   // 3. Team Members (assign each student to multiple teams - at least 7)
@@ -500,12 +553,12 @@ async function seed() {
         id: nanoid(),
         userId: member.userId,
         announcementId: announcement.id,
-        isReceived: faker.datatype.boolean({ probability: 0.8 }), // 80% chance received
-        isFavorited: faker.datatype.boolean({ probability: 0.2 }), // 20% chance favorited
-        receivedAt: faker.datatype.boolean({ probability: 0.8 })
+        isAcknowledged: faker.datatype.boolean({ probability: 0.8 }), // 80% chance acknowledged
+        isBookmarked: faker.datatype.boolean({ probability: 0.2 }), // 20% chance bookmarked
+        acknowledgedAt: faker.datatype.boolean({ probability: 0.8 })
           ? faker.date.recent({ days: 5 })
           : null,
-        favoritedAt: faker.datatype.boolean({ probability: 0.2 })
+        bookmarkedAt: faker.datatype.boolean({ probability: 0.2 })
           ? faker.date.recent({ days: 5 })
           : null,
       }));

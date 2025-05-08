@@ -1,3 +1,5 @@
+// "use server";
+
 // note: run `bun db:auth` to generate the `users.ts`
 // schema after making breaking changes to this file
 
@@ -122,7 +124,7 @@ if (hasFacebookCredentials) {
   };
 }
 
-export const auth = betterAuth({
+export  const auth =  betterAuth({
   baseURL: process.env.NEXT_SERVER_APP_URL,
   secret: process.env.AUTH_SECRET,
 
@@ -136,6 +138,11 @@ export const auth = betterAuth({
       twoFactor: twoFactorTable,
     },
   }),
+
+//   session: {
+//     expiresIn: 60 * 60 * 24 * 7, // 7 days
+//     updateAge: 60 * 60 * 24 // 1 day (every 1 day the session expiration is updated)
+// },
 
   user: {
     additionalFields: {

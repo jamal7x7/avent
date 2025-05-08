@@ -93,19 +93,27 @@ const announcementFormSchema = z.object({
 
 type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
 
-// Update mutation function signature if needed (e.g., pass scheduleDate)
+// Update mutation function to handle scheduled announcements
 const createAnnouncement = async (variables: {
   content: string;
   priority: AnnouncementPriority;
   teamIds: string[];
   senderId: string;
   senderRole: string;
-  scheduleDate?: Date; // Add optional scheduleDate
+  scheduleDate?: Date;
+  status?: string;
 }) => {
+  const payload = {
+    ...variables,
+    scheduleDate: variables.scheduleDate
+      ? variables.scheduleDate.toISOString()
+      : undefined,
+  };
+
   const res = await fetch("/api/announcements", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(variables),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -266,14 +274,7 @@ export function AnnouncementForm() {
         },
       );
     },
-    onSuccess: () => {
-      toastAnnouncement("success", "Announcement sent successfully!");
-      form.reset(); // Reset form fields
-      setSelectedTeams([]); // Clear selected teams
-      setError(null);
-      // Optionally invalidate queries to refetch fresh data, though optimistic update handles UI
-      // queryClient.invalidateQueries({ queryKey: ['announcements'] });
-    },
+    // Success handler moved to onSubmit for contextual messaging
     onSettled: () => {
       // Ensure queries are fresh after mutation settles (success or error)
       // Consider selective invalidation based on selected teams
@@ -294,12 +295,29 @@ export function AnnouncementForm() {
       return;
     }
     setError(null);
-    mutation.mutate({
-      ...values,
-      teamIds: selectedTeams,
-      senderId: session.user.id,
-      senderRole: role,
-    });
+
+    // Determine if this is a scheduled announcement
+    const isScheduled = !!values.scheduleDate;
+    const successMessage = isScheduled
+      ? "Announcement scheduled successfully!"
+      : "Announcement sent successfully!";
+
+    mutation.mutate(
+      {
+        ...values,
+        teamIds: selectedTeams,
+        senderId: session.user.id,
+        senderRole: role,
+      },
+      {
+        onSuccess: () => {
+          toastAnnouncement("success", successMessage);
+          form.reset();
+          setSelectedTeams([]);
+          setError(null);
+        },
+      },
+    );
   };
 
   const handleTeamSelectionChange = (teamId: string) => {
@@ -321,7 +339,7 @@ export function AnnouncementForm() {
         className="space-y-4 rounded-2xl border bg-card p-6 shadow-sm transition-all hover:shadow-md"
       >
         {/* User Avatar and Form Header */}
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3 mb-2 hidden">
           <Avatar className="h-8 w-8">
             <AvatarImage
               src={session?.user?.image || undefined}
@@ -372,66 +390,101 @@ export function AnnouncementForm() {
               name="scheduleDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-[180px] justify-start text-left font-normal h-9 transition-all",
-                            !field.value && "text-muted-foreground",
-                            field.value &&
-                              "border-primary/50 bg-primary/5 text-primary",
-                          )}
-                        >
-                          <CalendarIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              field.value && "text-primary",
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-10 h-9 p-0 justify-center transition-all",
+                                !field.value && "text-muted-foreground",
+                                field.value &&
+                                  "border-primary/50 bg-primary/5 text-primary",
+                              )}
+                            >
+                              <CalendarIcon
+                                className={cn(
+                                  "h-4 w-4",
+                                  field.value && "text-primary",
+                                )}
+                              />
+                            </Button>
+                          </FormControl>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Schedule Announcement</DialogTitle>
+                            <DialogDescription>
+                              Select when to send this announcement
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                // Only update if a date is selected and it's different from current value
+                                if (
+                                  date &&
+                                  (!field.value ||
+                                    date.toDateString() !==
+                                      field.value.toDateString())
+                                ) {
+                                  // Preserve time if there was a previous value
+                                  if (field.value) {
+                                    date.setHours(field.value.getHours());
+                                    date.setMinutes(field.value.getMinutes());
+                                  }
+                                  field.onChange(date);
+                                }
+                              }}
+                              disabled={(date) => date < new Date()}
+                              initialFocus
+                              className="mx-auto"
+                            />
+                            {field.value && (
+                              <TimePicker
+                                value={field.value}
+                                onChange={(newDate) => {
+                                  // Prevent unnecessary re-renders by checking if the date actually changed
+                                  if (
+                                    field.value &&
+                                    (field.value.getHours() !==
+                                      newDate.getHours() ||
+                                      field.value.getMinutes() !==
+                                        newDate.getMinutes())
+                                  ) {
+                                    field.onChange(newDate);
+                                  }
+                                }}
+                                className="mx-auto mt-2"
+                              />
                             )}
-                          />
-                          {field.value ? (
-                            format(field.value, "PPP") // Format date with more detail
-                          ) : (
-                            <span>Schedule (optional)</span>
-                          )}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <div className="p-2 border-b">
-                        <h4 className="font-medium text-sm">
-                          Schedule Announcement
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          Select when to send this announcement
-                        </p>
-                      </div>
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
-                      <div className="p-2 border-t flex justify-between">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => field.onChange(undefined)}
-                          className="text-xs"
-                        >
-                          Clear
-                        </Button>
-                        <p className="text-xs text-muted-foreground self-center">
-                          {field.value
-                            ? format(field.value, "PPp")
-                            : "Send immediately"}
-                        </p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => field.onChange(undefined)}
+                            >
+                              Clear
+                            </Button>
+                            <DialogClose asChild>
+                              <Button type="button">Done</Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Schedule (optional)</p>
+                      {field.value && (
+                        <p className="text-xs">{format(field.value, "PPp")}</p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
                   <FormMessage />
                 </FormItem>
               )}
@@ -449,42 +502,51 @@ export function AnnouncementForm() {
                       defaultValue={field.value}
                       className="flex items-center space-x-2"
                     >
-                      <FormItem className="flex flex-col items-center space-y-1">
-                        <FormControl>
-                          <RadioGroupItem
-                            value={AnnouncementPriority.NORMAL}
-                            id="priority-normal"
-                            className="peer sr-only"
-                          />
-                        </FormControl>
-                        <FormLabel
-                          htmlFor="priority-normal"
-                          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary transition-all"
-                        >
-                          !
-                        </FormLabel>
-                        <span className="text-[10px] text-muted-foreground">
-                          Normal
-                        </span>
-                      </FormItem>
-                      <FormItem className="flex flex-col items-center space-y-1">
-                        <FormControl>
-                          <RadioGroupItem
-                            value={AnnouncementPriority.URGENT}
-                            id="priority-urgent"
-                            className="peer sr-only"
-                          />
-                        </FormControl>
-                        <FormLabel
-                          htmlFor="priority-urgent"
-                          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive peer-data-[state=checked]:bg-destructive/10 [&:has([data-state=checked])]:border-destructive transition-all"
-                        >
-                          !!
-                        </FormLabel>
-                        <span className="text-[10px] text-muted-foreground">
-                          Urgent
-                        </span>
-                      </FormItem>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <FormItem className="flex flex-col items-center">
+                            <FormControl>
+                              <RadioGroupItem
+                                value={AnnouncementPriority.NORMAL}
+                                id="priority-normal"
+                                className="peer sr-only"
+                              />
+                            </FormControl>
+                            <FormLabel
+                              htmlFor="priority-normal"
+                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary transition-all"
+                            >
+                              !
+                            </FormLabel>
+                          </FormItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Normal Priority</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <FormItem className="flex flex-col items-center">
+                            <FormControl>
+                              <RadioGroupItem
+                                value={AnnouncementPriority.URGENT}
+                                id="priority-urgent"
+                                className="peer sr-only"
+                              />
+                            </FormControl>
+                            <FormLabel
+                              htmlFor="priority-urgent"
+                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive peer-data-[state=checked]:bg-destructive/10 [&:has([data-state=checked])]:border-destructive transition-all"
+                            >
+                              !!
+                            </FormLabel>
+                          </FormItem>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Urgent Priority</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -671,7 +733,14 @@ export function AnnouncementForm() {
               ) : (
                 <>
                   <span>Send</span>
-                  <ArrowRightIcon className="h-4 w-4" />
+                  <ArrowRightIcon
+                    className={cn(
+                      "h-4 w-4",
+                      form.getValues("content").length !== 0 &&
+                        selectedTeams.length !== 0 &&
+                        " motion-preset-wobble-md",
+                    )}
+                  />
                 </>
               )}
             </Button>
@@ -686,19 +755,7 @@ export function AnnouncementForm() {
           </div>
         )}
 
-        {mutation.isSuccess && (
-          <div className="flex items-center justify-between p-3 mt-2 rounded-md bg-green-100 text-green-800 text-sm animate-in fade-in slide-in-from-top-5 duration-300">
-            <p>Announcement sent successfully!</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs text-green-800 hover:text-green-900 hover:bg-green-200"
-              onClick={() => form.reset()}
-            >
-              Create another
-            </Button>
-          </div>
-        )}
+        {/* Success message is now handled by Sonner toast */}
       </form>
     </Form>
   );

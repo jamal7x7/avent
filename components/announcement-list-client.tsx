@@ -1,8 +1,10 @@
 "use client";
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnnouncementCard } from "~/components/announcement-card";
+import { useSession } from "~/lib/auth-client"; // Added useSession import
 
 import { Button } from "~/components/ui/button";
 import {
@@ -12,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import type { AnnouncementPriority } from "~/db/types"; // Import priority enum
 
 interface Announcement {
@@ -20,14 +23,15 @@ interface Announcement {
   createdAt: string;
   teamId: string;
   teamName: string;
+  teamAbbreviation?: string; // Added teamAbbreviation
   priority: AnnouncementPriority; // Add priority field
   sender: {
     name: string | null;
     image?: string | null;
     email: string; // Add sender email
   };
-  isReceived: boolean; // Add isReceived
-  isFavorited: boolean; // Add isFavorited
+  isAcknowledged: boolean; // Add isAcknowledged
+  isBookmarked: boolean; // Add isBookmarked
 }
 
 interface FetchResponse {
@@ -42,6 +46,7 @@ interface AnnouncementListClientProps {
   initialTeam: string;
   hasMore: boolean; // Keep initial for SSR/first load
   fetchUrl: string;
+  hasScheduledAccess?: boolean; // Whether user has access to scheduled announcements
 }
 
 const fetchAnnouncements = async (
@@ -69,9 +74,13 @@ export function AnnouncementListClient({
   initialTeam,
   // hasMore: initialHasMore, // No longer directly used for state
   fetchUrl,
+  hasScheduledAccess = false,
 }: AnnouncementListClientProps) {
   const [selectedTeam, setSelectedTeam] = useState(initialTeam);
+  const [tabValue, setTabValue] = useState("announcements");
+  const router = useRouter();
   const queryClient = useQueryClient(); // Get query client
+  const { data: session } = useSession(); // Get session data
 
   const {
     data,
@@ -107,25 +116,51 @@ export function AnnouncementListClient({
   const allAnnouncements =
     data?.pages.flatMap((page) => page.announcements) ?? [];
 
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setTabValue(value);
+    if (value === "scheduled") {
+      router.push("/dashboard/announcements/scheduled");
+    } else {
+      router.push("/dashboard/announcements");
+    }
+  };
+
   return (
     // Wrap with QueryProvider if not done globally
     // <QueryProvider>
     <div className="w-full">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-medium">Filter by team:</span>
-        <Select onValueChange={handleFilterChange} value={selectedTeam}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a team" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Teams</SelectItem>
-            {teams.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+        <div className="flex-1">
+          <Tabs
+            value={tabValue}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 max-w-[240px]">
+              <TabsTrigger value="announcements">Announcements</TabsTrigger>
+              {hasScheduledAccess && (
+                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Filter by team:</span>
+          <Select onValueChange={handleFilterChange} value={selectedTeam}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a team" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Teams</SelectItem>
+              {teams.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       {error && (
         <p className="text-destructive">
@@ -139,7 +174,11 @@ export function AnnouncementListClient({
           </li>
         )}
         {allAnnouncements.map((a) => (
-          <AnnouncementCard key={`${a.id}-${a.teamId}`} announcement={a} />
+          <AnnouncementCard
+            key={`${a.id}-${a.teamId}`}
+            announcement={a}
+            currentUserId={session?.user?.id}
+          />
         ))}
       </ul>
       {hasNextPage && (

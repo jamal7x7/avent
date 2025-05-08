@@ -20,8 +20,8 @@ interface AnnouncementCardProps {
       name: string | null; // Allow null for name
       image?: string | null; // Allow null for image
     };
-    isReceived: boolean; // Add isReceived
-    isFavorited: boolean; // Add isFavorited
+    isAcknowledged: boolean; // Add isAcknowledged
+    isBookmarked: boolean; // Add isBookmarked
   };
 }
 
@@ -63,8 +63,8 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
       <CardFooter className="flex justify-end items-center pt-3">
         <AnnouncementActions
           announcementId={announcement.id}
-          initialIsReceived={announcement.isReceived}
-          initialIsFavorited={announcement.isFavorited}
+          initialIsAcknowledged={announcement.isAcknowledged}
+          initialIsBookmarked={announcement.isBookmarked}
         />
       </CardFooter>
     </Card>

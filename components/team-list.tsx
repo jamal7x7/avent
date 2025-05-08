@@ -45,8 +45,11 @@ export function TeamList({
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddTeamOpen, setIsAddTeamOpen] = useState(false);
 
-  const filteredTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredTeams = teams.filter(
+    (team) =>
+      team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (team.abbreviation &&
+        team.abbreviation.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   const handleTeamAdded = () => {
@@ -120,18 +123,21 @@ export function TeamList({
                       <AvatarImage
                         src={
                           team.image ??
-                          `https://avatar.vercel.sh/${team.name}.png`
+                          `https://avatar.vercel.sh/${team.abbreviation}.png`
                         }
-                        alt={team.name}
+                        alt={team.name} // Keep full name for alt text for better accessibility, or use abbreviation if preferred by user later
                       />
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {team.name.slice(0, 2).toUpperCase()}
+                        {team.abbreviation}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-medium truncate max-w-16 min-w-0">
-                          {team.name}
+                        <span
+                          title={team.name}
+                          className="font-medium truncate max-w-16 min-w-0"
+                        >
+                          {team.abbreviation}
                         </span>
                         {team.role && (
                           <Badge

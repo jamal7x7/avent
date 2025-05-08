@@ -6,18 +6,23 @@ import { motion } from "framer-motion";
 import {
   ActivitySquare,
   AlertCircle,
-  BookmarkIcon,
+  CalendarClock,
   Check,
   Clock,
   ClockAlert,
+  Edit3,
   EyeClosed,
   EyeClosedIcon,
   EyeOff,
+  FileText,
+  MoreHorizontal,
   Star,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AnnouncementInteractions } from "~/components/announcement-interactions";
 
-import { AnnouncementActions } from "~/components/announcement-actions"; // Import the refactored component
+// import { AnnouncementActions } from "~/components/announcement-actions"; // Will be replaced by direct implementation
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -29,52 +34,63 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"; // Added
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { AnnouncementPriority } from "~/db/types"; // Import priority enum
-import { cn } from "~/lib/utils"; // Import cn utility
+import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Added AnnouncementStatus
+import { cn } from "~/lib/utils";
+import { AnnouncementActions } from "./announcement-actions";
 
 interface AnnouncementCardProps {
   announcement: {
     id: string;
     content: string;
-    createdAt: string;
+    createdAt: string; // Assuming this is a string representation of a Date
+    scheduledDate?: string | null;
+    status?: AnnouncementStatus;
     teamName: string;
+    teamAbbreviation?: string; // Added teamAbbreviation
     priority: AnnouncementPriority;
     sender: {
-      name: string | null; // Allow null for name
-      image?: string | null; // Allow null for image
-      email: string; // Add email property
-      role?: string; // Add role property if needed
+      // id: string; // senderId is available at announcement.senderId if needed
+      name: string | null;
+      image?: string | null;
+      email: string;
+      // role?: string; // Not directly part of the sender object from fetchAnnouncements
     };
+    isAcknowledged: boolean; // For the current user
+    isBookmarked: boolean; // For the current user
+    totalAcknowledged: number; // Total for the announcement
   };
-  // Add initial states if fetched server-side
-  // initialIsReceived?: boolean;
-  // initialIsFavorited?: boolean;
+  currentUserId?: string;
 }
-// Add user ID if needed and fetched server-side
-// userId?: string;
-// Removed extra closing brace causing parse error
-export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
-  // Remove local state for received/bookmarked as it's handled in AnnouncementActions
-  // const [received, setReceived] = useState(false);
-  // const [bookmarked, setBookmarked] = useState(false);
-  // const [receivedCount, setReceivedCount] = useState(12); // Dummy initial count - This should come from backend
+
+export function AnnouncementCard({
+  announcement,
+  currentUserId,
+}: AnnouncementCardProps) {
+  // const [isVisible, setIsVisible] = useState(false);
+  const { priority, status, scheduledDate } = announcement;
+
+  // State for animation only
   const [isVisible, setIsVisible] = useState(false);
 
-  // Determine priority based on content length (dummy logic)
-  // Removed duplicate priority declaration
-  const { priority } = announcement; // Use the actual priority from props
-
-  // Get sender information
   const senderName = announcement.sender.name ?? "Unknown User";
   const senderInitial = senderName.charAt(0).toUpperCase();
-  const teamNameInitial = announcement.teamName.charAt(0).toUpperCase();
+  const teamAbbreviation = announcement.teamAbbreviation;
+  const teamDisplayInitial = teamAbbreviation
+    ? teamAbbreviation.charAt(0).toUpperCase()
+    : announcement.teamName.charAt(0).toUpperCase();
 
-  // Dummy role based on team name
   const role = announcement.teamName.includes("Dev")
     ? "Developer"
     : announcement.teamName.includes("Design")
@@ -87,9 +103,14 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
     setIsVisible(true);
   }, []);
 
-  const formattedDate = formatDistanceToNow(new Date(announcement.createdAt), {
-    addSuffix: true,
-  });
+  const displayDate = () => {
+    if (status === AnnouncementStatus.SCHEDULED && scheduledDate) {
+      return `Scheduled for ${format(new Date(scheduledDate), "MM/dd/yyyy 'at' HH:mm")}`;
+    }
+    return formatDistanceToNow(new Date(announcement.createdAt), {
+      addSuffix: true,
+    });
+  };
 
   const exactDate = format(
     new Date(announcement.createdAt),
@@ -172,12 +193,12 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
                   <AvatarImage
                     src={
                       announcement.sender.image ??
-                      `https://avatar.vercel.sh/${announcement.teamName}.png`
+                      `https://avatar.vercel.sh/${teamAbbreviation ?? announcement.teamName}.png`
                     }
                     alt={senderName}
                   />
                   <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                    {teamNameInitial}
+                    {teamDisplayInitial}
                   </AvatarFallback>
                 </Avatar>
                 {priority === AnnouncementPriority.URGENT && (
@@ -189,20 +210,71 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold tracking-tight text-foreground/90">
-                    {announcement.teamName}
+                    {announcement.teamAbbreviation ?? announcement.teamName}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
-                          {formattedDate}
+                          {displayDate()} {/* Updated to use displayDate */}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{exactDate}</p>
+                        <p>
+                          {status === AnnouncementStatus.SCHEDULED &&
+                          scheduledDate
+                            ? format(
+                                new Date(scheduledDate),
+                                "MMM d, yyyy 'at' h:mm a",
+                              )
+                            : exactDate}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
+                    {currentUserId &&
+                      announcement.sender.id === currentUserId && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">More options</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={() => console.log("Edit clicked")}
+                            >
+                              <Edit3 className="mr-2 h-4 w-4" />
+                              <span>Edit</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => console.log("Schedule clicked")}
+                            >
+                              <CalendarClock className="mr-2 h-4 w-4" />
+                              <span>Schedule</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => console.log("Draft clicked")}
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>Draft</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                              onSelect={() => console.log("Delete clicked")}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
@@ -254,23 +326,13 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center pt-4 pb-0 px-6 border-t border-border/40">
-              <Button
-                variant="ghost"
-                size="sm"
-                // onClick={handleShowAnnouncement}
-                // disabled={isPendingShowAnnouncement}
-                // className={`transition-all ${isShown ? "text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500" : ""}`}
-              >
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <EyeClosed className="h-4 w-4 mr-1 " />
-                  <span> Hide</span>
-                </div>
-              </Button>
-              <AnnouncementActions
+            <CardFooter className="flex justify-between items-center pt-4 pb-5 px-6 border-t border-border/40">
+              <AnnouncementInteractions
                 announcementId={announcement.id}
-                initialIsReceived={false}
-                initialIsFavorited={false}
+                currentUserId={currentUserId} // Ensure currentUserId is passed here
+                initialIsAcknowledged={announcement.isAcknowledged}
+                initialIsBookmarked={announcement.isBookmarked}
+                initialAcknowledgedCount={announcement.totalAcknowledged}
               />
             </CardFooter>
           </Card>

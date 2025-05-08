@@ -1,3 +1,5 @@
+"use server";
+
 import { and, count, desc, eq, inArray, or, sql } from "drizzle-orm"; // Import sql
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -15,33 +17,44 @@ import {
   userTable,
   verificationTable,
 } from "~/db/schema";
-import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
+import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Import both enums
+import { generateTeamAbbreviation } from "~/lib/utils";
 
-export const announcementSchema = z.object({
+ const announcementSchema =  z.object({
   content: z.string().min(1).max(300),
-  priority: z.nativeEnum(AnnouncementPriority), // Add priority
+  priority: z.nativeEnum(AnnouncementPriority),
   teamIds: z.array(z.string()).optional(), // empty array or undefined = all teams
   senderId: z.string(),
   senderRole: z.enum(["teacher", "admin", "staff"]),
+  scheduleDate: z.date().optional(),
+  status: z.nativeEnum(AnnouncementStatus).optional().default(AnnouncementStatus.PUBLISHED),
 });
 
-export type AnnouncementInput = z.infer<typeof announcementSchema>;
+
+ type AnnouncementInput = z.infer<typeof announcementSchema>;
 
 export async function createAnnouncement(input: AnnouncementInput) {
   const parsed = announcementSchema.safeParse(input);
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
   }
-  const { content, priority, teamIds, senderId, senderRole } = parsed.data; // Destructure priority
+  const { content, priority, teamIds, senderId, senderRole, scheduleDate, status } = parsed.data;
   const announcementId = nanoid();
+  
+  // Determine status based on scheduleDate
+  const announcementStatus = scheduleDate 
+    ? AnnouncementStatus.SCHEDULED 
+    : status || AnnouncementStatus.PUBLISHED;
 
   await db.insert(announcements).values({
-    id: announcementId, // Use the generated announcementId here
+    id: announcementId,
     senderId,
     content,
-    priority, // Add priority to insert values
+    priority,
     createdAt: new Date(),
     type: "plain",
+    scheduledDate: scheduleDate,
+    status: announcementStatus,
   });
   // If no teamIds, send to all teams the sender is a member of
   let targetTeams = teamIds ?? [];
@@ -74,8 +87,10 @@ export async function createAnnouncement(input: AnnouncementInput) {
     senderId,
     senderRole,
     createdAt: new Date(),
-    priority, // Return priority
+    priority,
     teamIds: targetTeams,
+    scheduledDate: scheduleDate,
+    status: announcementStatus,
   };
 }
 
@@ -92,16 +107,21 @@ export async function fetchAnnouncements(
       content: announcements.content,
       createdAt: announcements.createdAt,
       priority: announcements.priority,
+      status: announcements.status,
+      scheduledDate: announcements.scheduledDate,
       teamId: announcementRecipients.teamId,
       teamName: teams.name,
+      teamAbbreviation: teams.abbreviation, // Added team abbreviation
       sender: {
+        id: userTable.id,
         name: userTable.name,
         image: userTable.image,
         email: userTable.email, // Add sender email
       },
       // Select status fields, defaulting to false if no status record exists for the user
-      isReceived: sql<boolean>`coalesce(${announcementUserStatus.isReceived}, false)`,
-      isFavorited: sql<boolean>`coalesce(${announcementUserStatus.isFavorited}, false)`,
+      isAcknowledged: sql<boolean>`coalesce(${announcementUserStatus.isAcknowledged}, false)`,
+      isBookmarked: sql<boolean>`coalesce(${announcementUserStatus.isBookmarked}, false)`,
+      totalAcknowledged: sql<number>`(SELECT COUNT(*) FROM ${announcementUserStatus} WHERE ${announcementUserStatus.announcementId} = ${announcements.id} AND ${announcementUserStatus.isAcknowledged} = true)`,
     })
     .from(announcements)
     .leftJoin(userTable, eq(announcements.senderId, userTable.id))
@@ -118,15 +138,29 @@ export async function fetchAnnouncements(
         eq(announcementUserStatus.userId, userId),
       ),
     )
+
     .orderBy(desc(announcements.createdAt))
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
-  // Conditionally apply the where clause based on teamId
+  // Conditionally apply the team filter based on teamId
   let finalQuery;
   if (teamId && teamId !== "all") {
     // Filter by specific teamId
-    finalQuery = query.where(eq(announcementRecipients.teamId, teamId));
+    finalQuery = query.where(
+      and(
+        eq(announcementRecipients.teamId, teamId),
+        or(
+          // Include all published announcements
+          eq(announcements.status, AnnouncementStatus.PUBLISHED),
+          // Include scheduled announcements only if their scheduled date has passed
+          and(
+            eq(announcements.status, AnnouncementStatus.SCHEDULED),
+            sql`${announcements.scheduledDate} <= CURRENT_TIMESTAMP`
+          )
+        )
+      )
+    );
   } else {
     // Filter by user's teams if teamId is 'all' or not provided
     const userTeamIdsQuery = db
@@ -136,12 +170,27 @@ export async function fetchAnnouncements(
 
     // Apply the where clause to the original query structure
     finalQuery = query.where(
-      inArray(announcementRecipients.teamId, userTeamIdsQuery),
+      and(
+        inArray(announcementRecipients.teamId, userTeamIdsQuery),
+        or(
+          // Include all published announcements
+          eq(announcements.status, AnnouncementStatus.PUBLISHED),
+          // Include scheduled announcements only if their scheduled date has passed
+          and(
+            eq(announcements.status, AnnouncementStatus.SCHEDULED),
+            sql`${announcements.scheduledDate} <= CURRENT_TIMESTAMP`
+          )
+        )
+      )
     );
   }
 
   const rows = await finalQuery;
-  return rows;
+  return rows.map(row => ({
+    ...row,
+    // Ensure teamAbbreviation is present, generate if not
+    teamAbbreviation: row.teamAbbreviation || generateTeamAbbreviation(row.teamName || ""),
+  }));
 }
 
 export async function fetchUserTeams(userId: string) {
@@ -151,17 +200,145 @@ export async function fetchUserTeams(userId: string) {
     .from(teamMembers)
     .where(eq(teamMembers.userId, userId));
 
-  const result = await db
+  const userTeamsData = await db // Renamed 'result' to 'userTeamsData' for clarity
     .select({
       id: teams.id,
       name: teams.name,
+      abbreviation: teams.abbreviation, // Added team abbreviation
       type: teams.type, // Include type as it's used in the page
+      order: teams.order, // Added team order for sorting
       memberCount: count(teamMembers.id),
     })
     .from(teams)
     .leftJoin(teamMembers, eq(teams.id, teamMembers.teamId))
     .where(inArray(teams.id, userTeamIdsQuery)) // Filter teams the user is part of
-    .groupBy(teams.id, teams.name, teams.type); // Group by team to count members
+    // Added teams.abbreviation and teams.order to groupBy
+    .groupBy(teams.id, teams.name, teams.type, teams.abbreviation, teams.order)
+    .orderBy(teams.order, teams.name); // Added orderBy
 
-  return result;
+  return userTeamsData.map(team => ({
+    ...team,
+    // Ensure abbreviation is present, generate if not
+    abbreviation: team.abbreviation || generateTeamAbbreviation(team.name || ""),
+  }));
+}
+
+export async function toggleAnnouncementAcknowledge(announcementId: string, userId: string) {
+  if (!userId || !announcementId) {
+    return { error: "User ID and Announcement ID are required." };
+  }
+  // First, check if the user is a member of any team that received this announcement
+  const isTeamMember = await db
+    .select()
+    .from(announcementRecipients)
+    .innerJoin(teamMembers, eq(announcementRecipients.teamId, teamMembers.teamId))
+    .where(
+      and(
+        eq(announcementRecipients.announcementId, announcementId),
+        eq(teamMembers.userId, userId)
+      )
+    )
+    .limit(1);
+
+  // If user is not a member of any team that received this announcement, return error
+  if (isTeamMember.length === 0) {
+    return { error: "User not authenticated or not a member of the team." };
+  }
+
+  const existingStatus = await db
+    .select()
+    .from(announcementUserStatus)
+    .where(
+      and(
+        eq(announcementUserStatus.announcementId, announcementId),
+        eq(announcementUserStatus.userId, userId),
+      ),
+    )
+    .limit(1);
+
+  if (existingStatus.length > 0) {
+    const currentAcknowledged = existingStatus[0].isAcknowledged;
+    await db
+      .update(announcementUserStatus)
+      .set({
+        isAcknowledged: !currentAcknowledged,
+        acknowledgedAt: !currentAcknowledged ? new Date() : null,
+      })
+      .where(
+        and(
+          eq(announcementUserStatus.announcementId, announcementId),
+          eq(announcementUserStatus.userId, userId),
+        ),
+      );
+    return { isAcknowledged: !currentAcknowledged };
+  }
+    await db.insert(announcementUserStatus).values({
+      id: nanoid(),
+      announcementId,
+      userId,
+      isAcknowledged: true,
+      acknowledgedAt: new Date(),
+      isBookmarked: false, // Default value for new entries
+    });
+    return { isAcknowledged: true };
+}
+
+export async function toggleAnnouncementBookmark(announcementId: string, userId: string) {
+  if (!userId || !announcementId) {
+    return { error: "User ID and Announcement ID are required." };
+  }
+  // First, check if the user is a member of any team that received this announcement
+  const isTeamMember = await db
+    .select()
+    .from(announcementRecipients)
+    .innerJoin(teamMembers, eq(announcementRecipients.teamId, teamMembers.teamId))
+    .where(
+      and(
+        eq(announcementRecipients.announcementId, announcementId),
+        eq(teamMembers.userId, userId)
+      )
+    )
+    .limit(1);
+
+  // If user is not a member of any team that received this announcement, return error
+  if (isTeamMember.length === 0) {
+    return { error: "User not authenticated or not a member of the team." };
+  }
+
+  const existingStatus = await db
+    .select()
+    .from(announcementUserStatus)
+    .where(
+      and(
+        eq(announcementUserStatus.announcementId, announcementId),
+        eq(announcementUserStatus.userId, userId),
+      ),
+    )
+    .limit(1);
+
+  if (existingStatus.length > 0) {
+    const currentBookmarked = existingStatus[0].isBookmarked;
+    await db
+      .update(announcementUserStatus)
+      .set({
+        isBookmarked: !currentBookmarked,
+        bookmarkedAt: !currentBookmarked ? new Date() : null,
+      })
+      .where(
+        and(
+          eq(announcementUserStatus.announcementId, announcementId),
+          eq(announcementUserStatus.userId, userId),
+        ),
+      );
+    return { isBookmarked: !currentBookmarked };
+  }
+    await db.insert(announcementUserStatus).values({
+      id: nanoid(),
+      announcementId,
+      userId,
+      isBookmarked: true,
+      bookmarkedAt: new Date(),
+      isAcknowledged: false, // Default value for new entries
+    });
+    return { isBookmarked: true };
 }

@@ -2,6 +2,7 @@
 
 import { RiScanLine } from "@remixicon/react";
 import clsx from "clsx";
+import { usePathname } from "next/navigation";
 import React from "react";
 import { AppSidebar, data as sidebarData } from "~/components/app-sidebar";
 import { AuthAvatar } from "~/components/auth-avatar";
@@ -44,6 +45,39 @@ export default function DashboardContent({
 }) {
   const { isSidebar } = useNavLayoutStore();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const pathname = usePathname();
+
+  // Get active navigation item based on current path
+  const getActiveNavItem = () => {
+    // Flatten all navigation items from sidebar data
+    const allNavItems = sidebarData.navMain.flatMap(
+      (group) => group.items || [],
+    );
+    // Find the active item based on current path
+    return allNavItems.find((item) => item.url === pathname);
+  };
+
+  // Get breadcrumb segments
+  const getBreadcrumbSegments = () => {
+    const activeItem = getActiveNavItem();
+
+    // Default segment is Dashboard
+    const segments = [
+      { label: "Dashboard", path: "/dashboard", icon: RiScanLine },
+    ];
+
+    if (activeItem && activeItem.url !== "/dashboard") {
+      segments.push({
+        label: activeItem.title,
+        path: activeItem.url,
+        icon: activeItem.icon,
+      });
+    }
+
+    return segments;
+  };
+
+  const breadcrumbSegments = getBreadcrumbSegments();
   // Sidebar width utility (matches sidebar.tsx)
   const SIDEBAR_WIDTH = "16rem";
   React.useEffect(() => {
@@ -84,16 +118,27 @@ export default function DashboardContent({
             <Separator orientation="vertical" decorative className="mx-2 h-8" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    <RiScanLine size={22} aria-hidden="true" />
-                    <span className="sr-only">Dashboard</span>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Contacts</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbSegments.map((segment, index) => (
+                  <React.Fragment key={segment.path}>
+                    {index > 0 && (
+                      <BreadcrumbSeparator className="hidden md:block" />
+                    )}
+                    <BreadcrumbItem className="hidden md:block">
+                      {index < breadcrumbSegments.length - 1 ? (
+                        <BreadcrumbLink href={segment.path}>
+                          {segment.icon && (
+                            <segment.icon size={22} aria-hidden="true" />
+                          )}
+                          <span className={segment.icon ? "sr-only" : ""}>
+                            {segment.label}
+                          </span>
+                        </BreadcrumbLink>
+                      ) : (
+                        <BreadcrumbPage>{segment.label}</BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                  </React.Fragment>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

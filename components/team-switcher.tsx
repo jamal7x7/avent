@@ -19,13 +19,12 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
 
+import type { Team } from "~/types"; // Import the main Team type
+
 export function TeamSwitcher({
   teams,
 }: {
-  teams: {
-    name: string;
-    logo: string;
-  }[];
+  teams: Pick<Team, "name" | "abbreviation" | "image">[]; // Use Pick from the main Team type
 }) {
   const [activeTeam, setActiveTeam] = React.useState(teams[0] ?? null);
 
@@ -43,16 +42,19 @@ export function TeamSwitcher({
               <div className="flex aspect-square size-8 items-center justify-center rounded-md overflow-hidden bg-sidebar-primary text-sidebar-primary-foreground">
                 {activeTeam && (
                   <Image
-                    src={activeTeam.logo}
+                    src={
+                      activeTeam.image ??
+                      `https://avatar.vercel.sh/${activeTeam.abbreviation}.png`
+                    }
                     width={36}
                     height={36}
-                    alt={activeTeam.name}
+                    alt={activeTeam.name} // Alt text can remain full name for accessibility
                   />
                 )}
               </div>
               <div className="grid flex-1 text-left text-base leading-tight">
-                <span className="truncate font-medium">
-                  {activeTeam?.name ?? "Select a Team"}
+                <span className="truncate font-medium" title={activeTeam?.name}>
+                  {activeTeam?.abbreviation ?? "Select a Team"}
                 </span>
               </div>
               <RiExpandUpDownLine
@@ -73,19 +75,22 @@ export function TeamSwitcher({
             </DropdownMenuLabel>
             {teams.map((team, index) => (
               <DropdownMenuItem
-                key={team.name}
+                key={team.abbreviation} // Use abbreviation or ID if available and unique
                 onClick={() => setActiveTeam(team)}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-md overflow-hidden">
                   <Image
-                    src={team.logo}
+                    src={
+                      team.image ??
+                      `https://avatar.vercel.sh/${team.abbreviation}.png`
+                    }
                     width={36}
                     height={36}
-                    alt={team.name}
+                    alt={team.name} // Alt text can remain full name
                   />
                 </div>
-                {team.name}
+                <span title={team.name}>{team.abbreviation}</span>
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}

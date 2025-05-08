@@ -13,26 +13,47 @@ export default async function AnnouncementList() {
   const teams = await fetchUserTeams(session.user.id);
   const initialTeam = "all";
   const pageSize = 10;
-  const announcements = (
-    await fetchAnnouncements(session.user.id, initialTeam, 1, pageSize)
-  ).map((a) => ({
-    ...a,
-    createdAt:
-      typeof a.createdAt === "string" ? a.createdAt : a.createdAt.toISOString(),
-    teamId: a.teamId ?? "",
-    teamName: a.teamName ?? "",
-    priority: a.priority as AnnouncementPriority, // Cast priority to enum type
-    isReceived: a.isReceived, // Pass isReceived through
-    isFavorited: a.isFavorited, // Pass isFavorited through
-    sender: a.sender
-      ? {
-          name: a.sender.name ?? null,
-          image: a.sender.image ?? null,
-          email: a.sender.email, // Add sender email
-        }
-      : { name: null, image: null, email: "" }, // Provide default empty email
-  }));
+  const announcementsData = await fetchAnnouncements(
+    session.user.id,
+    initialTeam,
+    1,
+    pageSize,
+  );
+  const announcements = announcementsData.map((a) => {
+    const teamDetails = teams.find((t) => t.id === a.teamId);
+    const abbreviation =
+      a.teamAbbreviation ||
+      teamDetails?.abbreviation ||
+      (a.teamName ? a.teamName.charAt(0).toUpperCase() : "");
+
+    return {
+      ...a,
+      createdAt:
+        typeof a.createdAt === "string"
+          ? a.createdAt
+          : a.createdAt.toISOString(),
+      teamId: a.teamId ?? "",
+      teamName: a.teamName ?? "",
+      teamAbbreviation: abbreviation,
+      priority: a.priority as AnnouncementPriority, // Cast priority to enum type
+      isAcknowledged: a.isAcknowledged, // Pass isAcknowledged through
+      isBookmarked: a.isBookmarked, // Pass isBookmarked through
+      sender: a.sender
+        ? {
+            name: a.sender.name ?? null,
+            image: a.sender.image ?? null,
+            email: a.sender.email, // Add sender email
+          }
+        : { name: null, image: null, email: "" }, // Provide default empty email
+    };
+  });
   const hasMore = announcements.length === pageSize;
+  // Validate user role (only teachers, admins, staff can view scheduled announcements)
+  const validRoles = ["teacher", "admin", "staff"];
+  const hasScheduledAccess = !!(
+    session.user.role && validRoles.includes(session.user.role)
+  );
+
   return (
     <AnnouncementListClient
       initialAnnouncements={announcements}
@@ -40,6 +61,7 @@ export default async function AnnouncementList() {
       initialTeam={initialTeam}
       hasMore={hasMore}
       fetchUrl="/api/announcements"
+      hasScheduledAccess={hasScheduledAccess}
     />
   );
 }

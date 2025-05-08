@@ -5,14 +5,16 @@ import {
   createAnnouncement,
   fetchAnnouncements,
 } from "~/app/dashboard/announcements/actions"; // Import createAnnouncement
-import { AnnouncementPriority } from "~/db/types"; // Import priority enum from correct location
+import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Import enums
 import { auth } from "~/lib/auth";
 
 // Define Zod schema for validation
 const createAnnouncementSchema = z.object({
   content: z.string().min(1).max(300),
-  priority: z.nativeEnum(AnnouncementPriority), // Add priority validation
+  priority: z.nativeEnum(AnnouncementPriority),
   teamIds: z.array(z.string()).optional(), // Optional, empty array means all teams
+  scheduleDate: z.string().optional(), // Optional date for scheduled announcements
+  status: z.nativeEnum(AnnouncementStatus).optional().default(AnnouncementStatus.PUBLISHED),
 });
 
 export async function GET(req: NextRequest) {
@@ -40,8 +42,14 @@ export async function GET(req: NextRequest) {
         typeof a.createdAt === "string"
           ? a.createdAt
           : a.createdAt.toISOString(),
+      scheduledDate: a.scheduledDate
+        ? typeof a.scheduledDate === "string"
+          ? a.scheduledDate
+          : a.scheduledDate.toISOString()
+        : null,
       teamId: a.teamId ?? "",
       teamName: a.teamName ?? "",
+      status: a.status ?? AnnouncementStatus.PUBLISHED,
     })),
     hasMore: data.length === pageSize,
   });
@@ -80,6 +88,10 @@ export async function POST(req: NextRequest) {
         (validation.data.teamIds ?? []).length > 0
           ? validation.data.teamIds
           : undefined,
+      scheduleDate: validation.data.scheduleDate ? new Date(validation.data.scheduleDate) : undefined,
+      status: validation.data.scheduleDate 
+        ? AnnouncementStatus.SCHEDULED 
+        : validation.data.status || AnnouncementStatus.PUBLISHED,
     };
 
     const newAnnouncement = await createAnnouncement({

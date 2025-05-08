@@ -55,6 +55,7 @@ export default function Page() {
               },
               icon: (
                 <svg
+                  role="graphics-symbol img"
                   xmlns="http://www.w3.org/2000/svg"
                   width={20}
                   height={20}
@@ -74,6 +75,7 @@ export default function Page() {
               },
               icon: (
                 <svg
+                  role="graphics-symbol img"
                   xmlns="http://www.w3.org/2000/svg"
                   width={18}
                   height={19}
@@ -93,6 +95,7 @@ export default function Page() {
               },
               icon: (
                 <svg
+                  role="graphics-symbol img"
                   xmlns="http://www.w3.org/2000/svg"
                   width={20}
                   height={20}
@@ -112,6 +115,7 @@ export default function Page() {
               },
               icon: (
                 <svg
+                  role="graphics-symbol img"
                   xmlns="http://www.w3.org/2000/svg"
                   width={21}
                   height={21}
@@ -157,6 +161,7 @@ export default function Page() {
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
             <svg
+              role="graphics-symbol img"
               width="64"
               height="64"
               fill="none"

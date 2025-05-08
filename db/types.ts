@@ -9,3 +9,11 @@ export enum AnnouncementPriority {
   HIGH = "high",
   URGENT = "urgent",
 }
+
+// Define announcement status types
+export enum AnnouncementStatus {
+  DRAFT = "draft",
+  SCHEDULED = "scheduled",
+  PUBLISHED = "published",
+  CANCELLED = "cancelled",
+}
