@@ -173,7 +173,7 @@ function DashboardTopNav() {
       className={cn(
         "fixed top-0 left-0 right-0 z-40 w-full bg-sidebar text-sidebar-foreground shadow flex flex-row items-center justify-between px-4 py-2 gap-2 border-b border-border",
         isPending &&
-          "opacity-60 transition-opacity duration-300 pointer-events-none",
+          "opacity-60 transition-opacity duration-300 pointer-events-none"
       )}
     >
       <div className="flex items-center gap-4">
@@ -187,7 +187,10 @@ function DashboardTopNav() {
         <TeamSwitcher teams={data.teams} />
         <div className="flex-1 flex flex-wrap gap-4 md:gap-8">
           {mainGroups.map((group) => (
-            <div key={group.title} className="flex flex-row items-center gap-2">
+            <div
+              key={group.title}
+              className="flex  flex-row items-center gap-2"
+            >
               {/* Removed group title for cleaner topnav */}
               <div className="flex flex-row gap-2 md:gap-4">
                 {group.items.map((item) => {
@@ -197,12 +200,19 @@ function DashboardTopNav() {
                       key={item.title}
                       href={item.url}
                       className={cn(
-                        "relative inline-flex flex-col md:flex-row items-center gap-1 px-3 py-1.5 rounded-md text-accent-foreground text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition",
-                        isActive && "bg-primary/10 text-primary",
+                        "relative inline-flex  flex-col md:flex-row items-center gap-1 py-3 px-3  rounded-md text-foreground/50 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition",
+                        isActive && "bg-sidebar-foreground/0 text-foreground"
                       )}
                     >
                       {item.icon && (
-                        <item.icon className="size-5" aria-hidden="true" />
+                        <item.icon
+                          className={cn(
+                            "text-muted-foreground/50 size-4",
+                            isActive &&
+                              "fill-primary/60 text-muted-foreground/50"
+                          )}
+                          aria-hidden="true"
+                        />
                       )}
                       <span>{item.title}</span>
                       {isActive && (

@@ -44,6 +44,7 @@ export default function DashboardContent({
   children?: React.ReactNode;
 }) {
   const { isSidebar } = useNavLayoutStore();
+  const { data: session } = useSession(); // Call useSession here
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const pathname = usePathname();
 
@@ -103,65 +104,68 @@ export default function DashboardContent({
       <SidebarInset
         className={clsx(
           "flex-1 w-full overflow-hidden px-4 md:px-6 lg:px-8",
-          isSidebar ? "mt-0" : "mt-16",
+          isSidebar ? "mt-0" : "mt-16", // mt-16 makes space for the fixed top nav (DashboardTopNav)
         )}
       >
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex flex-1 items-center gap-2 px-3">
-            <SidebarTrigger className="-ms-4" />
-            {/* Insert TeamSwitcher in icon mode */}
-            {isCollapsed && (
-              <div style={{ width: SIDEBAR_WIDTH }}>
-                <TeamSwitcher teams={sidebarData.teams} />
-              </div>
-            )}
-            <Separator orientation="vertical" decorative className="mx-2 h-8" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {breadcrumbSegments.map((segment, index) => (
-                  <React.Fragment key={segment.path}>
-                    {index > 0 && (
-                      <BreadcrumbSeparator className="hidden md:block" />
-                    )}
-                    <BreadcrumbItem className="hidden md:block">
-                      {index < breadcrumbSegments.length - 1 ? (
-                        <BreadcrumbLink href={segment.path}>
-                          {segment.icon && (
-                            <segment.icon size={22} aria-hidden="true" />
-                          )}
-                          <span className={segment.icon ? "sr-only" : ""}>
-                            {segment.label}
-                          </span>
-                        </BreadcrumbLink>
-                      ) : (
-                        <BreadcrumbPage>{segment.label}</BreadcrumbPage>
+        {isSidebar && ( /* Only render this header if in sidebar mode */
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger className="-ms-4" /> {/* Trigger for collapsing sidebar */}
+              {/* Insert TeamSwitcher in icon mode when sidebar is collapsed */}
+              {isCollapsed && ( 
+                <div style={{ width: SIDEBAR_WIDTH }}>
+                  <TeamSwitcher teams={sidebarData.teams} />
+                </div>
+              )}
+              <Separator orientation="vertical" decorative className="mx-2 h-8" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {breadcrumbSegments.map((segment, index) => (
+                    <React.Fragment key={segment.path}>
+                      {index > 0 && (
+                        <BreadcrumbSeparator className="hidden md:block" />
                       )}
-                    </BreadcrumbItem>
-                  </React.Fragment>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          {/* <div className="flex gap-3 ml-auto">
-            <FeedbackDialog />
-            <AuthAvatar
-              name={session?.user?.name || "User"}
-              email={session?.user?.email || ""}
-              image={session?.user?.image || undefined}
-              isDashboard={true}
-            />
-          </div> */}
-          {/* <SimpleTabs defaultValue="your-teams" className="w-full">
-            <SimpleTabsList className="flex justify-start border-b">
-              <SimpleTabsTrigger value="your-teams">
-                Your Teams
-              </SimpleTabsTrigger>
-              <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
-              <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
-            </SimpleTabsList>
-          </SimpleTabs> */}
-        </header>
-        <div className="flex flex-1 items-center flex-col gap-4 lg:gap-6 py-2 lg:py-4">
+                      <BreadcrumbItem className="hidden md:block">
+                        {index < breadcrumbSegments.length - 1 ? (
+                          <BreadcrumbLink href={segment.path}>
+                            {segment.icon && (
+                              <segment.icon size={22} aria-hidden="true" />
+                            )}
+                            <span className={segment.icon ? "sr-only" : ""}>
+                              {segment.label}
+                            </span>
+                          </BreadcrumbLink>
+                        ) : (
+                          <BreadcrumbPage>{segment.label}</BreadcrumbPage>
+                        )}
+                      </BreadcrumbItem>
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className="ml-auto flex items-center gap-3 pr-3"> {/* Container for right-aligned items */}
+              <FeedbackDialog />
+              <AuthAvatar
+                name={session?.user?.name || "User"} // session is available in this component's scope
+                email={session?.user?.email || ""}
+                image={session?.user?.image || undefined}
+                isDashboard={true}
+              />
+            </div>
+            {/* <SimpleTabs defaultValue="your-teams" className="w-full">
+              <SimpleTabsList className="flex justify-start border-b">
+                <SimpleTabsTrigger value="your-teams">
+                  Your Teams
+                </SimpleTabsTrigger>
+                <SimpleTabsTrigger value="add-team">Add Team</SimpleTabsTrigger>
+                <SimpleTabsTrigger value="join-team">Join Team</SimpleTabsTrigger>
+              </SimpleTabsList>
+            </SimpleTabs> */}
+          </header>
+        )}
+        {/* Main content area, py-6 for padding when header is not there in topNav mode */}
+        <div className={clsx("flex flex-1 flex-col gap-4 lg:gap-6", isSidebar ? "py-2 lg:py-4" : "py-6")}>
           {children}
         </div>
       </SidebarInset>

@@ -1,19 +1,20 @@
-import { AnnouncementForm } from "~/components/announcement-form";
+// This page is now a Server Component
 import AnnouncementList from "~/components/announcement-list";
 import DashboardContent from "../DashboardContent";
+import AnnouncementsPageClientWrapper from "~/components/announcements-page-client-wrapper";
 
-export default function AnnouncementsPage() {
+// export default function AnnouncementsPage() { // Can be async if needed for RSC data fetching
+export default async function AnnouncementsPage() { 
+  // Any server-side data fetching for the page itself could happen here
+  // For now, AnnouncementList handles its own data.
+
   return (
     <DashboardContent>
-      <div className="h-full w-full max-w-2xl mx-auto py-10 md:px-0 space-y-8">
-        {/* <h1 className="text-2xl font-bold mb-2">Announcements</h1>
-        <p className="text-muted-foreground mb-6">Manage and send announcements to your teams.</p> */}
-        <AnnouncementForm />
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Your Announcements</h2>
-          <AnnouncementList />
-        </div>
-      </div>
+      {/* The client wrapper will manage client-side interactions like the dialog state */}
+      <AnnouncementsPageClientWrapper>
+        {/* AnnouncementList is a Server Component, passed as a child */}
+        <AnnouncementList /> 
+      </AnnouncementsPageClientWrapper>
     </DashboardContent>
   );
 }

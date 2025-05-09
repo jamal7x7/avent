@@ -15,8 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
+// import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"; // Tabs will be replaced by tags/buttons
 import type { AnnouncementPriority } from "~/db/types"; // Import priority enum
+import { cn } from "~/lib/utils"; // For styling active tag
 
 interface Announcement {
   id: string;
@@ -85,10 +86,17 @@ export function AnnouncementListClient({
   hasScheduledAccess = false,
 }: AnnouncementListClientProps) {
   const [selectedTeam, setSelectedTeam] = useState(initialTeam);
-  const [tabValue, setTabValue] = useState("announcements"); // Default tab
-  const router = useRouter();
+  // const [tabValue, setTabValue] = useState("announcements"); // Replaced by activeTag
+  const [activeTag, setActiveTag] = useState("all"); // Default tag
+  const router = useRouter(); // Still needed for ScheduledAnnouncements' "Create" button if kept
   const queryClient = useQueryClient(); // Get query client
   const { data: session } = useSession(); // Get session data
+
+  const filterTags = [
+    { value: "all", label: "All" },
+    { value: "my-announcements", label: "My Announcements" },
+    ...(hasScheduledAccess ? [{ value: "scheduled", label: "Scheduled" }] : []),
+  ];
 
   const {
     data,
@@ -99,10 +107,14 @@ export function AnnouncementListClient({
     error,
     refetch, // Use refetch on filter change
   } = useInfiniteQuery<FetchResponse, Error>({
-    queryKey: ["announcements", selectedTeam, tabValue], // Include tabValue in queryKey
+    queryKey: ["announcements", selectedTeam, activeTag], // Use activeTag in queryKey
     queryFn: ({ pageParam }) => {
+      // Do not fetch using this query if 'scheduled' tag is active, as ScheduledAnnouncements handles its own fetching
+      if (activeTag === "scheduled") {
+        return Promise.resolve({ announcements: [], hasMore: false, nextCursor: undefined });
+      }
       const userIdFilter =
-        tabValue === "my-announcements" ? session?.user?.id : undefined;
+        activeTag === "my-announcements" ? session?.user?.id : undefined;
       return fetchAnnouncements(
         fetchUrl,
         selectedTeam,
@@ -110,6 +122,7 @@ export function AnnouncementListClient({
         userIdFilter
       );
     },
+    enabled: activeTag !== "scheduled", // Only enable this query if not on scheduled tab
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     // initialData: { // Optionally provide initial data from props
@@ -119,13 +132,12 @@ export function AnnouncementListClient({
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Refetch when selectedTeam or tabValue (for non-scheduled tabs) changes
+  // Refetch when selectedTeam or activeTag (for non-scheduled tags) changes
   useEffect(() => {
-    // Only refetch if the tab is not 'scheduled', as 'scheduled' handles its own navigation/data
-    if (tabValue !== "scheduled") {
+    if (activeTag !== "scheduled") {
       refetch();
     }
-  }, [selectedTeam, tabValue, refetch]);
+  }, [selectedTeam, activeTag, refetch]);
 
   const handleFilterChange = (teamId: string) => {
     setSelectedTeam(teamId);
@@ -135,45 +147,37 @@ export function AnnouncementListClient({
   const allAnnouncements =
     data?.pages.flatMap((page) => page.announcements) ?? [];
 
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setTabValue(value); // Always update tab state
-
-    // Handle navigation for specific tabs or update URL for filter persistence
-    // No longer navigating for "scheduled" tab, it will be rendered inline.
-    if (value === "my-announcements") {
-      // Optional: Update URL to reflect this tab, e.g., router.push("/dashboard/announcements?view=mine");
-    } else if (value === "announcements") {
-      // Optional: Update URL, e.g., router.push("/dashboard/announcements");
-    }
-    // refetch() will be called by the useEffect hook when tabValue changes (for non-scheduled tabs)
+  const handleTagChange = (tag: string) => {
+    setActiveTag(tag);
   };
 
   return (
     <div className="w-full">
-      {/* Controls Bar: Tabs and Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 px-0 py-3 border-b border-border">
-        {/* Tabs Section */}
-        {/* Using default Shadcn Tabs styling which is fairly minimalist */}
-        <Tabs
-          value={tabValue}
-          onValueChange={handleTabChange}
-          className="w-full md:w-auto"
-        >
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-none md:inline-flex">
-            <TabsTrigger value="announcements">All</TabsTrigger>
-            <TabsTrigger value="my-announcements">My Announcements</TabsTrigger>
-            {hasScheduledAccess && (
-              <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-            )}
-          </TabsList>
-        </Tabs>
+      {/* Controls Bar: Tags and Filters */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 px-4 py-3 border-b border-border">
+        {/* Tags Section */}
+        <div className="flex flex-wrap gap-2">
+          {filterTags.map((tag) => (
+            <Button
+              key={tag.value}
+              variant={activeTag === tag.value ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => handleTagChange(tag.value)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-sm",
+                activeTag === tag.value && "font-semibold"
+              )}
+            >
+              {tag.label}
+            </Button>
+          ))}
+        </div>
 
         {/* Filter Section - Simplified */}
         <div className="w-full md:w-auto">
           <Select onValueChange={handleFilterChange} value={selectedTeam}>
-            <SelectTrigger
-              id="team-filter"
+            <SelectTrigger 
+              id="team-filter" 
               className="w-full md:w-[220px] text-sm"
               aria-label="Filter by team"
             >
@@ -192,44 +196,38 @@ export function AnnouncementListClient({
         </div>
       </div>
       {/* Content Area */}
-      <div className="px-0">
-        {error && (
-          <div className="my-4 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
-            <p className="font-semibold">Error loading announcements:</p>
-            <p>{error.message}</p>
-          </div>
-        )}
-
-        {tabValue === "scheduled" ? (
+      <div className="px-4">
+        {activeTag === "scheduled" ? (
           <ScheduledAnnouncements selectedTeam={selectedTeam} />
         ) : (
           <>
+            {error && ( // Show error only for non-scheduled tabs if query is enabled
+              <div className="my-4 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
+                <p className="font-semibold">Error loading announcements:</p>
+                <p>{error.message}</p>
+              </div>
+            )}
             <ul className="space-y-6">
-              {" "}
-              {/* Increased spacing between cards */}
-              {isLoading &&
-                allAnnouncements.length === 0 && ( // Show simple loading text
-                  <li className="text-muted-foreground text-center py-8">
-                    Loading announcements...
-                  </li>
-                )}
-              {!isLoading && allAnnouncements.length === 0 && (
+              {isLoading && activeTag !== "scheduled" && allAnnouncements.length === 0 && (
+                <li className="text-muted-foreground text-center py-8">
+                  Loading announcements...
+                </li>
+              )}
+              {!isLoading && activeTag !== "scheduled" && allAnnouncements.length === 0 && (
                 <li className="text-muted-foreground text-center py-8">
                   No announcements found for the current filter.
                 </li>
               )}
-              {allAnnouncements.map((a) => (
+              {activeTag !== "scheduled" && allAnnouncements.map((a) => (
                 <AnnouncementCard
-                  key={`${a.id}-${a.teamId}-${tabValue}`} // Add tabValue to key for potential remount on tab switch
+                  key={`${a.id}-${a.teamId}-${activeTag}`}
                   announcement={a}
                   currentUserId={session?.user?.id}
                 />
               ))}
             </ul>
-            {hasNextPage && (
+            {activeTag !== "scheduled" && hasNextPage && (
               <div className="mt-6 text-center">
-                {" "}
-                {/* Centered Load More button */}
                 <Button
                   variant="outline"
                   onClick={() => fetchNextPage()}
@@ -237,22 +235,21 @@ export function AnnouncementListClient({
                 >
                   {isFetchingNextPage
                     ? "Loading more..."
-                    : isLoading // This isLoading here refers to the general query loading, not just next page
+                    : isLoading 
                     ? "Loading..."
                     : "Load More"}
                 </Button>
               </div>
             )}
-            {/* Fallback loading indicator if hasNextPage is false but still loading (e.g. initial load after error) */}
-            {isLoading && !hasNextPage && allAnnouncements.length === 0 && (
+            {/* Fallback loading indicator for non-scheduled tabs */}
+            {isLoading && activeTag !== "scheduled" && !hasNextPage && allAnnouncements.length === 0 && (
               <li className="text-muted-foreground text-center py-8">
                 Loading announcements...
               </li>
             )}
           </>
         )}
-      </div>{" "}
-      {/* Closing tag for px-4 div */}
+      </div>
     </div>
   );
 }

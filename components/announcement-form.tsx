@@ -93,6 +93,10 @@ const announcementFormSchema = z.object({
 
 type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
 
+interface AnnouncementFormProps {
+  onSuccess?: () => void; // Optional callback for successful submission
+}
+
 // Update mutation function to handle scheduled announcements
 const createAnnouncement = async (variables: {
   content: string;
@@ -124,7 +128,7 @@ const createAnnouncement = async (variables: {
   return res.json();
 };
 
-export function AnnouncementForm() {
+export function AnnouncementForm({ onSuccess }: AnnouncementFormProps) {
   const { data: session } = useSession();
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
@@ -315,6 +319,9 @@ export function AnnouncementForm() {
           form.reset();
           setSelectedTeams([]);
           setError(null);
+          if (onSuccess) {
+            onSuccess(); // Call the onSuccess callback if provided
+          }
         },
       },
     );

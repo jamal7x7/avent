@@ -31,5 +31,46 @@
   "markdownlint.config": {
     "MD033": false
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "piny.project_settings": {
+    "open-pages": [
+      "index.html"
+    ],
+    "component-settings": {
+      "components/app-sidebar.tsx:::Temp": {
+        "route": "/dashboard"
+      }
+    },
+    "app-routes": {
+      "routes": [
+        "/",
+        "/auth/backup-codes",
+        "/auth/sign-in",
+        "/auth/sign-up",
+        "/auth/two-factor",
+        "/dash",
+        "/dash/profile",
+        "/dash/settings",
+        "/dashboard",
+        "/dashboard/announcements",
+        "/dashboard/announcements/scheduled",
+        "/dashboard/courses",
+        "/dashboard/schedule",
+        "/dashboard/team-management",
+        "/notifications",
+        "/products"
+      ],
+      "current_route": "/dashboard/courses"
+    },
+    "urls": {
+      "index.html": {
+        "open-page-views": [
+          {
+            "w": 660,
+            "h": 812
+          }
+        ]
+      }
+    }
+  }
 }
