@@ -50,6 +50,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSession } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
+import { Team } from "~/types";
 
 const TEAM_TYPES = [
   { value: "classroom", label: "Classroom" },
@@ -91,7 +92,7 @@ export function TeamManagementTabs({
   onTeamAdded,
   activeTab = "create-team",
 }: {
-  teams: { id: string; name: string; type: string }[];
+  teams: Team[];
   onTeamAdded?: () => void;
   activeTab?: "create-team" | "invite-codes";
 }) {

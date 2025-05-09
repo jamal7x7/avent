@@ -48,6 +48,7 @@ import {
 import { YourTeamsTabContent } from "~/components/your-teams-tab-content";
 import { useSession } from "~/lib/auth-client";
 import DashboardContent from "../DashboardContent";
+import { Team } from "~/types";
 
 const TEAM_TYPES = [
   { value: "classroom", label: "Classroom" },
@@ -65,9 +66,7 @@ type CreateTeamFormValues = z.infer<typeof createTeamFormSchema>;
 
 export default function TeamManagementPage() {
   const { data: session } = useSession();
-  const [teams, setTeams] = useState<
-    { id: string; name: string; type: string; memberCount: number }[]
-  >([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasTeams = teams.length > 0;

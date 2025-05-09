@@ -40,11 +40,12 @@ export default async function AnnouncementList() {
       isBookmarked: a.isBookmarked, // Pass isBookmarked through
       sender: a.sender
         ? {
+            id: a.sender.id,
             name: a.sender.name ?? null,
             image: a.sender.image ?? null,
-            email: a.sender.email, // Add sender email
+            email: a.sender.email,
           }
-        : { name: null, image: null, email: "" }, // Provide default empty email
+        : { id: "", name: null, image: null, email: "" }
     };
   });
   const hasMore = announcements.length === pageSize;

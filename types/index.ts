@@ -9,7 +9,7 @@ export interface TeamMember {
 export interface Team {
   id: string;
   name: string;
-  abbreviation: string; // Added mandatory abbreviation
+  abbreviation: string | null; // Added mandatory abbreviation
   type: string | null;
   memberCount: number;
   image?: string;
@@ -24,10 +24,22 @@ export interface Announcement {
   createdAt: string;
   teamId: string;
   teamName: string;
+  teamAbbreviation?: string;
+  priority: AnnouncementPriority;
+  status: AnnouncementStatus;
+  scheduledDate?: Date;
   sender: {
-    name: string;
+    id: string;
+    name: string | null;
     image?: string | null;
-  } | null;
+    email: string;
+  };
+  isAcknowledged: boolean;
+  isBookmarked: boolean;
+  totalAcknowledged: number;
 }
+
+export type AnnouncementPriority = 'low' | 'medium' | 'high';
+export type AnnouncementStatus = 'published' | 'scheduled' | 'draft';
 
 // Add other types if needed

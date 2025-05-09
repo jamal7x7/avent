@@ -16,9 +16,8 @@ import { Button } from "~/components/ui/button";
 
 interface AnnouncementActionsProps {
   announcementId: string;
-  initialIsAcknowledged: boolean;
-  initialIsBookmarked: boolean;
-  // userId: string; // Or get from session
+  initialIsAcknowledged: boolean | undefined;
+  initialIsBookmarked: boolean | undefined;
 }
 
 export function AnnouncementActions({
