@@ -95,13 +95,14 @@ export async function createAnnouncement(input: AnnouncementInput) {
 }
 
 export async function fetchAnnouncements(
-  userId: string, // Add userId parameter
+  userId: string, // For user-specific data like acknowledgements
   teamId?: string,
   page = 1,
   pageSize = 10,
+  filterBySenderId?: string, // New parameter for filtering by sender
 ) {
   // Base query joining announcements and sender info
-  const query = db
+  let queryBuilder = db
     .select({
       id: announcements.id,
       content: announcements.content,
@@ -141,51 +142,45 @@ export async function fetchAnnouncements(
 
     .orderBy(desc(announcements.createdAt))
     .limit(pageSize)
-    .offset((page - 1) * pageSize);
+    .offset((page - 1) * pageSize)
+    .$dynamic(); // Make the query dynamic to add where clauses later
 
-  // Conditionally apply the team filter based on teamId
-  let finalQuery;
+  const whereConditions = [];
+
+  // Team filtering logic
   if (teamId && teamId !== "all") {
-    // Filter by specific teamId
-    finalQuery = query.where(
-      and(
-        eq(announcementRecipients.teamId, teamId),
-        or(
-          // Include all published announcements
-          eq(announcements.status, AnnouncementStatus.PUBLISHED),
-          // Include scheduled announcements only if their scheduled date has passed
-          and(
-            eq(announcements.status, AnnouncementStatus.SCHEDULED),
-            sql`${announcements.scheduledDate} <= CURRENT_TIMESTAMP`
-          )
-        )
-      )
-    );
+    whereConditions.push(eq(announcementRecipients.teamId, teamId));
   } else {
     // Filter by user's teams if teamId is 'all' or not provided
     const userTeamIdsQuery = db
       .selectDistinct({ teamId: teamMembers.teamId })
       .from(teamMembers)
       .where(eq(teamMembers.userId, userId));
-
-    // Apply the where clause to the original query structure
-    finalQuery = query.where(
-      and(
-        inArray(announcementRecipients.teamId, userTeamIdsQuery),
-        or(
-          // Include all published announcements
-          eq(announcements.status, AnnouncementStatus.PUBLISHED),
-          // Include scheduled announcements only if their scheduled date has passed
-          and(
-            eq(announcements.status, AnnouncementStatus.SCHEDULED),
-            sql`${announcements.scheduledDate} <= CURRENT_TIMESTAMP`
-          )
-        )
-      )
-    );
+    whereConditions.push(inArray(announcementRecipients.teamId, userTeamIdsQuery));
   }
 
-  const rows = await finalQuery;
+  // Status filtering (published or past scheduled)
+  whereConditions.push(
+    or(
+      eq(announcements.status, AnnouncementStatus.PUBLISHED),
+      and(
+        eq(announcements.status, AnnouncementStatus.SCHEDULED),
+        sql`${announcements.scheduledDate} <= CURRENT_TIMESTAMP`
+      )
+    )! // Add non-null assertion if TypeScript complains about potential null from or/and
+  );
+
+  // Sender ID filtering
+  if (filterBySenderId) {
+    whereConditions.push(eq(announcements.senderId, filterBySenderId));
+  }
+
+  // Apply all conditions
+  if (whereConditions.length > 0) {
+    queryBuilder = queryBuilder.where(and(...whereConditions));
+  }
+
+  const rows = await queryBuilder;
   return rows.map(row => ({
     ...row,
     // Ensure teamAbbreviation is present, generate if not

@@ -29,11 +29,14 @@ export async function GET(req: NextRequest) {
   const teamId = searchParams.get("teamId") || "all";
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
   const pageSize = 10;
+  const senderIdFilter = searchParams.get("senderId"); // Read senderId from query
+
   const data = await fetchAnnouncements(
-    session.user.id,
+    session.user.id, // For user-specific data like acknowledgements
     teamId,
     page,
     pageSize,
+    senderIdFilter || undefined, // Pass senderIdFilter to fetchAnnouncements
   );
   return NextResponse.json({
     announcements: data.map((a) => ({

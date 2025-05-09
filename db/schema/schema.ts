@@ -123,6 +123,7 @@ export const announcements = pgTable("announcements", {
   })
     .notNull()
     .default(AnnouncementStatus.PUBLISHED),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 export const announcementRecipients = pgTable("announcement_recipients", {

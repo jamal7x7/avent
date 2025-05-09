@@ -72,16 +72,31 @@ import { type AnnouncementPriority, AnnouncementStatus } from "~/db/types";
 import { useSession } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
 
+// This interface might need to align more closely with what AnnouncementCard expects,
+// or the mapping when calling AnnouncementCard needs to be thorough.
+// For now, keeping it as is, but noting that the API at /api/announcements/scheduled
+// will need to provide all necessary fields for AnnouncementCard.
 interface ScheduledAnnouncement {
   id: string;
   content: string;
   priority: AnnouncementPriority;
   createdAt: string;
-  scheduledDate: string;
+  scheduledDate: string; // Should be ISO string
   status: AnnouncementStatus;
   teamIds: string[];
-  teamNames: string[];
-  senderId: string; // Added senderId
+  teamNames: string[]; // Consider if a single teamName and teamAbbreviation is more appropriate for AnnouncementCard
+  teamAbbreviation?: string; // Add to match AnnouncementCard if possible from API
+  senderId: string;
+  // Add fields expected by AnnouncementCard, to be populated by fetchScheduledAnnouncements
+  sender: {
+    id: string;
+    name: string | null;
+    image?: string | null;
+    email: string;
+  };
+  isAcknowledged: boolean;
+  isBookmarked: boolean;
+  totalAcknowledged: number;
 }
 
 // Function to fetch scheduled announcements
@@ -131,7 +146,12 @@ const updateScheduledAnnouncement = async ({
   return res.json();
 };
 
-export function ScheduledAnnouncements() {
+interface ScheduledAnnouncementsProps {
+  selectedTeam: string; // Prop from parent
+  // teams: { id: string; name: string }[]; // Teams list can also be passed if not fetched internally or if parent already has it
+}
+
+export function ScheduledAnnouncements({ selectedTeam }: ScheduledAnnouncementsProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [selectedAnnouncement, setSelectedAnnouncement] =
@@ -146,35 +166,20 @@ export function ScheduledAnnouncements() {
   const [announcementToUnpublish, setAnnouncementToUnpublish] = useState<
     string | null
   >(null);
-  const [tabValue, setTabValue] = useState("scheduled");
-  const [selectedTeam, setSelectedTeam] = useState("all");
-  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  const router = useRouter();
+  // const [tabValue, setTabValue] = useState("scheduled"); // Tab value will be managed by parent
+  // const [selectedTeamState, setSelectedTeamState] = useState(selectedTeam); // Use prop directly
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]); // Still fetch teams for now, or pass as prop
+  const router = useRouter(); // Keep for "Create Scheduled Announcement" button
 
   const validRoles = ["teacher", "admin", "staff"];
   const role = session?.user?.role as string;
 
-  // Handle team filter change
-  const handleFilterChange = (teamId: string) => {
-    setSelectedTeam(teamId);
-  };
-
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setTabValue(value);
-    if (value === "announcements") {
-      router.push("/dashboard/announcements");
-    } else {
-      router.push("/dashboard/announcements/scheduled");
-    }
-  };
-
-  // Fetch teams
+  // Fetch teams (can be optimized if parent passes teams)
   useEffect(() => {
     const getTeams = async () => {
       if (!session?.user?.id || !validRoles.includes(role)) return;
       try {
-        const data = await fetchTeams();
+        const data = await fetchTeams(); // This might be redundant if parent already has teams
         setTeams(data.teams || []);
       } catch (err) {
         console.error("Failed to load teams:", err);
@@ -183,17 +188,17 @@ export function ScheduledAnnouncements() {
     void getTeams();
   }, [session?.user?.id, role]);
 
-  // Query for scheduled announcements
+  // Query for scheduled announcements, now using selectedTeam prop
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["scheduledAnnouncements", selectedTeam],
-    queryFn: () => fetchScheduledAnnouncements(selectedTeam),
+    queryKey: ["scheduledAnnouncements", selectedTeam], // Use prop in queryKey
+    queryFn: () => fetchScheduledAnnouncements(selectedTeam), // Use prop in queryFn
     enabled: !!session?.user?.id && validRoles.includes(role),
   });
 
-  // Refetch when selectedTeam changes
+  // Refetch when selectedTeam prop changes
   useEffect(() => {
     refetch();
-  }, [selectedTeam, refetch]);
+  }, [selectedTeam, refetch]); // Depend on the prop
 
   // Mutation for updating announcements
   const updateMutation = useMutation({
@@ -309,224 +314,55 @@ export function ScheduledAnnouncements() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-          <div className="flex-1">
-            <Tabs
-              value={tabValue}
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 max-w-[240px]">
-                <TabsTrigger value="announcements">Announcements</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Filter by team:</span>
-            <Select onValueChange={handleFilterChange} value={selectedTeam}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a team" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Teams</SelectItem>
-                {teams.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="p-4 text-center">
-          Loading scheduled announcements...
-        </div>
+      <div className="p-4 text-center text-muted-foreground">
+        Loading scheduled announcements...
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-          <div className="flex-1">
-            <Tabs
-              value={tabValue}
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 max-w-[240px]">
-                <TabsTrigger value="announcements">Announcements</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Filter by team:</span>
-            <Select onValueChange={handleFilterChange} value={selectedTeam}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a team" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Teams</SelectItem>
-                {teams.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="p-4 text-center text-destructive">
-          Error: {(error as Error).message}
-        </div>
+      <div className="p-4 text-center text-destructive">
+        Error loading scheduled announcements: {(error as Error).message}
       </div>
     );
   }
 
   if (scheduledAnnouncements.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-          <div className="flex-1">
-            <Tabs
-              value={tabValue}
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 max-w-[240px]">
-                <TabsTrigger value="announcements">Announcements</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Filter by team:</span>
-            <Select onValueChange={handleFilterChange} value={selectedTeam}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a team" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Teams</SelectItem>
-                {teams.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="p-8 text-center border rounded-lg bg-muted/20 flex flex-col items-center gap-4">
-          <CalendarClock className="h-12 w-12 text-muted-foreground/60" />
-          <h3 className="text-lg font-medium">No Scheduled Announcements</h3>
-          <p className="text-muted-foreground max-w-md">
-            {selectedTeam !== "all"
-              ? "There are no scheduled announcements for this team. Try selecting a different team or create a new scheduled announcement."
-              : "There are no scheduled announcements. You can create a new announcement and schedule it for future delivery."}
-          </p>
-          <Button
-            variant="outline"
-            className="mt-2"
-            onClick={() => router.push("/dashboard/announcements/new")}
-          >
-            <CalendarDays className="mr-2 h-4 w-4" />
-            Create Scheduled Announcement
-          </Button>
-        </div>
+      <div className="p-8 text-center border rounded-lg bg-muted/20 flex flex-col items-center gap-4 mt-6">
+        <CalendarClock className="h-12 w-12 text-muted-foreground/60" />
+        <h3 className="text-lg font-medium">No Scheduled Announcements</h3>
+        <p className="text-muted-foreground max-w-md">
+          {selectedTeam !== "all"
+            ? "There are no scheduled announcements for this team. Try selecting a different team or create a new scheduled announcement."
+            : "There are no scheduled announcements. You can create a new announcement and schedule it for future delivery."}
+        </p>
+        <Button
+          variant="outline"
+          className="mt-2"
+          onClick={() => router.push("/dashboard/announcements/new")}
+        >
+          <CalendarDays className="mr-2 h-4 w-4" />
+          Create Scheduled Announcement
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-        <div className="flex-1">
-          <Tabs
-            value={tabValue}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 max-w-[240px]">
-              <TabsTrigger value="announcements">Announcements</TabsTrigger>
-              <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Filter by team:</span>
-          <Select onValueChange={handleFilterChange} value={selectedTeam}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a team" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
-              {teams.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <h2 className="text-xl font-semibold">Scheduled Announcements</h2>
-      <div className="flex flex-col gap-4">
+    <div className="space-y-4 mt-6"> {/* Added mt-6 for spacing from parent controls */}
+      {/* The H2 and filter controls are removed as they will be handled by AnnouncementListClient */}
+      {/* <h2 className="text-xl font-semibold">Scheduled Announcements</h2> */}
+      <div className="flex flex-col gap-6"> {/* Increased gap */}
         {scheduledAnnouncements.map((announcement: ScheduledAnnouncement) => (
           <div key={announcement.id} className="relative group">
-            <AnnouncementCard
-              announcement={{
-                id: announcement.id,
-                content: announcement.content,
-                createdAt: announcement.createdAt,
-                teamName: announcement.teamNames.join(", "),
-                priority: announcement.priority,
-                sender: {
-                  id: session?.user?.id || "", // Ensure sender.id is passed if needed by AnnouncementCard's announcement prop structure
-                  name: session?.user?.name || "Unknown",
-                  image: session?.user?.image,
-                  email: session?.user?.email || "",
-                },
-              }}
-              currentUserId={session?.user?.id}
-            />
-            {session?.user?.id === announcement.senderId && (
-              <div className="absolute top-2 right-2 z-10">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">More actions</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleEditClick(announcement)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Schedule
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => openCancelDialog(announcement.id)}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Cancel
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => openUnpublishDialog(announcement.id)}
-                    >
-                      <Info className="mr-2 h-4 w-4" />
-                      Save as Draft
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-            <div className="absolute top-4 left-4 flex flex-col sm:flex-row gap-2 z-10">
+            {/* Removed the specific DropdownMenu for scheduled items. 
+                AnnouncementCard will provide its own generic Edit/Schedule/Draft/Delete.
+                If "Edit Schedule" needs to be a distinct action from "Edit Content",
+                this will require further refinement in AnnouncementCard or a new prop.
+            */}
+            <div className=" mt-4 mb-4 flex flex-col sm:flex-row gap-2 z-10">
               <Badge
                 variant="outline"
                 className="bg-amber-500/10 text-amber-600 border-amber-200 flex items-center gap-1 px-3 py-1.5 shadow-sm"
@@ -538,227 +374,42 @@ export function ScheduledAnnouncements() {
                 </span>
               </Badge>
             </div>
+
+            <AnnouncementCard
+              announcement={{
+                id: announcement.id,
+                content: announcement.content,
+                createdAt: announcement.createdAt,
+                scheduledDate: announcement.scheduledDate, // Pass scheduledDate
+                status: announcement.status, // Pass status
+                teamName: announcement.teamNames[0] || "Scheduled Team", // Pass first team name or a default
+                teamAbbreviation: announcement.teamAbbreviation, // Pass abbreviation if available
+                priority: announcement.priority,
+                sender: announcement.sender || { // Use actual sender if fetched, else default
+                  id: announcement.senderId, // Use senderId from scheduled announcement
+                  name: "Unknown Sender",    // Default or fetch actual sender name
+                  image: null,
+                  email: "",
+                },
+                isAcknowledged: announcement.isAcknowledged !== undefined ? announcement.isAcknowledged : false, // Default if not provided
+                isBookmarked: announcement.isBookmarked !== undefined ? announcement.isBookmarked : false,   // Default if not provided
+                totalAcknowledged: announcement.totalAcknowledged !== undefined ? announcement.totalAcknowledged : 0, // Default if not provided
+              }}
+              currentUserId={session?.user?.id}
+            />
           </div>
         ))}
       </div>
 
-      {/* Edit Schedule Dialog */}
-      {data?.scheduledAnnouncements?.length === 0 && !isLoading && (
-        <li className="text-muted-foreground text-center">
-          No scheduled announcements found for this team.
-        </li>
-      )}
-      {data?.scheduledAnnouncements?.map((a: ScheduledAnnouncement) => (
-        <Card
-          key={a.id}
-          className="w-full md:w-2xl rounded-2xl transition-shadow duration-300 hover:shadow-lg"
-        >
-          <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
-            <div className="flex-1">
-              <CardTitle className="text-sm font-semibold tracking-tight text-foreground/90">
-                {a.teamNames.join(", ")}
-              </CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  Scheduled:{" "}
-                  {format(new Date(a.scheduledDate), "MMM d, yyyy 'at' h:mm a")}
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  Status: {a.status}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Dialog
-                open={isEditDialogOpen && selectedAnnouncement?.id === a.id}
-                onOpenChange={(open) => {
-                  setIsEditDialogOpen(open);
-                  if (!open) {
-                    setSelectedAnnouncement(null);
-                    setNewScheduledDate(undefined);
-                  }
-                }}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label="Edit scheduled announcement"
-                    onClick={() => {
-                      setSelectedAnnouncement(a);
-                      setNewScheduledDate(new Date(a.scheduledDate));
-                      setIsEditDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit Scheduled Announcement</DialogTitle>
-                    <DialogDescription>
-                      Change the scheduled date and time for this announcement.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-4">
-                    <Calendar
-                      mode="single"
-                      selected={newScheduledDate}
-                      onSelect={setNewScheduledDate}
-                      className="rounded-md border"
-                    />
-                    <TimePicker
-                      date={newScheduledDate}
-                      setDate={setNewScheduledDate}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      onClick={() => {
-                        if (!selectedAnnouncement || !newScheduledDate) return;
-                        updateMutation.mutate({
-                          id: selectedAnnouncement.id,
-                          scheduledDate: newScheduledDate,
-                        });
-                      }}
-                      disabled={updateMutation.isLoading || !newScheduledDate}
-                    >
-                      {updateMutation.isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        "Save"
-                      )}
-                    </Button>
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <AlertDialog
-                open={announcementToCancel === a.id}
-                onOpenChange={(open) => {
-                  if (!open) setAnnouncementToCancel(null);
-                }}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label="Cancel scheduled announcement"
-                    onClick={() => setAnnouncementToCancel(a.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Cancel Scheduled Announcement
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to cancel this scheduled
-                      announcement? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel asChild>
-                      <Button variant="outline">No, keep it</Button>
-                    </AlertDialogCancel>
-                    <AlertDialogAction asChild>
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          updateMutation.mutate({
-                            id: a.id,
-                            status: "CANCELLED",
-                          });
-                          setAnnouncementToCancel(null);
-                        }}
-                        disabled={updateMutation.isLoading}
-                      >
-                        {updateMutation.isLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          "Yes, cancel"
-                        )}
-                      </Button>
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </CardHeader>
-          <CardContent className="px-6 py-4">
-            <div className="text-base text-foreground/90 whitespace-pre-line">
-              {a.content}
-            </div>
-          </CardContent>
-          <CardFooter className="px-6 pb-4 pt-0 flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">
-              Created:{" "}
-              {format(new Date(a.createdAt), "MMM d, yyyy 'at' h:mm a")}
-            </span>
-            <Badge variant="secondary" className="text-xs">
-              Priority: {a.priority}
-            </Badge>
-          </CardFooter>
-        </Card>
-      ))}
-      {/* Cancel Announcement Alert Dialog */}
-      <AlertDialog
-        open={!!announcementToCancel}
-        onOpenChange={(open) => !open && setAnnouncementToCancel(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Scheduled Announcement</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to cancel this scheduled announcement? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>No, keep it scheduled</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                announcementToCancel &&
-                handleCancelAnnouncement(announcementToCancel)
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Yes, cancel announcement
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Unpublish Announcement Alert Dialog */}
-      <AlertDialog
-        open={!!announcementToUnpublish}
-        onOpenChange={(open) => !open && setAnnouncementToUnpublish(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Save as Draft</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will unpublish the scheduled announcement and save it as a
-              draft. You can edit and reschedule it later. Continue?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                announcementToUnpublish &&
-                handleUnpublishAnnouncement(announcementToUnpublish)
-              }
-            >
-              Save as Draft
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* 
+        Removed the duplicated card rendering and standalone dialogs from here.
+        The AnnouncementCard component itself handles Edit/Schedule/Draft/Delete.
+        If specific actions like "Cancel Scheduled" or "Unpublish to Draft" are needed
+        distinctly for scheduled items, they would typically be integrated into
+        the AnnouncementCard's dropdown logic based on announcement.status,
+        or this ScheduledAnnouncements component would need its own more specialized card.
+        For now, relying on AnnouncementCard's generic actions.
+      */}
     </div>
   );
 }

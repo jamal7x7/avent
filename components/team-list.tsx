@@ -12,6 +12,7 @@ import { toastAnnouncement } from "./toast-announcement";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { generateTeamAbbreviation } from "~/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +50,7 @@ export function TeamList({
     (team) =>
       team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (team.abbreviation &&
-        team.abbreviation.toLowerCase().includes(searchQuery.toLowerCase())),
+        team.abbreviation.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleTeamAdded = () => {
@@ -114,7 +115,7 @@ export function TeamList({
                     "w-full border border-transparent cursor-pointer p-3 text-left rounded-md transition-all duration-200 flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     selectedTeamId === team.id
                       ? "bg-primary/10 hover:bg-primary/20 border-primary/20 shadow-sm"
-                      : "hover:border-primary/20 hover:bg-muted/50",
+                      : "hover:border-primary/20 hover:bg-muted/50"
                   )}
                   aria-current={selectedTeamId === team.id ? "true" : undefined}
                 >
@@ -123,12 +124,16 @@ export function TeamList({
                       <AvatarImage
                         src={
                           team.image ??
-                          `https://avatar.vercel.sh/${team.abbreviation}.png`
+                          `https://avatar.vercel.sh/${
+                            team.abbreviation ?? team.name
+                          }.png`
                         }
                         alt={team.name} // Keep full name for alt text for better accessibility, or use abbreviation if preferred by user later
                       />
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {team.abbreviation}
+                        {(team.abbreviation ?? team.name)
+                          .charAt(0)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
@@ -137,7 +142,9 @@ export function TeamList({
                           title={team.name}
                           className="font-medium truncate max-w-16 min-w-0"
                         >
-                          {team.abbreviation}
+                          {team.abbreviation ??
+                            generateTeamAbbreviation(team.name) ??
+                            team.name}
                         </span>
                         {team.role && (
                           <Badge

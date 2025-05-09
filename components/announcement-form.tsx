@@ -396,18 +396,18 @@ export function AnnouncementForm() {
                         <DialogTrigger asChild>
                           <FormControl>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               className={cn(
                                 "w-10 h-9 p-0 justify-center transition-all",
                                 !field.value && "text-muted-foreground",
                                 field.value &&
-                                  "border-primary/50 bg-primary/5 text-primary",
+                                  "border-primary/50 bg-primary/5 text-primary"
                               )}
                             >
                               <CalendarIcon
                                 className={cn(
                                   "h-4 w-4",
-                                  field.value && "text-primary",
+                                  field.value && "text-primary"
                                 )}
                               />
                             </Button>
@@ -507,21 +507,21 @@ export function AnnouncementForm() {
                           <FormItem className="flex flex-col items-center">
                             <FormControl>
                               <RadioGroupItem
-                                value={AnnouncementPriority.NORMAL}
-                                id="priority-normal"
+                                value={AnnouncementPriority.HIGH}
+                                id="priority-high"
                                 className="peer sr-only"
                               />
                             </FormControl>
                             <FormLabel
-                              htmlFor="priority-normal"
-                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary transition-all"
+                              htmlFor="priority-high"
+                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border-0 border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary transition-all"
                             >
                               !
                             </FormLabel>
                           </FormItem>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Normal Priority</p>
+                          <p>High Priority</p>
                         </TooltipContent>
                       </Tooltip>
 
@@ -537,7 +537,7 @@ export function AnnouncementForm() {
                             </FormControl>
                             <FormLabel
                               htmlFor="priority-urgent"
-                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive peer-data-[state=checked]:bg-destructive/10 [&:has([data-state=checked])]:border-destructive transition-all"
+                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border-0 border-input bg-background text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive peer-data-[state=checked]:bg-destructive/10 [&:has([data-state=checked])]:border-destructive transition-all"
                             >
                               !!
                             </FormLabel>
@@ -568,7 +568,7 @@ export function AnnouncementForm() {
                       ? "border-dashed border-muted-foreground/50"
                       : "border-solid",
                     selectedTeams.length > 0 &&
-                      "bg-primary/5 hover:bg-primary/10",
+                      "bg-primary/5 hover:bg-primary/10"
                   )}
                 >
                   <div className="flex -space-x-1 overflow-hidden">
@@ -608,12 +608,14 @@ export function AnnouncementForm() {
                       "text-sm font-medium",
                       selectedTeams.length === 0
                         ? "text-muted-foreground"
-                        : "text-primary",
+                        : "text-primary"
                     )}
                   >
                     {selectedTeams.length === 0
                       ? "Select Recipients"
-                      : `${selectedTeams.length} team${selectedTeams.length !== 1 ? "s" : ""}`}
+                      : `${selectedTeams.length} team${
+                          selectedTeams.length !== 1 ? "s" : ""
+                        }`}
                   </span>
                 </Button>
               </DialogTrigger>
@@ -721,7 +723,7 @@ export function AnnouncementForm() {
               size="sm"
               className={cn(
                 "h-9 gap-2 transition-all",
-                selectedTeams.length === 0 && "opacity-50 cursor-not-allowed",
+                selectedTeams.length === 0 && "opacity-50 cursor-not-allowed"
               )}
               disabled={mutation.isPending || selectedTeams.length === 0}
             >
@@ -738,7 +740,7 @@ export function AnnouncementForm() {
                       "h-4 w-4",
                       form.getValues("content").length !== 0 &&
                         selectedTeams.length !== 0 &&
-                        " motion-preset-wobble-md",
+                        " motion-preset-wobble-md"
                     )}
                   />
                 </>

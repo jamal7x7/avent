@@ -48,7 +48,16 @@ import {
 } from "~/components/ui/tooltip";
 import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Added AnnouncementStatus
 import { cn } from "~/lib/utils";
-import { AnnouncementActions } from "./announcement-actions";
+// import { AnnouncementActions } from "./announcement-actions"; // This was already commented out, but let's ensure it's not used if not needed.
+import {
+  editAnnouncementAction,
+  scheduleAnnouncementAction,
+  draftAnnouncementAction,
+  deleteAnnouncementAction,
+} from "~/app/actions/announcement";
+import { toast } from "sonner"; // For toast notifications
+import { EditAnnouncementDialog } from "./edit-announcement-dialog";
+import { ScheduleAnnouncementDialog } from "./schedule-announcement-dialog";
 
 interface AnnouncementCardProps {
   announcement: {
@@ -61,7 +70,7 @@ interface AnnouncementCardProps {
     teamAbbreviation?: string; // Added teamAbbreviation
     priority: AnnouncementPriority;
     sender: {
-      // id: string; // senderId is available at announcement.senderId if needed
+      id: string; // senderId is available at announcement.senderId if needed
       name: string | null;
       image?: string | null;
       email: string;
@@ -79,25 +88,38 @@ export function AnnouncementCard({
   currentUserId,
 }: AnnouncementCardProps) {
   // const [isVisible, setIsVisible] = useState(false);
-  const { priority, status, scheduledDate } = announcement;
+  const {
+    id: announcementId,
+    content,
+    priority,
+    status,
+    scheduledDate,
+    sender,
+    teamName,
+    teamAbbreviation,
+  } = announcement; // Destructure for easier access
+
+  // State for dialogs
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
 
   // State for animation only
   const [isVisible, setIsVisible] = useState(false);
 
-  const senderName = announcement.sender.name ?? "Unknown User";
+  const senderName = sender.name ?? "Unknown User";
   const senderInitial = senderName.charAt(0).toUpperCase();
-  const teamAbbreviation = announcement.teamAbbreviation;
+  // const teamAbbreviation = announcement.teamAbbreviation; // Removed redundant declaration, already destructured
   const teamDisplayInitial = teamAbbreviation
     ? teamAbbreviation.charAt(0).toUpperCase()
-    : announcement.teamName.charAt(0).toUpperCase();
+    : teamName.charAt(0).toUpperCase(); // Use destructured teamName
 
-  const role = announcement.teamName.includes("Dev")
+  const role = teamName.includes("Dev") // Use destructured teamName
     ? "Developer"
     : announcement.teamName.includes("Design")
-      ? "Designer"
-      : announcement.teamName.includes("Market")
-        ? "Marketing"
-        : "Teacher";
+    ? "Designer"
+    : announcement.teamName.includes("Market")
+    ? "Marketing"
+    : "Teacher";
 
   useEffect(() => {
     setIsVisible(true);
@@ -105,7 +127,10 @@ export function AnnouncementCard({
 
   const displayDate = () => {
     if (status === AnnouncementStatus.SCHEDULED && scheduledDate) {
-      return `Scheduled for ${format(new Date(scheduledDate), "MM/dd/yyyy 'at' HH:mm")}`;
+      return `Scheduled for ${format(
+        new Date(scheduledDate),
+        "MM/dd/yyyy 'at' HH:mm"
+      )}`;
     }
     return formatDistanceToNow(new Date(announcement.createdAt), {
       addSuffix: true,
@@ -114,7 +139,7 @@ export function AnnouncementCard({
 
   const exactDate = format(
     new Date(announcement.createdAt),
-    "MMM d, yyyy 'at' h:mm a",
+    "MMM d, yyyy 'at' h:mm a"
   );
 
   const roleColors = {
@@ -170,7 +195,7 @@ export function AnnouncementCard({
   // Existing code using effectivePriorityStyles
 
   // Placeholder for actual received count - fetch this data
-  const receivedCount = 12; // Replace with actual fetched count
+  // const receivedCount = 12; // Replace with actual fetched count
 
   return (
     <TooltipProvider>
@@ -180,20 +205,22 @@ export function AnnouncementCard({
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Card className="w-full md:w-2xl rounded-2xl transition-shadow duration-300 hover:shadow-lg  ">
+          <Card className=" rounded-2xl transition-shadow duration-300 hover:shadow-lg  ">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
               <div className="relative">
                 <Avatar
                   className={cn(
                     "h-12 w-12 border-2 border-border ring-2 ring-offset-2 ring-offset-background shadow-lg",
-                    effectivePriorityStyles[priority]?.ring,
+                    effectivePriorityStyles[priority]?.ring
                     // priority === AnnouncementPriority.URGENT && "animate-pulse"
                   )}
                 >
                   <AvatarImage
                     src={
                       announcement.sender.image ??
-                      `https://avatar.vercel.sh/${teamAbbreviation ?? announcement.teamName}.png`
+                      `https://avatar.vercel.sh/${
+                        teamAbbreviation ?? announcement.teamName
+                      }.png`
                     }
                     alt={senderName}
                   />
@@ -226,7 +253,7 @@ export function AnnouncementCard({
                           scheduledDate
                             ? format(
                                 new Date(scheduledDate),
-                                "MMM d, yyyy 'at' h:mm a",
+                                "MMM d, yyyy 'at' h:mm a"
                               )
                             : exactDate}
                         </p>
@@ -246,20 +273,58 @@ export function AnnouncementCard({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onSelect={() => console.log("Edit clicked")}
+                            <EditAnnouncementDialog
+                              announcementId={announcementId}
+                              currentContent={content}
+                              open={isEditDialogOpen}
+                              onOpenChange={setIsEditDialogOpen}
                             >
-                              <Edit3 className="mr-2 h-4 w-4" />
-                              <span>Edit</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={() => console.log("Schedule clicked")}
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault(); // Prevent menu from closing
+                                  setIsEditDialogOpen(true);
+                                }}
+                              >
+                                <Edit3 className="mr-2 h-4 w-4" />
+                                <span>Edit</span>
+                              </DropdownMenuItem>
+                            </EditAnnouncementDialog>
+                            <ScheduleAnnouncementDialog
+                              announcementId={announcementId}
+                              currentScheduledDate={scheduledDate}
+                              open={isScheduleDialogOpen}
+                              onOpenChange={setIsScheduleDialogOpen}
                             >
-                              <CalendarClock className="mr-2 h-4 w-4" />
-                              <span>Schedule</span>
-                            </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault(); // Prevent menu from closing
+                                  setIsScheduleDialogOpen(true);
+                                }}
+                              >
+                                <CalendarClock className="mr-2 h-4 w-4" />
+                                <span>Schedule</span>
+                              </DropdownMenuItem>
+                            </ScheduleAnnouncementDialog>
                             <DropdownMenuItem
-                              onSelect={() => console.log("Draft clicked")}
+                              onSelect={async () => {
+                                console.log(
+                                  "Draft clicked for:",
+                                  announcementId
+                                );
+                                const formData = new FormData();
+                                formData.append(
+                                  "announcementId",
+                                  announcementId
+                                );
+                                const result = await draftAnnouncementAction(
+                                  formData
+                                );
+                                if ("success" in result) {
+                                  toast.success(result.success);
+                                } else if ("error" in result) {
+                                  toast.error(result.error);
+                                }
+                              }}
                             >
                               <FileText className="mr-2 h-4 w-4" />
                               <span>Draft</span>
@@ -267,7 +332,31 @@ export function AnnouncementCard({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                              onSelect={() => console.log("Delete clicked")}
+                              onSelect={async () => {
+                                console.log(
+                                  "Delete clicked for:",
+                                  announcementId
+                                );
+                                if (
+                                  confirm(
+                                    "Are you sure you want to delete this announcement?"
+                                  )
+                                ) {
+                                  const formData = new FormData();
+                                  formData.append(
+                                    "announcementId",
+                                    announcementId
+                                  );
+                                  const result = await deleteAnnouncementAction(
+                                    formData
+                                  );
+                                  if ("success" in result) {
+                                    toast.success(result.success);
+                                  } else if ("error" in result) {
+                                    toast.error(result.error);
+                                  }
+                                }
+                              }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               <span>Delete</span>
@@ -301,7 +390,7 @@ export function AnnouncementCard({
                           }
                           className={cn(
                             "gap-1 capitalize",
-                            effectivePriorityStyles[priority].badge,
+                            effectivePriorityStyles[priority].badge
                           )}
                         >
                           {effectivePriorityStyles[priority].icon}
@@ -326,7 +415,7 @@ export function AnnouncementCard({
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center pt-4 pb-5 px-6 border-t border-border/40">
+            <CardFooter className="flex justify-between items-center pt-4  px-6 border-t border-border/40">
               <AnnouncementInteractions
                 announcementId={announcement.id}
                 currentUserId={currentUserId} // Ensure currentUserId is passed here

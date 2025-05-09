@@ -13,7 +13,7 @@ import {
   teams,
   userTable,
 } from "~/db/schema";
-import { AnnouncementPriority } from "~/db/types";
+import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Import AnnouncementStatus
 import { db } from "../db";
 
 async function seed() {
@@ -512,9 +512,20 @@ async function seed() {
       senderId: faker.helpers.arrayElement([...teachers, ...admins]).id,
       content: `${subjectObj.subject}: ${details}`,
       createdAt: faker.date.recent({ days: 30 }),
+      updatedAt: new Date(), 
       priority: faker.helpers.arrayElement(Object.values(AnnouncementPriority)),
       type: "plain",
+      scheduledDate: null as Date | null, // Initialize correctly
+      status: AnnouncementStatus.PUBLISHED,
     };
+    // Optionally, make some announcements scheduled
+    if (Math.random() < 0.1) { // 10% chance to be scheduled
+      const futureDate = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000) + (Math.random() * 7 * 24 * 60 * 60 * 1000)); // 7-14 days in future
+      announcement.scheduledDate = futureDate;
+      announcement.status = AnnouncementStatus.SCHEDULED;
+      // Ensure updatedAt is appropriate; can be same as createdAt or slightly before scheduledDate for realism
+      announcement.updatedAt = new Date(announcement.createdAt.getTime() + Math.random() * 1000 * 60); 
+    }
     return {
       announcement,
       team,
