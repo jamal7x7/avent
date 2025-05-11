@@ -151,7 +151,9 @@ interface ScheduledAnnouncementsProps {
   // teams: { id: string; name: string }[]; // Teams list can also be passed if not fetched internally or if parent already has it
 }
 
-export function ScheduledAnnouncements({ selectedTeam }: ScheduledAnnouncementsProps) {
+export function ScheduledAnnouncements({
+  selectedTeam,
+}: ScheduledAnnouncementsProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [selectedAnnouncement, setSelectedAnnouncement] =
@@ -351,10 +353,14 @@ export function ScheduledAnnouncements({ selectedTeam }: ScheduledAnnouncementsP
   }
 
   return (
-    <div className="space-y-4 mt-6"> {/* Added mt-6 for spacing from parent controls */}
+    <div className="space-y-4 mt-6">
+      {" "}
+      {/* Added mt-6 for spacing from parent controls */}
       {/* The H2 and filter controls are removed as they will be handled by AnnouncementListClient */}
       {/* <h2 className="text-xl font-semibold">Scheduled Announcements</h2> */}
-      <div className="flex flex-col gap-6"> {/* Increased gap */}
+      <div className="flex flex-col gap-6">
+        {" "}
+        {/* Increased gap */}
         {scheduledAnnouncements.map((announcement: ScheduledAnnouncement) => (
           <div key={announcement.id} className="relative group">
             {/* Removed the specific DropdownMenu for scheduled items. 
@@ -385,22 +391,31 @@ export function ScheduledAnnouncements({ selectedTeam }: ScheduledAnnouncementsP
                 teamName: announcement.teamNames[0] || "Scheduled Team", // Pass first team name or a default
                 teamAbbreviation: announcement.teamAbbreviation, // Pass abbreviation if available
                 priority: announcement.priority,
-                sender: announcement.sender || { // Use actual sender if fetched, else default
+                sender: announcement.sender || {
+                  // Use actual sender if fetched, else default
                   id: announcement.senderId, // Use senderId from scheduled announcement
-                  name: "Unknown Sender",    // Default or fetch actual sender name
+                  name: "Unknown Sender", // Default or fetch actual sender name
                   image: null,
                   email: "",
                 },
-                isAcknowledged: announcement.isAcknowledged !== undefined ? announcement.isAcknowledged : false, // Default if not provided
-                isBookmarked: announcement.isBookmarked !== undefined ? announcement.isBookmarked : false,   // Default if not provided
-                totalAcknowledged: announcement.totalAcknowledged !== undefined ? announcement.totalAcknowledged : 0, // Default if not provided
+                isAcknowledged:
+                  announcement.isAcknowledged !== undefined
+                    ? announcement.isAcknowledged
+                    : false, // Default if not provided
+                isBookmarked:
+                  announcement.isBookmarked !== undefined
+                    ? announcement.isBookmarked
+                    : false, // Default if not provided
+                totalAcknowledged:
+                  announcement.totalAcknowledged !== undefined
+                    ? announcement.totalAcknowledged
+                    : 0, // Default if not provided
               }}
               currentUserId={session?.user?.id}
             />
           </div>
         ))}
       </div>
-
       {/* 
         Removed the duplicated card rendering and standalone dialogs from here.
         The AnnouncementCard component itself handles Edit/Schedule/Draft/Delete.

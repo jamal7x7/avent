@@ -1,7 +1,7 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 // Import Tajawal alongside Geist
-import { Geist, Geist_Mono, Tajawal } from "next/font/google";
+import { Inter, Tajawal } from "next/font/google";
 import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
 import { CartProvider } from "~/lib/hooks/use-cart";
@@ -11,22 +11,17 @@ import "./globals.css";
 import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Configure Tajawal font
 const tajawal = Tajawal({
   variable: "--font-tajawal",
-  weight: ["300", "400", "500", "700", "800"], // Specify weights used
-  subsets: ["arabic", "latin"], // Include necessary subsets
-  display: "swap", // Font display strategy
+  weight: ["300", "400", "500", "700", "800"],
+  subsets: ["arabic", "latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -50,7 +45,7 @@ export default function RootLayout({
       </head>
       <body
         // Add Tajawal variable alongside Geist
-        className={`${tajawal.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${tajawal.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

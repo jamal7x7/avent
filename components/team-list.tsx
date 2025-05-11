@@ -112,7 +112,9 @@ export function TeamList({
                 <div
                   onClick={() => onSelectTeam(team.id)}
                   className={cn(
-                    "w-full border border-transparent cursor-pointer p-3 text-left rounded-md transition-all duration-200 flex justify-between items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    // "border-border-300 border-0.5 absolute inset-0 z-10 rounded-xl bg-bg-100 group-hover:bg-bg-000/60 transition-all group-hover:scale-x-[1.02] group-hover:scale-y-[1.05] group-hover:border-border-200",
+                    // "w-full border border-transparent cursor-pointer p-3 text-left rounded-md transition-all duration-200 flex justify-between border-0.5 z-10 group-hover:scale-x-[1.02] group-hover:border-primary/20 group-hover:shadow-sm items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "w-full border border-transparent cursor-pointer p-3 text-left rounded-md transition-all duration-200 flex justify-between z-10 group-hover:scale-x-[1.00]  hover:shadow-sm items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     selectedTeamId === team.id
                       ? "bg-primary/10 hover:bg-primary/20 border-primary/20 shadow-sm"
                       : "hover:border-primary/20 hover:bg-muted/50"

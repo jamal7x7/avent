@@ -30,7 +30,7 @@ export default function AnnouncementsPageClientWrapper({
         <DialogTrigger asChild>
           <Button
             variant="secondary"
-            className="fixed bottom-6 border-1 border-secondary-foreground/10 right-6 h-14 w-14 rounded-xl shadow-lg z-50"
+            className="fixed bottom-6 border-1 border-secondary-foreground/10 right-6 h-14 w-14 rounded-xl shadow-lg z-50 hover:bg-secondary/80 hover:border-secondary-foreground/20 hover:shadow-xl hover:scale-105 transition-all"
             size="icon"
             aria-label="Add new announcement"
             // onClick={() => setIsAddDialogOpen(true)} // DialogTrigger handles this

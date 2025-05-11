@@ -19,9 +19,18 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Added for navigation
+import { startTransition, useEffect, useState } from "react"; // Added startTransition for View Transitions API
 import { AnnouncementInteractions } from "~/components/announcement-interactions";
 
+import { toast } from "sonner"; // For toast notifications
+// import { AnnouncementActions } from "./announcement-actions"; // This was already commented out, but let's ensure it's not used if not needed.
+import {
+  deleteAnnouncementAction,
+  draftAnnouncementAction,
+  editAnnouncementAction,
+  scheduleAnnouncementAction,
+} from "~/app/actions/announcement";
 // import { AnnouncementActions } from "~/components/announcement-actions"; // Will be replaced by direct implementation
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -48,14 +57,6 @@ import {
 } from "~/components/ui/tooltip";
 import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Added AnnouncementStatus
 import { cn } from "~/lib/utils";
-// import { AnnouncementActions } from "./announcement-actions"; // This was already commented out, but let's ensure it's not used if not needed.
-import {
-  editAnnouncementAction,
-  scheduleAnnouncementAction,
-  draftAnnouncementAction,
-  deleteAnnouncementAction,
-} from "~/app/actions/announcement";
-import { toast } from "sonner"; // For toast notifications
 import { EditAnnouncementDialog } from "./edit-announcement-dialog";
 import { ScheduleAnnouncementDialog } from "./schedule-announcement-dialog";
 
@@ -87,6 +88,7 @@ export function AnnouncementCard({
   announcement,
   currentUserId,
 }: AnnouncementCardProps) {
+  const router = useRouter(); // Added for navigation
   // const [isVisible, setIsVisible] = useState(false);
   const {
     id: announcementId,
@@ -106,6 +108,19 @@ export function AnnouncementCard({
   // State for animation only
   const [isVisible, setIsVisible] = useState(false);
 
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Ensure the click is not on an interactive element (button, dropdown, etc.)
+    // This can be done by checking e.target or by stopping propagation in child interactive elements.
+    // For simplicity, we'll rely on stopping propagation in children for now.
+    if (document.startViewTransition) {
+      startTransition(() => {
+        router.push(`/dashboard/announcements/${announcement.id}`);
+      });
+    } else {
+      router.push(`/dashboard/announcements/${announcement.id}`);
+    }
+  };
+
   const senderName = sender.name ?? "Unknown User";
   const senderInitial = senderName.charAt(0).toUpperCase();
   // const teamAbbreviation = announcement.teamAbbreviation; // Removed redundant declaration, already destructured
@@ -116,10 +131,10 @@ export function AnnouncementCard({
   const role = teamName.includes("Dev") // Use destructured teamName
     ? "Developer"
     : announcement.teamName.includes("Design")
-    ? "Designer"
-    : announcement.teamName.includes("Market")
-    ? "Marketing"
-    : "Teacher";
+      ? "Designer"
+      : announcement.teamName.includes("Market")
+        ? "Marketing"
+        : "Teacher";
 
   useEffect(() => {
     setIsVisible(true);
@@ -129,7 +144,7 @@ export function AnnouncementCard({
     if (status === AnnouncementStatus.SCHEDULED && scheduledDate) {
       return `Scheduled for ${format(
         new Date(scheduledDate),
-        "MM/dd/yyyy 'at' HH:mm"
+        "MM/dd/yyyy 'at' HH:mm",
       )}`;
     }
     return formatDistanceToNow(new Date(announcement.createdAt), {
@@ -139,7 +154,7 @@ export function AnnouncementCard({
 
   const exactDate = format(
     new Date(announcement.createdAt),
-    "MMM d, yyyy 'at' h:mm a"
+    "MMM d, yyyy 'at' h:mm a",
   );
 
   const roleColors = {
@@ -204,6 +219,16 @@ export function AnnouncementCard({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ viewTransitionName: `announcement-card-${announcement.id}` }} // Added for View Transitions API
+          onClick={handleCardClick} // Added navigation handler
+          role="link" // Added for accessibility
+          tabIndex={0} // Added for accessibility
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleCardClick(e as any);
+            }
+          }}
+          className="cursor-pointer" // Added cursor pointer
         >
           <Card className=" rounded-2xl transition-shadow duration-300 hover:shadow-lg  ">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
@@ -211,7 +236,7 @@ export function AnnouncementCard({
                 <Avatar
                   className={cn(
                     "h-12 w-12 border-2 border-border ring-2 ring-offset-2 ring-offset-background shadow-lg",
-                    effectivePriorityStyles[priority]?.ring
+                    effectivePriorityStyles[priority]?.ring,
                     // priority === AnnouncementPriority.URGENT && "animate-pulse"
                   )}
                 >
@@ -253,7 +278,7 @@ export function AnnouncementCard({
                           scheduledDate
                             ? format(
                                 new Date(scheduledDate),
-                                "MMM d, yyyy 'at' h:mm a"
+                                "MMM d, yyyy 'at' h:mm a",
                               )
                             : exactDate}
                         </p>
@@ -267,6 +292,7 @@ export function AnnouncementCard({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
+                              onClick={(e) => e.stopPropagation()} // Prevent card click
                             >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">More options</span>
@@ -309,16 +335,15 @@ export function AnnouncementCard({
                               onSelect={async () => {
                                 console.log(
                                   "Draft clicked for:",
-                                  announcementId
+                                  announcementId,
                                 );
                                 const formData = new FormData();
                                 formData.append(
                                   "announcementId",
-                                  announcementId
+                                  announcementId,
                                 );
-                                const result = await draftAnnouncementAction(
-                                  formData
-                                );
+                                const result =
+                                  await draftAnnouncementAction(formData);
                                 if ("success" in result) {
                                   toast.success(result.success);
                                 } else if ("error" in result) {
@@ -335,21 +360,20 @@ export function AnnouncementCard({
                               onSelect={async () => {
                                 console.log(
                                   "Delete clicked for:",
-                                  announcementId
+                                  announcementId,
                                 );
                                 if (
                                   confirm(
-                                    "Are you sure you want to delete this announcement?"
+                                    "Are you sure you want to delete this announcement?",
                                   )
                                 ) {
                                   const formData = new FormData();
                                   formData.append(
                                     "announcementId",
-                                    announcementId
+                                    announcementId,
                                   );
-                                  const result = await deleteAnnouncementAction(
-                                    formData
-                                  );
+                                  const result =
+                                    await deleteAnnouncementAction(formData);
                                   if ("success" in result) {
                                     toast.success(result.success);
                                   } else if ("error" in result) {
@@ -390,7 +414,7 @@ export function AnnouncementCard({
                           }
                           className={cn(
                             "gap-1 capitalize",
-                            effectivePriorityStyles[priority].badge
+                            effectivePriorityStyles[priority].badge,
                           )}
                         >
                           {effectivePriorityStyles[priority].icon}
@@ -416,13 +440,17 @@ export function AnnouncementCard({
             </CardContent>
 
             <CardFooter className="flex justify-between items-center pt-4  px-6 border-t border-border/40">
-              <AnnouncementInteractions
-                announcementId={announcement.id}
-                currentUserId={currentUserId} // Ensure currentUserId is passed here
-                initialIsAcknowledged={announcement.isAcknowledged}
-                initialIsBookmarked={announcement.isBookmarked}
-                initialAcknowledgedCount={announcement.totalAcknowledged}
-              />
+              <div onClick={(e) => e.stopPropagation()}>
+                {" "}
+                {/* Prevent card click on interactions area */}
+                <AnnouncementInteractions
+                  announcementId={announcement.id}
+                  currentUserId={currentUserId} // Ensure currentUserId is passed here
+                  initialIsAcknowledged={announcement.isAcknowledged}
+                  initialIsBookmarked={announcement.isBookmarked}
+                  initialAcknowledgedCount={announcement.totalAcknowledged}
+                />
+              </div>
             </CardFooter>
           </Card>
         </motion.div>

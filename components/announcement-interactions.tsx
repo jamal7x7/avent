@@ -56,14 +56,18 @@ export function AnnouncementInteractions({
           return;
         }
 
-        if (typeof result.isAcknowledged === 'boolean') {
+        if (typeof result.isAcknowledged === "boolean") {
           setIsAcknowledged(result.isAcknowledged);
           setAcknowledgedCount((prev) =>
             result.isAcknowledged ? prev + 1 : prev - 1,
           );
+          console.log("Acknowledged count:", acknowledgedCount);
         } else {
-          console.error('Invalid acknowledgement status:', result.isAcknowledged);
-          toast.error('Failed to update acknowledgement status.');
+          console.error(
+            "Invalid acknowledgement status:",
+            result.isAcknowledged,
+          );
+          toast.error("Failed to update acknowledgement status.");
         }
         toast.success(
           `Announcement ${result.isAcknowledged ? "acknowledged" : "unacknowledged"}.`,
@@ -99,14 +103,14 @@ export function AnnouncementInteractions({
           return;
         }
 
-        if (typeof result.isBookmarked === 'boolean') {
+        if (typeof result.isBookmarked === "boolean") {
           setIsBookmarked(result.isBookmarked);
           toast.success(
             `Announcement ${result.isBookmarked ? "bookmarked" : "unbookmarked"}.`,
           );
         } else {
-          console.error('Invalid bookmark status:', result.isBookmarked);
-          toast.error('Failed to update bookmark status.');
+          console.error("Invalid bookmark status:", result.isBookmarked);
+          toast.error("Failed to update bookmark status.");
         }
       } catch (error: any) {
         const errorMessage = error?.message || "Failed to update bookmark.";
@@ -123,7 +127,7 @@ export function AnnouncementInteractions({
           variant="ghost"
           size="sm"
           onClick={handleAcknowledge}
-          disabled={isAcknowledged || isPendingAcknowledge}
+          disabled={isPendingAcknowledge} // TODO: if i add isAcknowledged to disabled it will not allow to click on the button but miss up the count
           className={cn(
             "flex items-center text-xs text-muted-foreground transition-all",
             isAcknowledged &&

@@ -11,9 +11,12 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Use Geist Sans as the default sans font, Tajawal will be applied conditionally
-        sans: ["var(--font-geist-sans)"],
-        mono: ["var(--font-geist-mono)"],
+        // Use Inter as the default sans font
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        // Use Tajawal for Arabic text
+        tajawal: ["var(--font-tajawal)", "system-ui", "sans-serif"],
+        // Use Inter for monospace text
+        mono: ["var(--font-inter)", "ui-monospace", "monospace"],
       },
       // Add custom theme extensions here
       backgroundImage: {

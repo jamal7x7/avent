@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnnouncementCard } from "~/components/announcement-card";
 import { ScheduledAnnouncements } from "~/components/scheduled-announcements"; // Import ScheduledAnnouncements
-import { useSession } from "~/lib/auth-client"; // Added useSession import
-import { Label } from "~/components/ui/label"; // Added Label import
 import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label"; // Added Label import
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ import {
 } from "~/components/ui/select";
 // import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"; // Tabs will be replaced by tags/buttons
 import type { AnnouncementPriority } from "~/db/types"; // Import priority enum
+import { useSession } from "~/lib/auth-client"; // Added useSession import
 import { cn } from "~/lib/utils"; // For styling active tag
 
 interface Announcement {
@@ -57,7 +57,7 @@ const fetchAnnouncements = async (
   fetchUrl: string,
   teamId: string,
   pageParam = 1,
-  currentUserIdForFilter?: string
+  currentUserIdForFilter?: string,
 ): Promise<FetchResponse> => {
   let apiUrl = `${fetchUrl}?teamId=${teamId}&page=${pageParam}`;
   if (currentUserIdForFilter) {
@@ -111,7 +111,11 @@ export function AnnouncementListClient({
     queryFn: ({ pageParam }) => {
       // Do not fetch using this query if 'scheduled' tag is active, as ScheduledAnnouncements handles its own fetching
       if (activeTag === "scheduled") {
-        return Promise.resolve({ announcements: [], hasMore: false, nextCursor: undefined });
+        return Promise.resolve({
+          announcements: [],
+          hasMore: false,
+          nextCursor: undefined,
+        });
       }
       const userIdFilter =
         activeTag === "my-announcements" ? session?.user?.id : undefined;
@@ -119,7 +123,7 @@ export function AnnouncementListClient({
         fetchUrl,
         selectedTeam,
         pageParam as number,
-        userIdFilter
+        userIdFilter,
       );
     },
     enabled: activeTag !== "scheduled", // Only enable this query if not on scheduled tab
@@ -165,7 +169,7 @@ export function AnnouncementListClient({
               onClick={() => handleTagChange(tag.value)}
               className={cn(
                 "rounded-full px-4 py-1.5 text-sm",
-                activeTag === tag.value && "font-semibold"
+                activeTag === tag.value && "font-semibold",
               )}
             >
               {tag.label}
@@ -176,8 +180,8 @@ export function AnnouncementListClient({
         {/* Filter Section - Simplified */}
         <div className="w-full md:w-auto">
           <Select onValueChange={handleFilterChange} value={selectedTeam}>
-            <SelectTrigger 
-              id="team-filter" 
+            <SelectTrigger
+              id="team-filter"
               className="w-full md:w-[220px] text-sm"
               aria-label="Filter by team"
             >
@@ -208,23 +212,28 @@ export function AnnouncementListClient({
               </div>
             )}
             <ul className="space-y-6">
-              {isLoading && activeTag !== "scheduled" && allAnnouncements.length === 0 && (
-                <li className="text-muted-foreground text-center py-8">
-                  Loading announcements...
-                </li>
-              )}
-              {!isLoading && activeTag !== "scheduled" && allAnnouncements.length === 0 && (
-                <li className="text-muted-foreground text-center py-8">
-                  No announcements found for the current filter.
-                </li>
-              )}
-              {activeTag !== "scheduled" && allAnnouncements.map((a) => (
-                <AnnouncementCard
-                  key={`${a.id}-${a.teamId}-${activeTag}`}
-                  announcement={a}
-                  currentUserId={session?.user?.id}
-                />
-              ))}
+              {isLoading &&
+                activeTag !== "scheduled" &&
+                allAnnouncements.length === 0 && (
+                  <li className="text-muted-foreground text-center py-8">
+                    Loading announcements...
+                  </li>
+                )}
+              {!isLoading &&
+                activeTag !== "scheduled" &&
+                allAnnouncements.length === 0 && (
+                  <li className="text-muted-foreground text-center py-8">
+                    No announcements found for the current filter.
+                  </li>
+                )}
+              {activeTag !== "scheduled" &&
+                allAnnouncements.map((a) => (
+                  <AnnouncementCard
+                    key={`${a.id}-${a.teamId}-${activeTag}`}
+                    announcement={a}
+                    currentUserId={session?.user?.id}
+                  />
+                ))}
             </ul>
             {activeTag !== "scheduled" && hasNextPage && (
               <div className="mt-6 text-center">
@@ -235,18 +244,21 @@ export function AnnouncementListClient({
                 >
                   {isFetchingNextPage
                     ? "Loading more..."
-                    : isLoading 
-                    ? "Loading..."
-                    : "Load More"}
+                    : isLoading
+                      ? "Loading..."
+                      : "Load More"}
                 </Button>
               </div>
             )}
             {/* Fallback loading indicator for non-scheduled tabs */}
-            {isLoading && activeTag !== "scheduled" && !hasNextPage && allAnnouncements.length === 0 && (
-              <li className="text-muted-foreground text-center py-8">
-                Loading announcements...
-              </li>
-            )}
+            {isLoading &&
+              activeTag !== "scheduled" &&
+              !hasNextPage &&
+              allAnnouncements.length === 0 && (
+                <li className="text-muted-foreground text-center py-8">
+                  Loading announcements...
+                </li>
+              )}
           </>
         )}
       </div>

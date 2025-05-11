@@ -212,7 +212,7 @@ export default function TeamManagementPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-card rounded-lg border-2 border-muted/50 shadow-sm overflow-hidden">
+              <div className="bg-card/0 rounded-lg border-0 border-muted/50 shadow-sm overflow-hidden">
                 <YourTeamsTabContent teams={teams} hasTeams={hasTeams} />
               </div>
             )}

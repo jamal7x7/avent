@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig = {
+  experimental: {
+    viewTransition: true,
+  },
   webpack: (config, { isServer }) => {
     // Prevent bundling of server-side modules in client-side code
     if (!isServer) {
