@@ -64,9 +64,10 @@ function SidebarProvider({
 
   // Load initial state from localStorage
   const [initialOpen] = React.useState(() => {
-    const cookie = document.cookie
-      .split('; ')
-      .find(row => row.startsWith(SIDEBAR_COOKIE_NAME))?.split('=')[1];
+    const cookie = document?.cookie
+      .split("; ")
+      .find((row) => row.startsWith(SIDEBAR_COOKIE_NAME))
+      ?.split("=")[1];
     return cookie ? JSON.parse(cookie) : defaultOpen;
   });
 

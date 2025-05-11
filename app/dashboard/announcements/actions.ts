@@ -28,6 +28,7 @@ import { generateTeamAbbreviation } from "~/lib/utils";
   senderRole: z.enum(["teacher", "admin", "staff"]),
   scheduleDate: z.date().optional(),
   status: z.nativeEnum(AnnouncementStatus).optional().default(AnnouncementStatus.PUBLISHED),
+  allowComments: z.boolean().optional().default(false),
 });
 
 
@@ -38,7 +39,7 @@ export async function createAnnouncement(input: AnnouncementInput) {
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
   }
-  const { content, priority, teamIds, senderId, senderRole, scheduleDate, status } = parsed.data;
+  const { content, priority, teamIds, senderId, senderRole, scheduleDate, status, allowComments } = parsed.data;
   const announcementId = nanoid();
   
   // Determine status based on scheduleDate
@@ -55,6 +56,7 @@ export async function createAnnouncement(input: AnnouncementInput) {
     type: "plain",
     scheduledDate: scheduleDate,
     status: announcementStatus,
+    allowComments: allowComments || false,
   });
   // If no teamIds, send to all teams the sender is a member of
   let targetTeams = teamIds ?? [];
@@ -91,6 +93,7 @@ export async function createAnnouncement(input: AnnouncementInput) {
     teamIds: targetTeams,
     scheduledDate: scheduleDate,
     status: announcementStatus,
+    allowComments,
   };
 }
 

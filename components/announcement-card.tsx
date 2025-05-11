@@ -109,9 +109,19 @@ export function AnnouncementCard({
   const [isVisible, setIsVisible] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Ensure the click is not on an interactive element (button, dropdown, etc.)
-    // This can be done by checking e.target or by stopping propagation in child interactive elements.
-    // For simplicity, we'll rely on stopping propagation in children for now.
+    // Prevent navigation if the click is on an interactive element
+    const target = e.target as HTMLElement;
+    const isInteractive =
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest('[role="button"]') ||
+      target.closest(".dropdown-menu");
+
+    if (isInteractive) {
+      return; // Don't navigate if clicking on interactive elements
+    }
+
+    // Use View Transitions API if available for smooth transitions
     if (document.startViewTransition) {
       startTransition(() => {
         router.push(`/dashboard/announcements/${announcement.id}`);
@@ -220,15 +230,15 @@ export function AnnouncementCard({
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           style={{ viewTransitionName: `announcement-card-${announcement.id}` }} // Added for View Transitions API
-          onClick={handleCardClick} // Added navigation handler
-          role="link" // Added for accessibility
-          tabIndex={0} // Added for accessibility
+          onClick={handleCardClick} // Navigation handler
+          role="link" // For accessibility
+          tabIndex={0} // For keyboard navigation
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               handleCardClick(e as any);
             }
           }}
-          className="cursor-pointer" // Added cursor pointer
+          className="cursor-pointer hover:scale-[1.01] transition-transform" // Added subtle hover effect
         >
           <Card className=" rounded-2xl transition-shadow duration-300 hover:shadow-lg  ">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">

@@ -17,7 +17,7 @@
     "ui": "npx shadcn@latest add",
     "latest": "pnpm update --latest && pnpm check",
     "check": "tsc --noEmit && knip && eslint . && biome check --write .",
-    "seed": "npx tsx script/seed.ts"
+    "seed": "npx tsx scripts/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

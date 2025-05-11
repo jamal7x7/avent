@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import {
   accountTable,
+  announcementComments,
   announcementRecipients,
   announcementUserStatus,
   announcements,
@@ -19,7 +20,7 @@ import { db } from "../db";
 async function seed() {
   // Clean DB: truncate all tables in dependency order
   await db.execute(
-    sql`TRUNCATE TABLE team_invite_codes, announcements, team_members, teams, account, "user", session CASCADE`,
+    sql`TRUNCATE TABLE announcement_comments, announcement_recipients, announcement_user_status, team_invite_codes, announcements, team_members, teams, account, "user", session CASCADE`,
   );
 
   const arabicNames = [
@@ -477,7 +478,7 @@ async function seed() {
         subject: "موعد تسليم الواجبات",
         details: [
           "تم تمديد موعد تسليم مقال التاريخ",
-          "عروض المشاريع الجماعية مقررة يوم الاثنين القادم",
+          "عروض المشاريع الجماعية مقررة يوم الاثنين القادم", // This line contains the typo
           "واجب الرياضيات مستحق غداً",
         ],
       },
@@ -533,9 +534,12 @@ async function seed() {
   };
 
   // Generate announcements with their recipients and user status
-  const announcementData = Array.from({ length: 300 }).map(
-    generateAnnouncement,
-  );
+  const announcementData = Array.from({ length: 300 }).map(() => {
+    const { announcement, team } = generateAnnouncement();
+    // Set allowComments to true for 70% of announcements
+    announcement.allowComments = faker.datatype.boolean({ probability: 0.7 });
+    return { announcement, team };
+  });
 
   // Insert announcements
   await db
@@ -580,7 +584,98 @@ async function seed() {
     await db.insert(announcementUserStatus).values(announcementUserStatusList);
   }
 
-  // 5. Team Invite Codes (optional, keep small for demo)
+  // 5. Announcement Comments
+  console.log("Generating announcement comments...");
+  
+  // Only create comments for announcements that allow comments
+  const announcementsWithComments = announcementData.filter(
+    ({ announcement }) => announcement.allowComments
+  );
+  
+  // Generate comments for announcements
+  const commentsList = [];
+  const commentPromises = [];
+  
+  for (const { announcement, team } of announcementsWithComments) {
+    // Get team members who can comment on this announcement
+    const teamStudentMembers = teamMemberList.filter(
+      (member) => member.teamId === team.id
+    );
+    
+    if (teamStudentMembers.length === 0) continue;
+    
+    // Generate 0-5 comments per announcement
+    const commentCount = Math.floor(Math.random() * 6);
+    
+    for (let i = 0; i < commentCount; i++) {
+      const commentId = nanoid();
+      const commenter = faker.helpers.arrayElement(teamStudentMembers);
+      const commentDate = new Date(announcement.createdAt.getTime() + (1000 * 60 * 60 * Math.random() * 48)); // 0-48 hours after announcement
+      
+      const comment = {
+        id: commentId,
+        announcementId: announcement.id,
+        userId: commenter.userId,
+        content: faker.helpers.arrayElement([
+          "Thank you for the information!",
+          "When will we get more details about this?",
+          "I have a question about this announcement.",
+          "This is very helpful, thanks for sharing.",
+          "Could you please clarify this point?",
+          "I'm looking forward to this.",
+          "Is there anything specific we need to prepare?",
+          "Will this be covered in the next class?",
+          "I appreciate the heads up!",
+          "This is important information for everyone.",
+        ]),
+        createdAt: commentDate,
+        updatedAt: commentDate,
+        parentId: null,
+      };
+      
+      commentsList.push(comment);
+      
+      // Add 0-3 replies to this comment
+      const replyCount = Math.floor(Math.random() * 4);
+      
+      for (let j = 0; j < replyCount; j++) {
+        const replyId = nanoid();
+        const replier = faker.helpers.arrayElement(teamStudentMembers);
+        const replyDate = new Date(commentDate.getTime() + (1000 * 60 * 30 * Math.random() * 24)); // 0-12 hours after comment
+        
+        const reply = {
+          id: replyId,
+          announcementId: announcement.id,
+          userId: replier.userId,
+          content: faker.helpers.arrayElement([
+            "I agree with this comment.",
+            "That's a good point!",
+            "I was wondering the same thing.",
+            "Let me add some additional context here...",
+            "Thanks for bringing this up.",
+            "I think we should discuss this further in class.",
+            "The teacher mentioned this in the previous session.",
+            "I found some additional resources on this topic.",
+            "Does anyone else have more information about this?",
+            "This is exactly what I was thinking!",
+          ]),
+          createdAt: replyDate,
+          updatedAt: replyDate,
+          parentId: commentId,
+        };
+        
+        commentsList.push(reply);
+      }
+    }
+  }
+  
+  // Insert all comments
+  if (commentsList.length > 0) {
+    await db.insert(announcementComments).values(commentsList);
+    console.log(`✅ Added ${commentsList.length} comments and replies`);
+  }
+  
+  // 6. Team Invite Codes (optional, keep small for demo)
   const inviteCodeList = Array.from({ length: 5 }).map(() => {
     const team = faker.helpers.arrayElement(teamList);
     return {

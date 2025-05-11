@@ -15,6 +15,7 @@ const createAnnouncementSchema = z.object({
   teamIds: z.array(z.string()).optional(), // Optional, empty array means all teams
   scheduleDate: z.string().optional(), // Optional date for scheduled announcements
   status: z.nativeEnum(AnnouncementStatus).optional().default(AnnouncementStatus.PUBLISHED),
+  allowComments: z.boolean().optional().default(false),
 });
 
 export async function GET(req: NextRequest) {
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
       status: validation.data.scheduleDate 
         ? AnnouncementStatus.SCHEDULED 
         : validation.data.status || AnnouncementStatus.PUBLISHED,
+      allowComments: validation.data.allowComments,
     };
 
     const newAnnouncement = await createAnnouncement({

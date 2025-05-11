@@ -1,18 +1,20 @@
 "use client";
 
+import React from 'react'; // Added React import
 import { format, formatDistanceToNow } from "date-fns";
-import { motion } from "motion/react";
 import { AlertCircle, Book, Check, Clock, Star, ThumbsUp } from "lucide-react";
+import { motion } from "motion/react";
 import { AnimatedCardWrapper } from "~/components/animated-card-wrapper";
 import { AnnouncementDetailActions } from "~/components/announcement-detail-actions";
 import { AnnouncementQA } from "~/components/announcement-qa";
+import { CommentsSection } from "~/components/announcements/comments-section";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardHeader,
   CardFooter,
+  CardHeader,
   CardTitle,
   // CardDescription is not used, can be removed if not needed elsewhere
 } from "~/components/ui/card";
@@ -23,7 +25,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import type { AnnouncementPriority } from "~/db/types";
+import { AnnouncementPriority } from "~/db/types"; // Changed from 'import type'
+import { useSession } from "~/lib/auth-client";
 import { cn } from "~/lib/utils";
 import type { AnnouncementDetails } from "~/types/announcements";
 
@@ -68,17 +71,23 @@ interface AnnouncementDetailClientProps {
   announcement: AnnouncementDetails;
 }
 
-export function AnnouncementDetailClient({ announcement }: AnnouncementDetailClientProps) {
+export function AnnouncementDetailClient({
+  announcement,
+}: AnnouncementDetailClientProps) {
+  const { data: session } = useSession();
   const {
-    title,
+    id,
+
     content,
     createdAt,
     sender,
     teamName,
     priority,
     allowQuestions,
+    allowComments,
     acknowledgements,
     bookmarks,
+    comments,
   } = announcement;
 
   const displayDate = formatDistanceToNow(new Date(createdAt), {
@@ -97,28 +106,42 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
   const teamAbbreviation = teamName.substring(0, 3).toUpperCase();
   const teamDisplayInitial = teamAbbreviation.charAt(0);
 
-  const priorityStyles = {
-    NORMAL: {
+  // Use Enum members as keys
+  const priorityStyles: Record<AnnouncementPriority, { badge: string; ring: string; icon: JSX.Element }> = {
+    [AnnouncementPriority.NORMAL]: {
       badge: "bg-secondary text-secondary-foreground",
       ring: "ring-secondary",
       icon: <Check className="h-3 w-3" />,
     },
-    HIGH: {
+    [AnnouncementPriority.HIGH]: {
       badge: "bg-yellow-500/20 text-yellow-500",
       ring: "ring-yellow-500",
       icon: <AlertCircle className="h-3 w-3" />,
     },
-    URGENT: {
+    [AnnouncementPriority.URGENT]: {
       badge: "bg-destructive/20 text-destructive",
       ring: "ring-destructive",
       icon: <Star className="h-3 w-3 fill-destructive" />,
     },
   };
+  
+  // Helper to get styles, defaulting to NORMAL if priority is somehow invalid
+  const getPriorityStyle = (p: AnnouncementPriority) => {
+    return priorityStyles[p] || priorityStyles[AnnouncementPriority.NORMAL];
+  };
 
   return (
     <div className="container mx-auto p-4 md:p-8 ">
-      <AnimatedCardWrapper className="w-full  max-w-4xl mx-auto" delay={100}>
-        <Card className="rounded-2xl shadow-md  transition-all duration-300">
+      <AnimatedCardWrapper
+        className="w-full max-w-4xl mx-auto"
+        delay={100}
+        // style prop removed as it's not accepted by AnimatedCardWrapper
+        // If viewTransitionName is needed, it should be a direct prop or handled internally
+      >
+        <Card 
+          className="rounded-2xl shadow-md  transition-all duration-300"
+          style={{ viewTransitionName: `announcement-card-${id}` }} // Apply style here if Card accepts it
+        >
           <CardHeader className="flex flex-row items-start gap-4 space-y-0 pb-0 pt-0 px-6 border-b border-border/40">
             <motion.div
               className="relative"
@@ -134,7 +157,7 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
               <Avatar
                 className={cn(
                   "h-12 w-12 border-2 border-border ring-2 ring-offset-2 ring-offset-background shadow-lg",
-                  priorityStyles[priority as keyof typeof priorityStyles]?.ring,
+                  getPriorityStyle(priority).ring,
                 )}
               >
                 <AvatarImage
@@ -147,7 +170,7 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
                   {teamDisplayInitial}
                 </AvatarFallback>
               </Avatar>
-              {priority === "URGENT" && (
+              {priority === AnnouncementPriority.URGENT && ( // Compare with enum member
                 <motion.div
                   className="absolute -top-1 -right-1 bg-destructive rounded-full p-0.5 border-2 border-background"
                   animate={{
@@ -214,7 +237,7 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
                     {role}
                   </Badge>
                 </Badge>
-                {priority !== "NORMAL" && (
+                {priority !== AnnouncementPriority.NORMAL && ( // Compare with enum member
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -228,23 +251,17 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
                         >
                           <Badge
                             variant={
-                              priority === "URGENT"
+                              priority === AnnouncementPriority.URGENT // Compare with enum member
                                 ? "destructive"
                                 : "secondary"
                             }
                             className={cn(
                               "gap-1 capitalize",
-                              priorityStyles[
-                                priority as keyof typeof priorityStyles
-                              ].badge,
+                              getPriorityStyle(priority).badge,
                             )}
                           >
-                            {
-                              priorityStyles[
-                                priority as keyof typeof priorityStyles
-                              ].icon
-                            }
-                            {priority}
+                            {getPriorityStyle(priority).icon}
+                            {priority} {/* Displaying the string value of enum is fine */}
                           </Badge>
                         </motion.div>
                       </TooltipTrigger>
@@ -354,7 +371,7 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
               {
                 id: "q1",
                 content: "When will the slides from the meeting be available?",
-                createdAt: new Date(Date.now() - 3600000).toISOString(), 
+                createdAt: new Date(Date.now() - 3600000).toISOString(),
                 user: {
                   id: "user4",
                   name: "Edward",
@@ -389,6 +406,24 @@ export function AnnouncementDetailClient({ announcement }: AnnouncementDetailCli
                 answers: [],
               },
             ]}
+          />
+        </motion.div>
+      )}
+
+      {allowComments && (
+        <motion.div
+          className="w-full max-w-4xl mx-auto mt-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          <Separator className="my-6" />
+          <CommentsSection
+            announcementId={announcement.id}
+            userId={session?.user?.id || ""}
+            userRole={session?.user?.role || "student"}
+            allowComments={allowComments}
+            comments={comments}
           />
         </motion.div>
       )}

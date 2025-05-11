@@ -8,9 +8,10 @@ import {
   text,
   timestamp,
   varchar,
+  type AnyPgColumn, // Import AnyPgColumn
 } from "drizzle-orm/pg-core";
 import { AnnouncementPriority, AnnouncementStatus } from "~/db/types"; // Import both enums
-import { userTable } from "./users"; // Adjust path if needed
+import { userTable } from "./users"; // Import directly from users.ts
 
 // --- Teams ---
 export const teams = pgTable("teams", {
@@ -106,9 +107,11 @@ export const invitationCodeUses = pgTable("invitation_code_uses", {
 // --- Announcements ---
 export const announcements = pgTable("announcements", {
   id: text("id").primaryKey(),
+  teamId: text("team_id").references(() => teams.id, { onDelete: "set null" }), // Added teamId
   senderId: text("sender_id")
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }), // Added title
   content: text("content").notNull(),
   priority: text("priority", {
     enum: Object.values(AnnouncementPriority) as [string, ...string[]],
@@ -124,6 +127,8 @@ export const announcements = pgTable("announcements", {
     .notNull()
     .default(AnnouncementStatus.PUBLISHED),
   updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+  allowComments: boolean("allow_comments").notNull().default(false),
+  allowQuestions: boolean("allow_questions").notNull().default(false), // Added allowQuestions
 });
 
 export const announcementRecipients = pgTable("announcement_recipients", {
@@ -240,7 +245,7 @@ export const classSubjects = pgTable("class_subjects", {
 });
 
 // --- Team Invite Codes ---
-import { nanoid } from "nanoid";
+import { nanoid } from "nanoid"; // Restored import
 export const teamInviteCodes = pgTable("team_invite_codes", {
   id: text("id")
     .primaryKey()
@@ -259,6 +264,7 @@ export const teamInviteCodes = pgTable("team_invite_codes", {
 });
 
 // --- RELATIONS ---
+// (All table definitions are above this section)
 
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
@@ -345,14 +351,115 @@ export const teamInviteCodesRelations = relations(teamInviteCodes, ({ one }) => 
   }),
 }));
 
+// --- Announcement Comments ---
+// Define columns first for potentially complex tables or self-references
+const announcementCommentColumns = {
+  id: text("id").primaryKey(),
+  announcementId: text("announcement_id")
+    .notNull()
+    .references(() => announcements.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+  // Self-reference for parentId:
+  // The lambda for references should point to the final table object's column.
+  // We'll define parentId after the table is initially defined, then add it. This is a bit tricky.
+  // Alternative: Define table, then relations, and ensure parentId references correctly.
+  // Let's stick to the standard way first, as the AnyPgColumn hint should have worked.
+};
+
+export const announcementComments = pgTable("announcement_comments", {
+  id: text("id").primaryKey(),
+  announcementId: text("announcement_id")
+    .notNull()
+    .references(() => announcements.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+  parentId: text("parent_id").references((): AnyPgColumn => announcementComments.id, { onDelete: "cascade" }),
+});
+// The above definition for announcementComments is standard and should work with the AnyPgColumn hint.
+// The 'implicitly has type any' suggests TypeScript isn't completing its type analysis for it.
+
 export const announcementsRelations = relations(
   announcements,
   ({ one, many }) => ({
+    team: one(teams, { // Added team relation
+      fields: [announcements.teamId],
+      references: [teams.id],
+    }),
     sender: one(userTable, {
       fields: [announcements.senderId],
       references: [userTable.id],
     }),
-    recipients: many(announcementRecipients),
+    recipients: many(announcementRecipients), // This can co-exist
+    comments: many(announcementComments),
+    acknowledgements: many(announcementUserStatus, { relationName: "rel_acknowledgements" }),
+    bookmarks: many(announcementUserStatus, { relationName: "rel_bookmarks" }),
+  }),
+);
+
+// Define relations for announcementUserStatus
+export const announcementUserStatusRelations = relations(
+  announcementUserStatus,
+  ({ one }) => ({
+    user: one(userTable, {
+      fields: [announcementUserStatus.userId],
+      references: [userTable.id],
+    }),
+    // Corresponds to the 'acknowledgements' relation in announcements
+    announcementViaAcknowledgements: one(announcements, {
+      fields: [announcementUserStatus.announcementId],
+      references: [announcements.id],
+      relationName: "rel_acknowledgements",
+    }),
+    // Corresponds to the 'bookmarks' relation in announcements
+    announcementViaBookmarks: one(announcements, {
+      fields: [announcementUserStatus.announcementId],
+      references: [announcements.id],
+      relationName: "rel_bookmarks",
+    }),
+    // A general relation if needed, though the named ones might cover all uses from AUS to A
+    // If a query from AUS to A doesn't specify a named relation, this might be ambiguous.
+    // For the current query (A to AUS), the above named relations are key.
+    // It might be safer to remove this generic 'announcement' if all paths are named.
+    // For now, let's keep it but be aware it might be an issue if not used carefully.
+    announcement: one(announcements, {
+       fields: [announcementUserStatus.announcementId],
+       references: [announcements.id],
+    }),
+  }),
+);
+
+// Moved all relations definitions to be after all table definitions.
+// The actual content of announcementCommentsRelations and others remain the same,
+// just their position in the file is after all pgTable calls.
+
+export const announcementCommentsRelations = relations(
+  announcementComments,
+  ({ one, many }) => ({
+    announcement: one(announcements, {
+      fields: [announcementComments.announcementId],
+      references: [announcements.id],
+    }),
+    user: one(userTable, {
+      fields: [announcementComments.userId],
+      references: [userTable.id],
+    }),
+    parent: one(announcementComments, {
+      fields: [announcementComments.parentId],
+      references: [announcementComments.id],
+      relationName: "comment_replies",
+    }),
+    replies: many(announcementComments, {
+      relationName: "comment_replies",
+    }),
   }),
 );
 
